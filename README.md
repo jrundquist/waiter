@@ -17,6 +17,14 @@ server that will provide very fast hot reload of your frontend changes. If you w
 and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
 to this in your browser, and you can call your Go code from devtools.
 
+## Research Reading List 
+
+* [Golang GPT Implementation](https://github.com/go-aie/gptbot)
+  * [Python Version for inspiration](https://github.com/jerryjliu/llama_index)
+* [Sentence BERT](https://towardsdatascience.com/an-intuitive-explanation-of-sentence-bert-1984d144a868)
+* [Collaborative Editing using CRDT](https://pierrehedkvist.com/posts/collaborative-editing-using-crdts)
+  * [code](https://github.com/phedkvist/crdt-woot)
+
 ## Building
 
 To build a redistributable, production mode package, use `wails build`.
