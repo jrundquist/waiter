@@ -211,6 +211,14 @@ func (m *Menu) Generate(ctx context.Context) *menu.Menu {
 
 	appMenu.Append(menu.WindowMenu())
 
+	// DevTools (only in debug mode)
+	if runtime.Environment(ctx).BuildType == "dev" {
+		devMenu := appMenu.AddSubmenu("Developer")
+		devMenu.AddText("Reload", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) {
+			runtime.WindowReloadApp(ctx)
+		})
+	}
+
 	helpMenu := appMenu.AddSubmenu("Help")
 	helpMenu.AddText(fmt.Sprintf("%s Help", consts.AppName), nil, func(_ *menu.CallbackData) {
 		runtime.LogPrint(ctx, "Help")
