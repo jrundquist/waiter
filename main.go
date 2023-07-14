@@ -10,20 +10,22 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	waiter "waiter/backend"
+	"waiter/backend/consts"
+	"waiter/backend/logger"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	waiter.RecoverAndLog()
+	logger.PanicLogger()
 
 	// Create an instance of the app structure
 	app := waiter.NewApp()
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:         waiter.AppName,
+		Title:         consts.AppName,
 		Width:         1320,
 		Height:        780,
 		MinWidth:      840,
@@ -39,7 +41,8 @@ func main() {
 			B: 54,
 			A: 100,
 		},
-		OnStartup: app.Startup,
+		OnStartup:  app.Startup,
+		OnShutdown: app.Shutdown,
 		Bind: []interface{}{
 			app.Middleware,
 		},
@@ -61,8 +64,8 @@ func main() {
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
-				Title:   waiter.AppName,
-				Message: waiter.CopyRight,
+				Title:   consts.AppName,
+				Message: consts.CopyRight,
 			},
 		},
 	})

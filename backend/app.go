@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"waiter/backend/consts"
+	"waiter/backend/db"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -15,23 +17,29 @@ type File struct {
 	Contents string `json:"contents" binding:"required"`
 }
 
-var (
-	recentOpens = []string{}
-)
+var ()
 
 // App struct
 type App struct {
 	ctx context.Context
 
 	Middleware *MiddlewareFunctions
+
+	db *db.Database
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
+	db, err := db.NewDatabase()
+	if err != nil {
+		runtime.LogErrorf(nil, "Error creating database: %s", err.Error())
+	}
+
 	return &App{
 		Middleware: &MiddlewareFunctions{
 			ctx: nil,
 		},
+		db: db,
 	}
 }
 
@@ -43,21 +51,18 @@ func (a *App) Startup(ctx context.Context) {
 	// Bind the middleware functions
 	runtime.MenuSetApplicationMenu(ctx, a.createMenu())
 
+	// Set the context for the middleware functions
 	a.Middleware.setContext(ctx)
+}
+
+func (a *App) Shutdown(ctx context.Context) {
+	a.db.Close()
 }
 
 func (a *App) openFile(fileName string) {
 	runtime.LogPrint(a.ctx, "Open File")
 
-	// Check to see if recentOpens already contains the file
-	for i, recentOpen := range recentOpens {
-		if recentOpen == fileName {
-			// Remove the file from the list
-			recentOpens = append(recentOpens[:i], recentOpens[i+1:]...)
-			break
-		}
-	}
-	recentOpens = append(recentOpens, fileName)
+	a.db.AddRecentlyOpenedFile(fileName)
 	// Update the menu
 	runtime.MenuSetApplicationMenu(a.ctx, a.createMenu())
 	runtime.MenuUpdateApplicationMenu(a.ctx)
@@ -65,12 +70,12 @@ func (a *App) openFile(fileName string) {
 
 func (a *App) createMenu() *menu.Menu {
 	appMenu := menu.NewMenu()
-	waiterMenu := appMenu.AddSubmenu(AppName)
-	aboutString := fmt.Sprintf("%s is a tool for managing waitlists.\n\nCreated by: James Rundquist\n\nVersion: %s", AppName, Version)
-	waiterMenu.AddText(fmt.Sprintf("About %s", AppName), nil, func(_ *menu.CallbackData) {
+	waiterMenu := appMenu.AddSubmenu(consts.AppName)
+	aboutString := fmt.Sprintf("%s is a tool for managing waitlists.\n\nCreated by: James Rundquist\n\nVersion: %s", consts.AppName, consts.Version)
+	waiterMenu.AddText(fmt.Sprintf("About %s", consts.AppName), nil, func(_ *menu.CallbackData) {
 		res, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
 			Type:          runtime.InfoDialog,
-			Title:         fmt.Sprintf("About %s", AppName),
+			Title:         fmt.Sprintf("About %s", consts.AppName),
 			Message:       aboutString,
 			Buttons:       []string{"Copy", "OK"},
 			DefaultButton: "Copy",
@@ -88,12 +93,12 @@ func (a *App) createMenu() *menu.Menu {
 		runtime.LogPrint(a.ctx, "Preferences")
 	})
 	waiterMenu.AddSeparator()
-	waiterMenu.AddText(fmt.Sprintf("Hide %s", AppName), keys.CmdOrCtrl("H"), func(_ *menu.CallbackData) {
+	waiterMenu.AddText(fmt.Sprintf("Hide %s", consts.AppName), keys.CmdOrCtrl("H"), func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Hide wAIter")
 		runtime.Hide(a.ctx)
 	})
 	waiterMenu.AddSeparator()
-	waiterMenu.AddText(fmt.Sprintf("Quit %s", AppName), keys.CmdOrCtrl("Q"), func(_ *menu.CallbackData) {
+	waiterMenu.AddText(fmt.Sprintf("Quit %s", consts.AppName), keys.CmdOrCtrl("Q"), func(_ *menu.CallbackData) {
 		runtime.Quit(a.ctx)
 	})
 
@@ -125,13 +130,17 @@ func (a *App) createMenu() *menu.Menu {
 	})
 	recent := fileMenu.AddSubmenu("Open Recent")
 	displayed := make(map[string]interface{})
+	recentOpens, err := a.db.GetRecentlyOpenedFiles()
+	if err != nil {
+		runtime.LogErrorf(a.ctx, "Error getting recently opened files: %s", err.Error())
+	}
+
 	for _, recentOpen := range recentOpens {
 		display := path.Base(recentOpen)
 		if _, ok := displayed[display]; ok {
 			display = path.Join(path.Base(path.Dir(recentOpen)), path.Base(recentOpen))
 		}
 		displayed[display] = struct{}{}
-		runtime.LogPrintf(a.ctx, "Adding recent open: %s => %s", display, recentOpen)
 		recent.AddText(display, nil, func(_ *menu.CallbackData) {
 			a.openFile(recentOpen)
 		})
@@ -139,21 +148,33 @@ func (a *App) createMenu() *menu.Menu {
 	recent.AddSeparator()
 	recent.AddText("Clear Menu", nil, func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Clear Menu")
-		runtime.EventsEmit(a.ctx, "file:clearRecent")
+		a.db.ClearRecentlyOpenedFiles()
+		runtime.MenuSetApplicationMenu(a.ctx, a.createMenu())
+		runtime.MenuUpdateApplicationMenu(a.ctx)
 	})
 	fileMenu.AddSeparator()
 	fileMenu.AddText("Close", keys.CmdOrCtrl("w"), func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Close")
 		runtime.EventsEmit(a.ctx, "file:close")
 	})
+
+	canSave := false
+
 	fileMenu.AddText("Save", keys.CmdOrCtrl("s"), func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Save")
 		runtime.EventsEmit(a.ctx, "file:save")
 	})
+	if !canSave {
+		fileMenu.Items[len(fileMenu.Items)-1].Disabled = true
+		fileMenu.Items[len(fileMenu.Items)-1].Accelerator = nil
+	}
 	fileMenu.AddText("Save As...", keys.Combo("s", keys.ShiftKey, keys.CmdOrCtrlKey), func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Save As")
 		runtime.EventsEmit(a.ctx, "file:saveAs")
 	})
+	if !canSave {
+		fileMenu.Items[len(fileMenu.Items)-1].Accelerator = keys.CmdOrCtrl("s")
+	}
 	fileMenu.AddCheckbox("Autosave", false, nil, func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Auto Save")
 		runtime.EventsEmit(a.ctx, "file:autoSave")
@@ -193,7 +214,7 @@ func (a *App) createMenu() *menu.Menu {
 		runtime.LogPrint(a.ctx, "Italic")
 		runtime.EventsEmit(a.ctx, "format:italic")
 	})
-	formatMenu.AddText("Underline", keys.CmdOrCtrl("s"), func(_ *menu.CallbackData) {
+	formatMenu.AddText("Underline", keys.CmdOrCtrl("u"), func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Underline")
 		runtime.EventsEmit(a.ctx, "format:underline")
 	})
@@ -240,11 +261,11 @@ func (a *App) createMenu() *menu.Menu {
 	appMenu.Append(menu.WindowMenu())
 
 	helpMenu := appMenu.AddSubmenu("Help")
-	helpMenu.AddText(fmt.Sprintf("%s Help", AppName), nil, func(_ *menu.CallbackData) {
+	helpMenu.AddText(fmt.Sprintf("%s Help", consts.AppName), nil, func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "Help")
 	})
 	helpMenu.AddSeparator()
-	helpMenu.AddText(fmt.Sprintf("About %s", AppName), nil, func(_ *menu.CallbackData) {
+	helpMenu.AddText(fmt.Sprintf("About %s", consts.AppName), nil, func(_ *menu.CallbackData) {
 		runtime.LogPrint(a.ctx, "About")
 	})
 

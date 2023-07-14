@@ -1,4 +1,4 @@
-package waiter
+package consts
 
 const (
 	// AppName is the name of the application
