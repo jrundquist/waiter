@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	fileBucketName    = "fileBucket"
 	settingBucketName = "settingsBucket"
 
 	recentlyOpenedFilesKey = "recentlyOpenedFiles"
@@ -36,7 +35,6 @@ func NewDatabase() (*Database, error) {
 	// Initialize buckets
 	db.Update(func(tx *nutsdb.Tx) error {
 		tx.Put(settingBucketName, []byte("init"), []byte("true"), 0)
-		tx.Put(fileBucketName, []byte("init"), []byte("true"), 0)
 		return nil
 	})
 
