@@ -1,4 +1,4 @@
-module github.com/jrundquist/waiter
+module waiter
 
 go 1.20
 

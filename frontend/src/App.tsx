@@ -1,12 +1,22 @@
-import { useState } from "react";
-import logo from "./assets/images/logo-universal.png";
+import { useEffect, useState } from "react";
 import "./App.css";
-import { Greet } from "@go/app/App";
+import { Greet } from "@go/waiter/MiddlewareFunctions";
+import { EventsOn, EventsOff } from "@runtime/runtime";
 
 function App() {
   const [resultText, setResultText] = useState(
     "Please enter your name below 👇"
   );
+
+  useEffect(() => {
+    EventsOn("file:open", (file) => {
+      console.log(file);
+    });
+    return () => {
+      EventsOff("file:open");
+    };
+  }, []);
+
   const [name, setName] = useState("");
   const updateName = (e: any) => setName(e.target.value);
   const updateResultText = (result: string) => setResultText(result);
@@ -17,7 +27,6 @@ function App() {
 
   return (
     <div id="App">
-      <img src={logo} id="logo" alt="logo" />
       <div id="result" className="result">
         {resultText}
       </div>
