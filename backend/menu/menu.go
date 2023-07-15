@@ -217,6 +217,10 @@ func (m *Menu) Generate(ctx context.Context) *menu.Menu {
 		devMenu.AddText("Reload", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) {
 			runtime.WindowReloadApp(ctx)
 		})
+
+		devMenu.AddText("Prompt AI", keys.CmdOrCtrl("p"), func(_ *menu.CallbackData) {
+			runtime.EventsEmit(ctx, "ai:prompt")
+		})
 	}
 
 	helpMenu := appMenu.AddSubmenu("Help")
