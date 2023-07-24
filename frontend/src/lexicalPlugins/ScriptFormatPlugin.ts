@@ -27,6 +27,7 @@ import {
   ParentheticalNode,
 } from "./ParentheticalNode";
 import { $createSceneNode, $isSceneNode, SceneNode } from "./SceneNode";
+import { $createDialogNode, $isDialogNode, DialogNode } from "./DialogNode";
 
 export type Transformer =
   | ElementTransformer
@@ -103,7 +104,8 @@ const TRANSFORMERS: Transformer[] = [
       return "" + node.getTextContent();
     },
     shouldReplace: (node) => {
-      return !$isCharacterNode(node);
+      console.log("Testing if should replace", node);
+      return !$isCharacterNode(node) && !$isSceneNode(node);
     },
     replace: (parentNode, match) => {
       const characterName = `${match[0]}`;
@@ -168,6 +170,45 @@ const TRANSFORMERS: Transformer[] = [
       return true;
     },
   },
+  {
+    // Dialog
+    type: "text-match",
+    regExp: /(^[^\!>\.].*)/i,
+    triggers: [" ", "\n"],
+    dependencies: [DialogNode],
+    importRegExp: /(^[^\!>\.])/,
+    export: (node: LexicalNode) => {
+      return node.getTextContent().toUpperCase();
+    },
+    shouldReplace: (node) => {
+      return (
+        ($isCharacterNode(
+          node.getParent()?.getPreviousSibling()?.getLastChild()
+        ) ||
+          $isParentheticalNode(node.getParent()?.getPreviousSibling()) ||
+          $isDialogNode(
+            node.getParent()?.getPreviousSibling()?.getLastChild()
+          )) &&
+        !$isCharacterNode(node) &&
+        !$isParentheticalNode(node.getParent()) &&
+        !$isDialogNode(node) &&
+        !$isDialogNode(node.getParent())
+      );
+    },
+    replace: (parentNode, match) => {
+      const dialog = $createDialogNode(`${parentNode.getTextContent()}`);
+
+      if (parentNode.getNextSibling() == null) {
+        parentNode.replace(dialog);
+      } else {
+        parentNode.insertBefore(dialog);
+        parentNode.setTextContent("");
+        dialog.selectNext();
+      }
+      return true;
+    },
+  },
+
   {
     type: "element",
     dependencies: [richText.HeadingNode],
@@ -328,7 +369,7 @@ function applyTextMatchTransformers(
   return false;
 }
 
-function useEmoticons(
+function useScriptFormatPlugin(
   editor: LexicalEditor,
   transformers: Transformer[] = TRANSFORMERS
 ) {
@@ -476,6 +517,6 @@ function useEmoticons(
 
 export function ScriptFormatPlugin() {
   const [editor] = useLexicalComposerContext();
-  useEmoticons(editor);
+  useScriptFormatPlugin(editor);
   return null;
 }

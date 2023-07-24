@@ -22,6 +22,7 @@ import { ScriptFormatPlugin } from "./lexicalPlugins/ScriptFormatPlugin";
 import { CharacterNode } from "./lexicalPlugins/CharacterNode";
 import { ParentheticalNode } from "./lexicalPlugins/ParentheticalNode";
 import { SceneNode } from "./lexicalPlugins/SceneNode";
+import { DialogNode } from "./lexicalPlugins/DialogNode";
 
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
@@ -99,7 +100,7 @@ function App() {
       CharacterNode,
       ParentheticalNode,
       SceneNode,
-
+      DialogNode,
       HeadingNode,
       ListNode,
       ListItemNode,

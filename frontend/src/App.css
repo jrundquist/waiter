@@ -146,8 +146,15 @@ p {
   font-weight: bold;
 }
 
+.dialog {
+  color: rgb(33, 111, 219);
+  margin-left: 30%;
+  width: 30%;
+}
+
 .parenthetical {
   margin-left: 40%;
+  width: 40%;
 }
 .parenthetical::before {
   content: "(";
