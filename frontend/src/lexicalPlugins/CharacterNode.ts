@@ -7,7 +7,6 @@ import {
   RangeSelection,
 } from "lexical";
 import * as utils from "@lexical/utils";
-import { ForcedTypeNode } from "./ForcedTypeNode";
 import { $createLineNode, $isLineNode, LineNodeType } from "./LineNode";
 import { $createDialogNode } from "./DialogNode";
 
@@ -47,22 +46,21 @@ export class CharacterNode extends ElementNode {
 
   collapseAtStart() {
     console.log("collapseAtStart");
-    // const newElement = !this.isEmpty()
-    //   ? $createCharacterNode("")
-    //   : $createParagraphNode();
-    // const children = this.getChildren();
-    // children.forEach((child) => newElement.append(child));
-    // this.replace(newElement);
-
     // move the selection to the parent
     const parent = this.getParent();
-    this.remove();
     if (!parent) {
       return false;
     }
     if ($isLineNode(parent)) {
-      parent.setElementType(LineNodeType.None);
+      if (parent.isForced()) {
+        // First remove on empty unforces the line.
+        parent.setForced(false);
+        return true;
+      } else {
+        parent.setElementType(LineNodeType.None);
+      }
     }
+    this.remove();
     parent.select();
     return true;
   }

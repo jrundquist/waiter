@@ -1,5 +1,16 @@
-import { EditorConfig, ElementNode, ParagraphNode } from "lexical";
+import {
+  $createTextNode,
+  $isTextNode,
+  EditorConfig,
+  ElementNode,
+  LexicalNode,
+  ParagraphNode,
+} from "lexical";
 import * as utils from "@lexical/utils";
+import { $createCharacterNode } from "./CharacterNode";
+import { $createForcedTypeNode } from "./ForcedTypeNode";
+import { SCENE_HEADER_PATTERN } from "./FountainRegex";
+import { $createSceneNode } from "./SceneNode";
 
 export enum LineNodeType {
   None = "none",
@@ -15,14 +26,26 @@ export class LineNode extends ParagraphNode {
   }
 
   static clone(node: LineNode): LineNode {
-    return new LineNode(node.__elementType, node.__key);
+    return new LineNode(node.__elementType, node.__forced, node.__key);
   }
 
-  __elementType = LineNodeType.None;
+  __elementType: LineNodeType = LineNodeType.None;
+  __forced: boolean = false;
 
-  constructor(type: LineNodeType = LineNodeType.None, key?: string) {
+  constructor(
+    type: LineNodeType = LineNodeType.None,
+    forced: boolean = false,
+    key?: string
+  ) {
     super(key);
     this.__elementType = type;
+    this.__forced = forced;
+  }
+
+  getType() {
+    return `${LineNode.getType()} [${this.__elementType}${
+      this.__forced ? "*" : ""
+    }]`;
   }
 
   createDOM(config: EditorConfig): HTMLElement {
@@ -61,11 +84,127 @@ export class LineNode extends ParagraphNode {
     return self.__elementType;
   }
 
+  isForced() {
+    const self = this.getLatest();
+    return self.__forced;
+  }
+
+  setForced(forced: boolean) {
+    const self = this.getWritable();
+    self.__forced = forced;
+  }
+
   canMergeWith(node: ElementNode): boolean {
     return (
       node instanceof LineNode &&
       this.getElementType() === node.getElementType()
     );
+  }
+
+  checkForForcedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+    if (
+      this.getTextContent() === "@" &&
+      this.getElementType() !== LineNodeType.Character
+    ) {
+      // Create new character node with forced type.
+      const node = $createCharacterNode();
+      const forceNode = $createForcedTypeNode("@");
+      node.append(forceNode);
+      anchorNode.replace(node);
+      this.setElementType(LineNodeType.Character);
+      this.setForced(true);
+      return true;
+    }
+
+    // Scenes start with a period.
+    if (
+      this.getTextContent() === "." &&
+      this.getElementType() !== LineNodeType.Scene
+    ) {
+      // Create new character node with forced type.
+      const node = $createSceneNode();
+      const forceNode = $createForcedTypeNode(".");
+      node.append(forceNode);
+      anchorNode.replace(node);
+      this.setElementType(LineNodeType.Scene);
+      this.setForced(true);
+    }
+
+    // Not handled.
+    return false;
+  }
+
+  checkForImpliedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+    // Safe guard against changing the type of an already typed line. This
+    // should only happen when the line is forced, which happens via
+    // checkForForcedType().
+    if (this.getElementType() !== LineNodeType.None) {
+      return false;
+    }
+
+    console.log({
+      content: this.getTextContent(),
+      match: this.getTextContent().match(SCENE_HEADER_PATTERN),
+    });
+
+    if (
+      $isTextNode(anchorNode) &&
+      this.getTextContent().match(SCENE_HEADER_PATTERN)
+    ) {
+      console.log("is scene!");
+      this.setElementType(LineNodeType.Scene);
+      return true;
+    }
+
+    if (
+      $isTextNode(anchorNode) &&
+      this.getTextContent().match(/^[A-Z0-9\s\_\-\(\)]{3,}$/)
+    ) {
+      const node = $createCharacterNode();
+      const nameNode = $createTextNode(anchorNode.getTextContent());
+      node.append(nameNode);
+      anchorNode.replace(node);
+      this.setElementType(LineNodeType.Character);
+      return true;
+    }
+    // Not handled.
+    return false;
+  }
+
+  checkForLostType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+    // Forced nodes cant lose their type.
+    if (this.isForced()) {
+      return false;
+    }
+
+    const reset = () => {
+      const node = $createTextNode(this.getTextContent());
+      this.clear();
+      this.append(node);
+      node.selectNext();
+      this.setElementType(LineNodeType.None);
+    };
+
+    // Non-forced character nodes can be lost if they no longer contain all caps
+    // text.
+    if (
+      this.getElementType() === LineNodeType.Character &&
+      this.getTextContent().match(/[a-z]/)
+    ) {
+      reset();
+      return true;
+    }
+
+    // Scene heading no longer matches.
+    if (
+      this.getElementType() === LineNodeType.Scene &&
+      !this.getTextContent().match(SCENE_HEADER_PATTERN)
+    ) {
+      reset();
+      return true;
+    }
+
+    return false;
   }
 }
 

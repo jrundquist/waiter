@@ -36,17 +36,19 @@ import { ForcedTypeNode } from "./lexicalPlugins/ForcedTypeNode";
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
     width: "100vw",
-    height: "75vh",
+    height: "100vh",
     display: "flex",
     flexDirection: "row",
-    backgroundColor: "blue",
-    alignItems: "center",
+    backgroundColor: "slategrey",
+    alignItems: "flex-start",
     justifyContent: "center",
+    overflow: "scroll",
   },
   editorInner: {
+    marginTop: "1rem",
     maxWidth: "700px",
     width: "100%",
-    height: "75vh",
+    minHeight: "80vh",
     backgroundColor: "white",
     position: "relative",
   },
