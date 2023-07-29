@@ -149,7 +149,17 @@ p {
 .dialog {
   color: rgb(33, 111, 219);
   margin-left: 30%;
-  width: 30%;
+  width: 50%;
+  display: inline-block;
+}
+
+.forced {
+  opacity: 0.3;
+}
+
+.character {
+  display: inline-block;
+  text-transform: uppercase;
 }
 
 .parenthetical {

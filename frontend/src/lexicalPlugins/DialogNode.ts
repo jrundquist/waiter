@@ -1,23 +1,32 @@
-import { EditorConfig, TextNode, NodeKey } from "lexical";
+import { EditorConfig, ElementNode, NodeKey } from "lexical";
+import * as utils from "@lexical/utils";
 
-export class DialogNode extends TextNode {
+export class DialogNode extends ElementNode {
   /** @internal */
   static getType() {
     return "dialog";
   }
 
-  constructor(text: string, key?: NodeKey) {
-    super(text, key);
+  constructor(key?: NodeKey) {
+    super(key);
   }
 
   static clone(node: DialogNode): DialogNode {
-    return new DialogNode(node.__text, node.__key);
+    return new DialogNode(node.__key);
   }
 
   createDOM(config: EditorConfig): HTMLElement {
-    const element = super.createDOM(config);
-    element.classList.add("dialog");
+    const element = document.createElement("span");
+    utils.addClassNamesToElement(element, "dialog");
     return element;
+  }
+
+  updateDOM(prevNode: DialogNode, dom: HTMLElement, config: EditorConfig) {
+    return false;
+  }
+
+  extractWithChild() {
+    return true;
   }
 }
 
@@ -25,7 +34,7 @@ export function $isDialogNode(node: unknown) {
   return node instanceof DialogNode;
 }
 
-export function $createDialogNode(scene: string): DialogNode {
+export function $createDialogNode(): DialogNode {
   // return new DialogNode();
-  return new DialogNode(scene);
+  return new DialogNode();
 }

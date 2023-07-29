@@ -28,11 +28,25 @@ import {
 } from "./ParentheticalNode";
 import { $createSceneNode, $isSceneNode, SceneNode } from "./SceneNode";
 import { $createDialogNode, $isDialogNode, DialogNode } from "./DialogNode";
+import { $createForcedTypeNode, $isForcedTypeNode } from "./ForcedTypeNode";
+import { $isLineNode, LineNode, LineNodeType } from "./LineNode";
 
 export type Transformer =
   | ElementTransformer
   | TextMatchTransformer
+  | LineMatch
   | TextMatchAfterTransformer;
+export type LineMatch = Readonly<{
+  dependencies: Array<Klass<LexicalNode>>;
+  export: (
+    node: LexicalNode,
+    exportChildren: (node: ElementNode) => string
+  ) => string | null;
+  regexp: RegExp;
+  replace: (parentNode: ElementNode, match: RegExpMatchArray) => boolean;
+  restore: (parentNode: ElementNode) => boolean;
+  type: "line-match";
+}>;
 export type ElementTransformer = Readonly<{
   dependencies: Array<Klass<LexicalNode>>;
   export: (
@@ -93,8 +107,8 @@ const TRANSFORMERS: Transformer[] = [
   {
     // Character nodes
     type: "text-match",
-    regExp: /^(?!(:?EXT\.)|(:?INT\.))([A-Z0-9\s\_\-\(\)])+$/,
-    triggers: ["\n"],
+    regExp: /^@|(?!(:?EXT\.)|(:?INT\.))([A-Z0-9\s\_\-\(\)])+$/,
+    triggers: ["\n", "@"],
     dependencies: [CharacterNode],
     importRegExp: /^(?!(:?EXT\.)|(:?INT\.))([A-Z0-9\s\_\-\(\)])+$/,
     export: (node: LexicalNode) => {
@@ -108,8 +122,7 @@ const TRANSFORMERS: Transformer[] = [
       return !$isCharacterNode(node) && !$isSceneNode(node);
     },
     replace: (parentNode, match) => {
-      const characterName = `${match[0]}`;
-      const character = $createCharacterNode(characterName);
+      const character = $createCharacterNode();
 
       if (parentNode.getNextSibling() == null) {
         parentNode.replace(character);
@@ -147,7 +160,7 @@ const TRANSFORMERS: Transformer[] = [
     type: "text-match",
     regExp:
       /(^INT|^EXT|^EXT[\/\-]INT|^INT[\/-]EXT|^E\/I|^I\/E|^\.[A-Z0-9]+)[\s\.][^$]*/i,
-    triggers: [".", " ", "\n"],
+    triggers: [".", " ", "T", "\n"],
     dependencies: [SceneNode],
     importRegExp: /^\.([A-Z0-9\s\_\-\(\)])+$/,
     export: (node: LexicalNode) => {
@@ -196,7 +209,7 @@ const TRANSFORMERS: Transformer[] = [
       );
     },
     replace: (parentNode, match) => {
-      const dialog = $createDialogNode(`${parentNode.getTextContent()}`);
+      const dialog = $createDialogNode();
 
       if (parentNode.getNextSibling() == null) {
         parentNode.replace(dialog);
@@ -439,25 +452,36 @@ function useScriptFormatPlugin(
       //   textFormatTransformersIndex
       // );
     };
+
+    let alreadyReplaced = false;
     return editor.registerUpdateListener(
       ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
+        // console.log("update listener triggered");
         // Ignore updates from undo/redo (as changes already calculated)
         if (tags.has("historic")) {
+          console.log("historic");
           return;
-        } // If editor is still composing (i.e. backticks) we must wait before the user confirms the key
+        }
 
         if (editor.isComposing()) {
+          // The editor is currently in "composition" mode due to
+          // receiving input through an IME, or 3P extension, for example.
+          console.log("is composing");
           return;
         }
 
         const selection = editorState.read($getSelection);
         const prevSelection = prevEditorState.read($getSelection);
 
+        // console.log({ selection, prevSelection });
+
         if (
           !$isRangeSelection(prevSelection) ||
           !$isRangeSelection(selection) ||
           !selection.isCollapsed()
         ) {
+          console.info("selection change only");
+          // This is simply the selection changing, not the content.
           return;
         }
 
@@ -467,35 +491,46 @@ function useScriptFormatPlugin(
         const prevAnchorKey = prevSelection.anchor.key;
         const prevAnchorOffset = prevSelection.anchor.offset;
 
-        const anchorNode = editorState._nodeMap.get(anchorKey);
-        const prevAnchorNode = prevEditorState._nodeMap.get(prevAnchorKey);
+        const anchorNode = editorState._nodeMap.get(anchorKey)!;
+        const prevAnchorNode = prevEditorState._nodeMap.get(prevAnchorKey)!;
 
+        const nextNodeLike = anchorNode!.isPrototypeOf(TextNode);
         if (
-          !$isTextNode(anchorNode) ||
-          !dirtyLeaves.has(anchorKey) ||
-          (anchorOffset !== 1 && anchorOffset > prevSelection.anchor.offset + 1)
+          false
+          // (!$isTextNode(anchorNode) ||
+          //   !dirtyLeaves.has(anchorKey) ||
+          //   (anchorOffset !== 1 &&
+          //     anchorOffset > prevSelection!.anchor.offset + 1))
         ) {
+          console.log("something not a text node", !nextNodeLike);
           if (
             prevAnchorKey !== anchorKey &&
             $isTextNode(prevAnchorNode) &&
             !dirtyLeaves.has(prevAnchorKey)
           ) {
+            console.log("prevAnchorKey !== anchorKey");
             editor.update(() => {
               console.log("Running on-enter transforms");
               console.log({ transformers: textMatchTransformersIndex["\n"] });
-              applyTextMatchTransformers(
-                prevAnchorNode,
-                prevAnchorOffset,
-                textMatchTransformersIndex["\n"] || []
-              );
+              // applyTextMatchTransformers(
+              //   prevAnchorNode,
+              //   prevAnchorOffset,
+              //   textMatchTransformersIndex["\n"] || []
+              // );
             });
           }
           return;
         }
 
-        editor.update(() => {
-          console.log("update triggered");
+        const findClosestLineNode = (
+          node: LexicalNode | null
+        ): LineNode | null => {
+          if (node === null) return null;
+          if ($isLineNode(node)) return node;
+          return findClosestLineNode(node.getParent());
+        };
 
+        editor.update(() => {
           // Markdown is not available inside code
           if (anchorNode.hasFormat("code")) {
             return;
@@ -507,8 +542,45 @@ function useScriptFormatPlugin(
             return;
           }
 
+          if ($isLineNode(parentNode)) {
+            if (
+              anchorNode.getTextContent() === "@" &&
+              !$isCharacterNode(anchorNode) &&
+              parentNode.getElementType() !== LineNodeType.Character
+            ) {
+              const node = $createCharacterNode();
+              const forceNode = $createForcedTypeNode("@");
+              node.append(forceNode);
+              anchorNode.replace(node);
+              parentNode.setElementType(LineNodeType.Character);
+              return;
+            }
+            if (
+              anchorNode.getTextContent().match(/^[A-Z0-9\s\_\-\(\)]{3,}$/) &&
+              $isTextNode(anchorNode) &&
+              parentNode.getElementType() === LineNodeType.None
+            ) {
+              const node = $createCharacterNode();
+              const nameNode = $createTextNode(anchorNode.getTextContent());
+              node.append(nameNode);
+              anchorNode.replace(node);
+              parentNode.setElementType(LineNodeType.Character);
+            }
+
+            if (parentNode.getTextContent() === "") {
+              const thisLine = findClosestLineNode(parentNode);
+              if (!thisLine) return;
+              const prevLine = thisLine.getPreviousSibling() as LineNode | null;
+
+              console.log("empty line", {
+                thisLine: thisLine.getElementType(),
+                prevLine: prevLine?.getElementType(),
+              });
+            }
+          }
+
           // Would try transforms
-          transform(parentNode, anchorNode, selection.anchor.offset);
+          // transform(parentNode, anchorNode, selection.anchor.offset);
         });
       }
     );
