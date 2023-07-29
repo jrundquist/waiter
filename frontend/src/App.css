@@ -124,7 +124,7 @@ p {
 
 .editor-paragraph {
   margin: 0;
-  margin-bottom: 8px;
+  margin-bottom: 1px;
   position: relative;
 }
 
@@ -159,6 +159,9 @@ p {
 
 .character {
   display: inline-block;
+}
+
+.character:not(:has(span.forced)) {
   text-transform: uppercase;
 }
 

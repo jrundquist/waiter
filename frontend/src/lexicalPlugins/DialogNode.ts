@@ -1,5 +1,14 @@
-import { EditorConfig, ElementNode, NodeKey } from "lexical";
+import {
+  $isLineBreakNode,
+  EditorConfig,
+  ElementNode,
+  NodeKey,
+  RangeSelection,
+} from "lexical";
 import * as utils from "@lexical/utils";
+import { $createLineNode, LineNodeType } from "./LineNode";
+
+const EXIT_ON_ENTER = true;
 
 export class DialogNode extends ElementNode {
   /** @internal */
@@ -23,6 +32,34 @@ export class DialogNode extends ElementNode {
 
   updateDOM(prevNode: DialogNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+    // Double new line means we should return back to the scene
+    if (
+      EXIT_ON_ENTER ||
+      $isLineBreakNode(this.getChildAtIndex(this.getChildrenSize() - 1))
+    ) {
+      // Remove the trailing dialog linebreak, replacing it with an empty line.
+      if ($isLineBreakNode(this.getLastChild())) {
+        this.getLastChild()!.remove();
+      }
+      const lineBreak = $createLineNode(LineNodeType.None);
+      const newLine = $createLineNode(LineNodeType.None);
+      // Swap the order so they are inserted in the correct order.
+      this.getParent()!.insertAfter(newLine, restoreSelection);
+      this.getParent()!.insertAfter(lineBreak, false);
+      return newLine;
+    }
+
+    if (this.isEmpty()) {
+      // If the dialog is empty, we should insert a new line.
+      const newLine = $createLineNode(LineNodeType.None);
+      this.getParent()!.insertAfter(newLine, false);
+      return newLine;
+    }
+
+    return null;
   }
 
   extractWithChild() {

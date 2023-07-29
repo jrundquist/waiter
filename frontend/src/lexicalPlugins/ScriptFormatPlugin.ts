@@ -578,9 +578,6 @@ function useScriptFormatPlugin(
               });
             }
           }
-
-          // Would try transforms
-          // transform(parentNode, anchorNode, selection.anchor.offset);
         });
       }
     );
