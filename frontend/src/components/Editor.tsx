@@ -18,14 +18,10 @@ import {
 import TreeViewPlugin from "@/lexicalPlugins/TreeViewPlugin";
 import LexicalHorizontalRuleNode from "@lexical/react/LexicalHorizontalRuleNode";
 
-import { ScriptFormatPlugin } from "@/lexicalPlugins/ScriptFormatPlugin";
-import { CharacterNode } from "@/lexicalPlugins/CharacterNode";
-import { ParentheticalNode } from "@/lexicalPlugins/ParentheticalNode";
-import { SceneNode } from "@/lexicalPlugins/SceneNode";
-import { DialogNode } from "@/lexicalPlugins/DialogNode";
-import { ParagraphNode } from "lexical";
-import { LineNode } from "@/lexicalPlugins/LineNode";
-import { ForcedTypeNode } from "@/lexicalPlugins/ForcedTypeNode";
+import {
+  SCRIPT_NODES,
+  ScriptFormatPlugin,
+} from "@/lexicalPlugins/ScriptFormatPlugin";
 
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
@@ -70,10 +66,6 @@ export function Editor(): React.FunctionComponentElement<{}> {
     },
     // Any custom nodes go here
     nodes: [
-      CharacterNode,
-      ParentheticalNode,
-      SceneNode,
-      DialogNode,
       HeadingNode,
       ListNode,
       ListItemNode,
@@ -85,15 +77,8 @@ export function Editor(): React.FunctionComponentElement<{}> {
       TableRowNode,
       AutoLinkNode,
       LinkNode,
-      ForcedTypeNode,
-      LineNode,
       LexicalHorizontalRuleNode.HorizontalRuleNode,
-      {
-        replace: ParagraphNode,
-        with: (node: ParagraphNode) => {
-          return new LineNode();
-        },
-      },
+      ...SCRIPT_NODES,
     ],
   };
 

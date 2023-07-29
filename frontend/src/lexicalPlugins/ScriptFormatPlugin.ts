@@ -1,8 +1,40 @@
 import { useEffect } from "react";
-import { LexicalEditor, LexicalNode } from "lexical";
+import { Klass, LexicalEditor, LexicalNode, ParagraphNode } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getSelection, $isRangeSelection } from "lexical";
 import { $isLineNode, LineNode, LineNodeType } from "./LineNode";
+import { SceneNode } from "./SceneNode";
+import { CharacterNode } from "./CharacterNode";
+import { TransitionNode } from "./TransitionNode";
+import { ForcedTypeNode } from "./ForcedTypeNode";
+import { DialogNode } from "./DialogNode";
+
+type NodeList = (
+  | Klass<LexicalNode>
+  | {
+      replace: Klass<LexicalNode>;
+      with: <T extends new (...args: any) => any>(
+        node: InstanceType<T>
+      ) => LexicalNode;
+    }
+)[];
+
+export const SCRIPT_NODES: NodeList = [
+  LineNode,
+  ForcedTypeNode,
+
+  SceneNode,
+  TransitionNode,
+  CharacterNode,
+  DialogNode,
+
+  {
+    replace: ParagraphNode,
+    with: (node: ParagraphNode) => {
+      return new LineNode();
+    },
+  },
+];
 
 function useScriptFormatPlugin(editor: LexicalEditor) {
   useEffect(() => {
@@ -68,14 +100,14 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             return;
           }
 
-          if ($isLineNode(parentNode)) {
+          if ($isLineNode(parentNode) || true) {
             // Look for forcing characters.
             if (thisLine.checkForForcedType(anchorNode, anchorOffset)) {
               return;
             }
 
             if (
-              thisLine.getElementType() === LineNodeType.None &&
+              // thisLine.getElementType() === LineNodeType.None &&
               thisLine.checkForImpliedType(anchorNode, anchorOffset)
             ) {
               return;

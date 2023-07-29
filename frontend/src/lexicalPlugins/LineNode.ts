@@ -9,8 +9,9 @@ import {
 import * as utils from "@lexical/utils";
 import { $createCharacterNode } from "./CharacterNode";
 import { $createForcedTypeNode } from "./ForcedTypeNode";
-import { SCENE_HEADER_PATTERN } from "./FountainRegex";
+import { SCENE_HEADER_PATTERN, TRANSITION_PATTERN } from "./FountainRegex";
 import { $createSceneNode } from "./SceneNode";
+import { $createTransitionNode } from "./TransitionNode";
 
 export enum LineNodeType {
   None = "none",
@@ -18,6 +19,7 @@ export enum LineNodeType {
   Parenthetical = "parenthetical",
   Dialog = "dialog",
   Scene = "scene",
+  Transition = "transition",
 }
 
 export class LineNode extends ParagraphNode {
@@ -130,6 +132,20 @@ export class LineNode extends ParagraphNode {
       this.setForced(true);
     }
 
+    // Scenes start with a period.
+    if (
+      this.getTextContent() === ">" &&
+      this.getElementType() !== LineNodeType.Transition
+    ) {
+      // Create new character node with forced type.
+      const node = $createTransitionNode();
+      const forceNode = $createForcedTypeNode(">");
+      node.append(forceNode);
+      anchorNode.replace(node);
+      this.setElementType(LineNodeType.Transition);
+      this.setForced(true);
+    }
+
     // Not handled.
     return false;
   }
@@ -139,6 +155,13 @@ export class LineNode extends ParagraphNode {
     // should only happen when the line is forced, which happens via
     // checkForForcedType().
     if (this.getElementType() !== LineNodeType.None) {
+      // Overwrite some types...
+      if (
+        this.getElementType() === LineNodeType.Character &&
+        this.getTextContent().match(TRANSITION_PATTERN)
+      ) {
+        return this.changeTo(LineNodeType.Transition);
+      }
       return false;
     }
 
@@ -151,7 +174,6 @@ export class LineNode extends ParagraphNode {
       $isTextNode(anchorNode) &&
       this.getTextContent().match(SCENE_HEADER_PATTERN)
     ) {
-      console.log("is scene!");
       this.setElementType(LineNodeType.Scene);
       return true;
     }
@@ -167,6 +189,7 @@ export class LineNode extends ParagraphNode {
       this.setElementType(LineNodeType.Character);
       return true;
     }
+
     // Not handled.
     return false;
   }
@@ -204,6 +227,34 @@ export class LineNode extends ParagraphNode {
       return true;
     }
 
+    // Transition no longer matches.
+    if (
+      this.getElementType() === LineNodeType.Transition &&
+      !this.getTextContent().match(TRANSITION_PATTERN)
+    ) {
+      reset();
+      return true;
+    }
+
+    return false;
+  }
+
+  changeTo(type: LineNodeType): boolean {
+    if (this.isForced()) {
+      return false;
+    }
+
+    switch (type) {
+      case LineNodeType.Transition:
+        if (this.getElementType() === LineNodeType.Character) {
+          this.setElementType(LineNodeType.Transition);
+          this.getChildAtIndex(0)!.replace($createTransitionNode(), true);
+          return true;
+        }
+        return false;
+      default:
+        console.log("changeTo not implemented", type);
+    }
     return false;
   }
 }
