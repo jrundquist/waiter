@@ -2,7 +2,10 @@ import * as React from "react";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
 
-import { RESET_WITH_FOUNTAIN_FILE } from "@/lexicalPlugins/ScriptFormatPlugin";
+import {
+  RESET_WITH_FINALDRAFT_FILE,
+  RESET_WITH_FOUNTAIN_FILE,
+} from "@/lexicalPlugins/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -45,6 +48,8 @@ export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({
         console.log({ file });
         if (file.name.toLocaleLowerCase().endsWith(".fountain")) {
           editor.dispatchCommand(RESET_WITH_FOUNTAIN_FILE, file);
+        } else if (file.name.toLocaleLowerCase().endsWith(".fdx")) {
+          editor.dispatchCommand(RESET_WITH_FINALDRAFT_FILE, file);
         }
       }
       setIsDragging(false);

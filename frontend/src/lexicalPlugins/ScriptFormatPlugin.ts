@@ -20,9 +20,14 @@ import { ParentheticalNode } from "./ParentheticalNode";
 import { ActionNode } from "./ActionNode";
 import { LyricNode } from "./LyricNode";
 import { parseFountain } from "./utils/parseFountain";
+import { parseFinalDraft } from "./utils/parseFinalDraft";
 
 export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
   "RESET_WITH_FOUNTAIN_FILE"
+);
+
+export const RESET_WITH_FINALDRAFT_FILE: LexicalCommand<File> = createCommand(
+  "RESET_WITH_FINALDRAFT_FILE"
 );
 
 type NodeList = (
@@ -71,6 +76,24 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
         };
         reader.readAsText(fountainFile);
         return false;
+      },
+      COMMAND_PRIORITY_HIGH
+    );
+
+    editor.registerCommand(
+      RESET_WITH_FINALDRAFT_FILE,
+      (draft: File) => {
+        const reader = new FileReader();
+        reader.onload = function (f) {
+          const scriptText = f.target?.result as string | null;
+          if (scriptText !== null) {
+            editor.update(() => {
+              parseFinalDraft(scriptText);
+            });
+          }
+        };
+        reader.readAsText(draft);
+        return true;
       },
       COMMAND_PRIORITY_HIGH
     );

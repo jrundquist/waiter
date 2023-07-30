@@ -453,7 +453,8 @@ export class LineNode extends ParagraphNode {
               type: this.getElementType(),
               content: this.getTextContent(),
             });
-            throw new Error("Invalid type :" + this.getElementType());
+            console.error(new Error("Invalid type :" + this.getElementType()));
+            return;
         }
         if (
           el.getTextContentSize() > 0 &&
@@ -463,7 +464,12 @@ export class LineNode extends ParagraphNode {
           start.remove();
         }
         const force = $createForcedTypeNode(char);
-        el.getFirstChild().insertBefore(force);
+        console.log({ char, force, el });
+        if (el.getFirstChild()) {
+          el.getFirstChild().insertBefore(force);
+        } else {
+          el.append(force);
+        }
       }
     }
   }
@@ -473,9 +479,7 @@ export class LineNode extends ParagraphNode {
       if (this.getChildrenSize() > 0) {
         const isText = $isTextNode(this.getFirstChild());
         if (isText) {
-          for (const child of this.getChildren()) {
-            node.append(child);
-          }
+          this.getChildren().forEach((child) => node.append(child));
           this.append(node);
         } else {
           this.getChildAtIndex(0)!.replace(node, true);
