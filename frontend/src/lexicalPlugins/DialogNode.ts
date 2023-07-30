@@ -11,7 +11,7 @@ import { $createLineNode, LineNodeType } from "./LineNode";
 import { didSplitNode } from "./didSplitNode";
 
 const EXIT_NODE_ON_ENTER = true;
-const INSERT_EXTRA_LINE_BREAK = false;
+const INSERT_EXTRA_LINE_BREAK = true;
 
 export class DialogNode extends ElementNode {
   /** @internal */
@@ -48,16 +48,11 @@ export class DialogNode extends ElementNode {
       EXIT_NODE_ON_ENTER ||
       $isLineBreakNode(this.getChildAtIndex(this.getChildrenSize() - 1))
     ) {
-      // Remove the trailing dialog linebreak, replacing it with an empty line.
-      if ($isLineBreakNode(this.getLastChild())) {
-        this.getLastChild()!.remove();
-      }
-      const lineBreak = $createLineNode(LineNodeType.None);
       const newLine = $createLineNode(LineNodeType.None);
       // Swap the order so they are inserted in the correct order.
       this.getParent()!.insertAfter(newLine, restoreSelection);
       if (INSERT_EXTRA_LINE_BREAK) {
-        this.getParent()!.insertAfter(lineBreak, false);
+        this.getLastChild()?.insertAfter($createLineBreakNode(), false);
       }
       return newLine;
     }
