@@ -1,11 +1,4 @@
-import {
-  $createParagraphNode,
-  EditorConfig,
-  ElementNode,
-  LexicalNode,
-  NodeKey,
-  RangeSelection,
-} from "lexical";
+import { EditorConfig, ElementNode, NodeKey, RangeSelection } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, $isLineNode, LineNodeType } from "./LineNode";
 import { $createDialogNode } from "./DialogNode";
