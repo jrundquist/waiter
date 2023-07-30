@@ -1007,6 +1007,11 @@ find-root@^1.1.0:
   resolved "https://registry.yarnpkg.com/find-root/-/find-root-1.1.0.tgz#abcfc8ba76f708c42a97b3d685b7e9450bfb9ce4"
   integrity sha512-NKfW6bec6GfKc0SGx1e07QZY9PE99u0Bft/0rzSD5k3sO/vwkVUpDUKVm5Gpp5Ue3YfShPFTX2070tDs5kB9Ng==
 
+fountain-js@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/fountain-js/-/fountain-js-1.1.0.tgz#977ff8c55c3da69bd739bd9be614b763399262b0"
+  integrity sha512-gsxptfDeSz5f7KLk9um6NuMcqTQ2w/kbkLYpWhHWaMLcqXaG3qW4AEVAp1brJP7XfWOVJ/wVRPG61Crw1obY0w==
+
 fsevents@~2.3.2:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"

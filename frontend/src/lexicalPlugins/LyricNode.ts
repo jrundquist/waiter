@@ -42,6 +42,7 @@ export class LyricNode extends ElementNode {
   exportJSON(): SerializedLyricNode {
     const json = super.exportJSON() as SerializedLyricNode;
     json.type = "lyric";
+    json.version = 1;
     return json;
   }
 

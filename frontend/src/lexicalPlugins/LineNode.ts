@@ -225,6 +225,54 @@ export class LineNode extends ParagraphNode {
     return false;
   }
 
+  impliedType(): LineNodeType {
+    let currentType = this.getElementType();
+    const currentText = this.getTextContent();
+
+    // pretend to lose the type if needed.
+    const needsForceToStay = this.wouldRequireForce();
+    if (needsForceToStay) {
+      currentType = LineNodeType.None;
+    }
+
+    if (currentType !== LineNodeType.None) {
+      // Parentheticals can only be initiated from a dialog line.
+      if (
+        currentType === LineNodeType.Dialog &&
+        currentText.match(PARENTHETICAL_PATTERN)
+      ) {
+        return LineNodeType.Parenthetical;
+      }
+    }
+
+    if (
+      currentType === LineNodeType.None &&
+      currentText.match(TRANSITION_PATTERN)
+    ) {
+      return LineNodeType.Transition;
+    }
+
+    if (
+      currentType !== LineNodeType.Scene &&
+      currentText.match(SCENE_HEADER_PATTERN)
+    ) {
+      return LineNodeType.Scene;
+    }
+
+    if (
+      currentText.match(CHARACTER_PATTERN) &&
+      (currentType == LineNodeType.None || currentType === LineNodeType.Action)
+    ) {
+      return LineNodeType.Character;
+    }
+
+    if (this.getTextContentSize() > 0 && currentType === LineNodeType.None) {
+      return LineNodeType.Action;
+    }
+
+    return currentType;
+  }
+
   checkForImpliedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
     if (this.isForced()) {
       return false;
@@ -308,13 +356,31 @@ export class LineNode extends ParagraphNode {
       this.setElementType(LineNodeType.None);
     };
 
+    // Parenthetical no longer matches, returns to dialog
+    if (
+      this.getElementType() === LineNodeType.Parenthetical &&
+      this.wouldRequireForce()
+    ) {
+      this.changeTo(LineNodeType.Dialog);
+      return true;
+    }
+
+    // Scene heading no longer matches.
+    if (this.wouldRequireForce()) {
+      reset();
+      return true;
+    }
+
+    return false;
+  }
+
+  wouldRequireForce() {
     // Non-forced character nodes can be lost if they no longer contain all caps
     // text.
     if (
       this.getElementType() === LineNodeType.Character &&
       !this.getTextContent().match(CHARACTER_PATTERN)
     ) {
-      reset();
       return true;
     }
 
@@ -322,7 +388,6 @@ export class LineNode extends ParagraphNode {
       this.getElementType() === LineNodeType.Lyric &&
       !this.getTextContent().startsWith("~")
     ) {
-      reset();
       return true;
     }
 
@@ -331,7 +396,6 @@ export class LineNode extends ParagraphNode {
       this.getElementType() === LineNodeType.Scene &&
       !this.getTextContent().match(SCENE_HEADER_PATTERN)
     ) {
-      reset();
       return true;
     }
 
@@ -340,7 +404,6 @@ export class LineNode extends ParagraphNode {
       this.getElementType() === LineNodeType.Transition &&
       !this.getTextContent().match(TRANSITION_PATTERN)
     ) {
-      reset();
       return true;
     }
 
@@ -349,7 +412,6 @@ export class LineNode extends ParagraphNode {
       this.getElementType() === LineNodeType.Parenthetical &&
       !this.getTextContent().match(PARENTHETICAL_PATTERN)
     ) {
-      this.changeTo(LineNodeType.Dialog);
       return true;
     }
 
@@ -358,19 +420,62 @@ export class LineNode extends ParagraphNode {
       this.getElementType() === LineNodeType.Action &&
       this.getTextContentSize() === 0
     ) {
-      reset();
       return true;
     }
-
     return false;
+  }
+
+  setForcedWithMarker() {
+    this.setForced(true);
+    const el = this.getChildAtIndex(0);
+    if (el) {
+      if (!$isTextNode(el)) {
+        let char: "@" | "." | "!" | ">" | "~";
+        switch (this.getElementType()) {
+          case LineNodeType.Character:
+            char = "@";
+            break;
+          case LineNodeType.Scene:
+            char = ".";
+            break;
+          case LineNodeType.Transition:
+            char = ">";
+            break;
+          case LineNodeType.Action:
+            char = "!";
+            break;
+          case LineNodeType.Lyric:
+            char = "~";
+            break;
+          default:
+            console.log({
+              weirdForce: this,
+              type: this.getElementType(),
+              content: this.getTextContent(),
+            });
+            throw new Error("Invalid type :" + this.getElementType());
+        }
+        if (
+          el.getTextContentSize() > 0 &&
+          el.getTextContent().startsWith(char)
+        ) {
+          const [start, rest] = el.getFirstChild()!.splitText(0);
+          start.remove();
+        }
+        const force = $createForcedTypeNode(char);
+        el.getFirstChild().insertBefore(force);
+      }
+    }
   }
 
   changeTo(type: LineNodeType): boolean {
     const safeSwap = (node: ElementNode) => {
       if (this.getChildrenSize() > 0) {
-        const isText = $isTextNode(this.getChildAtIndex(0));
+        const isText = $isTextNode(this.getFirstChild());
         if (isText) {
-          node.append(this.getChildAtIndex(0)!);
+          for (const child of this.getChildren()) {
+            node.append(child);
+          }
           this.append(node);
         } else {
           this.getChildAtIndex(0)!.replace(node, true);
@@ -408,7 +513,7 @@ export class LineNode extends ParagraphNode {
         this.setElementType(LineNodeType.Lyric);
         return safeSwap($createLyricNode());
       default:
-        console.log("changeTo not implemented", type);
+        console.error("changeTo not implemented", type);
     }
     return false;
   }

@@ -1,3 +1,4 @@
+import * as React from "react";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
@@ -22,6 +23,7 @@ import {
   SCRIPT_NODES,
   ScriptFormatPlugin,
 } from "@/lexicalPlugins/ScriptFormatPlugin";
+import { EditorDropTarget } from "./EditorDropTarget";
 
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
@@ -35,18 +37,18 @@ const useStyles = makeStyles((theme: Theme) => ({
     overflow: "scroll",
   },
   editorInner: {
-    paddingTop: "1rem",
-    maxWidth: "700px",
-    width: "100%",
+    width: "600px",
     minHeight: "100%",
     backgroundColor: "white",
     position: "relative",
+    padding: "4rem 6rem 1rem 7rem",
   },
 
   editorInput: {
     // width: "100%",
     // height: "100%",
-    padding: "1rem",
+    // padding: "1rem",
+    width: "568px",
     outline: "none",
   },
 }));
@@ -84,7 +86,7 @@ export function Editor(): React.FunctionComponentElement<{}> {
 
   return (
     <LexicalComposer initialConfig={editorConfig}>
-      <div className={classes.editorContainer}>
+      <EditorDropTarget>
         <div className={classes.editorInner}>
           <RichTextPlugin
             contentEditable={
@@ -98,7 +100,7 @@ export function Editor(): React.FunctionComponentElement<{}> {
           <TreeViewPlugin />
           <AutoFocusPlugin />
         </div>
-      </div>
+      </EditorDropTarget>
     </LexicalComposer>
   );
 }

@@ -44,6 +44,7 @@ export class TransitionNode extends ElementNode {
   exportJSON(): SerializedTransitionNode {
     const json = super.exportJSON() as SerializedTransitionNode;
     json.type = "transition";
+    json.version = 1;
     return json;
   }
 

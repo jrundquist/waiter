@@ -1,5 +1,13 @@
 import { useEffect } from "react";
-import { Klass, LexicalEditor, LexicalNode, ParagraphNode } from "lexical";
+import {
+  COMMAND_PRIORITY_HIGH,
+  Klass,
+  LexicalCommand,
+  LexicalEditor,
+  LexicalNode,
+  ParagraphNode,
+  createCommand,
+} from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getSelection, $isRangeSelection } from "lexical";
 import { $isLineNode, LineNode, LineNodeType } from "./LineNode";
@@ -11,6 +19,11 @@ import { DialogNode } from "./DialogNode";
 import { ParentheticalNode } from "./ParentheticalNode";
 import { ActionNode } from "./ActionNode";
 import { LyricNode } from "./LyricNode";
+import { parseFountain } from "./utils/parseFountain";
+
+export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
+  "RESET_WITH_FOUNTAIN_FILE"
+);
 
 type NodeList = (
   | Klass<LexicalNode>
@@ -44,11 +57,26 @@ export const SCRIPT_NODES: NodeList = [
 
 function useScriptFormatPlugin(editor: LexicalEditor) {
   useEffect(() => {
+    editor.registerCommand(
+      RESET_WITH_FOUNTAIN_FILE,
+      (fountainFile: File) => {
+        const reader = new FileReader();
+        reader.onload = function (f) {
+          const scriptText = f.target?.result as string | null;
+          if (scriptText !== null) {
+            editor.update(() => {
+              parseFountain(scriptText);
+            });
+          }
+        };
+        reader.readAsText(fountainFile);
+        return false;
+      },
+      COMMAND_PRIORITY_HIGH
+    );
+
     return editor.registerUpdateListener(
       ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
-        console.groupCollapsed("update listener triggered");
-        console.log("state", editorState.toJSON());
-        console.groupEnd();
         // console.log("update listener triggered");
         // Ignore updates from undo/redo (as changes already calculated)
         if (tags.has("historic")) {

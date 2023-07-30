@@ -111,8 +111,8 @@ body {
 
 .dialog {
   color: rgb(33, 111, 219);
-  margin-left: 30%;
-  width: 50%;
+  margin-left: 130px;
+  width: 360px;
   display: inline-block;
 }
 

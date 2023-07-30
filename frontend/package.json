@@ -9,15 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@lexical/react": "^0.11.2",
-    "lexical": "^0.11.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@lexical/react": "^0.11.2",
     "@mui/icons-material": "^5.14.0",
     "@mui/material": "^5.14.0",
-    "@mui/styles": "^5.14.0"
+    "@mui/styles": "^5.14.0",
+    "fountain-js": "^1.1.0",
+    "lexical": "^0.11.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",
