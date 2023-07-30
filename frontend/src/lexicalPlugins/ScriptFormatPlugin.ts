@@ -9,6 +9,7 @@ import { TransitionNode } from "./TransitionNode";
 import { ForcedTypeNode } from "./ForcedTypeNode";
 import { DialogNode } from "./DialogNode";
 import { ParentheticalNode } from "./ParentheticalNode";
+import { ActionNode } from "./ActionNode";
 
 type NodeList = (
   | Klass<LexicalNode>
@@ -24,6 +25,7 @@ export const SCRIPT_NODES: NodeList = [
   LineNode,
   ForcedTypeNode,
 
+  ActionNode,
   SceneNode,
   TransitionNode,
   CharacterNode,
@@ -102,18 +104,16 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             return;
           }
 
-          if ($isLineNode(parentNode) || true) {
-            // Look for forcing characters.
-            if (thisLine.checkForForcedType(anchorNode, anchorOffset)) {
-              return;
-            }
+          // Look for forcing characters.
+          if (thisLine.checkForForcedType(anchorNode, anchorOffset)) {
+            return;
+          }
 
-            if (
-              // thisLine.getElementType() === LineNodeType.None &&
-              thisLine.checkForImpliedType(anchorNode, anchorOffset)
-            ) {
-              return;
-            }
+          if (
+            // thisLine.getElementType() === LineNodeType.None &&
+            thisLine.checkForImpliedType(anchorNode, anchorOffset)
+          ) {
+            return;
           }
         });
       }

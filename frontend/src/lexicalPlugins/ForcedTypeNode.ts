@@ -1,4 +1,10 @@
-import { EditorConfig, TextNode, NodeKey } from "lexical";
+import {
+  EditorConfig,
+  TextNode,
+  NodeKey,
+  ElementNode,
+  LexicalNode,
+} from "lexical";
 
 export class ForcedTypeNode extends TextNode {
   /** @internal */
@@ -21,7 +27,7 @@ export class ForcedTypeNode extends TextNode {
   }
 }
 
-export function $isForcedTypeNode(node: unknown) {
+export function $isForcedTypeNode(node: unknown): node is ForcedTypeNode {
   return node instanceof ForcedTypeNode;
 }
 
@@ -32,4 +38,22 @@ export function $createForcedTypeNode(
   const node = new ForcedTypeNode(marker);
   node.setMode("token");
   return node;
+}
+
+export function findForcedTypeNode(node: ElementNode): ForcedTypeNode | null {
+  if ($isForcedTypeNode(node)) {
+    return node;
+  }
+  if (!node.getChildrenSize) {
+    console.log("node does not have getChildrenSize", node);
+    return null;
+  }
+  for (let i = 0; i < node.getChildrenSize(); i++) {
+    const child = node.getChildAtIndex(i);
+    const result = findForcedTypeNode(child as ElementNode);
+    if (result) {
+      return result;
+    }
+  }
+  return null;
 }
