@@ -99,7 +99,6 @@ export class LineNode extends ParagraphNode {
     const dom: HTMLParagraphElement = super.createDOM(
       config
     ) as HTMLParagraphElement;
-    dom.style.backgroundColor = "rgb(240, 240, 240)";
     return dom;
   }
 
@@ -110,8 +109,8 @@ export class LineNode extends ParagraphNode {
   ): boolean {
     const isUpdated = super.updateDOM(prevNode, dom, config);
     if (prevNode.__elementType !== this.__elementType) {
-      utils.removeClassNamesFromElement(dom, `el-${prevNode.__elementType}`);
-      utils.addClassNamesToElement(dom, `el-${this.__elementType}`);
+      utils.removeClassNamesFromElement(dom, `line-${prevNode.__elementType}`);
+      utils.addClassNamesToElement(dom, `line-${this.__elementType}`);
     }
     return isUpdated;
   }
@@ -158,17 +157,13 @@ export class LineNode extends ParagraphNode {
         anchorText.startsWith(config.character) &&
         (currentType !== config.type || !this.isForced())
       ) {
-        console.log(1);
         if (currentType === LineNodeType.None) {
-          console.log(2);
           const node = config.nodeCtr();
           if (this.getChildAtIndex(0) === anchorNode) {
-            console.log(3);
             const forceNode = $createForcedTypeNode(config.character);
             node.append(forceNode);
             anchorNode.replace(node);
           } else {
-            console.log(4);
             const [mark, content] =
               this.getChildAtIndex(0)?.splitText(anchorOffset);
             mark.remove();
@@ -193,8 +188,6 @@ export class LineNode extends ParagraphNode {
             mark.remove();
           }
         }
-        console.log(99);
-        console.log({ config });
         this.changeTo(config.type);
         this.setForced(true);
         return true;

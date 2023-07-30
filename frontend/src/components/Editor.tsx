@@ -26,19 +26,19 @@ import {
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
     width: "100vw",
-    height: "100vh",
+    height: "100%",
     display: "flex",
     flexDirection: "row",
-    backgroundColor: "slategrey",
+    backgroundColor: "lightgrey",
     alignItems: "flex-start",
     justifyContent: "center",
     overflow: "scroll",
   },
   editorInner: {
-    marginTop: "1rem",
+    paddingTop: "1rem",
     maxWidth: "700px",
     width: "100%",
-    minHeight: "80vh",
+    minHeight: "100%",
     backgroundColor: "white",
     position: "relative",
   },

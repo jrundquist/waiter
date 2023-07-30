@@ -4,6 +4,14 @@ import { EventsOn, EventsOff } from "@runtime/runtime";
 // import { Editor } from "./components/Editor";
 import { Toolbar } from "@components/Toolbar";
 import { Editor } from "@components/Editor";
+import { makeStyles } from "@mui/styles";
+import { Theme } from "@mui/material";
+
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    height: "100%",
+  },
+}));
 
 function App() {
   useEffect(() => {
@@ -15,9 +23,11 @@ function App() {
     };
   }, []);
 
+  const classes = useStyles();
+
   return (
-    <div id="App">
-      <Toolbar />
+    <div className={classes.root}>
+      {/* <Toolbar /> */}
       <Editor />
     </div>
   );
