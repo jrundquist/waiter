@@ -32,7 +32,7 @@ export function $isForcedTypeNode(node: unknown): node is ForcedTypeNode {
 }
 
 export function $createForcedTypeNode(
-  marker: "@" | "." | "!" | ">"
+  marker: "@" | "." | "!" | ">" | "~"
 ): ForcedTypeNode {
   // return new ForcedTypeNode();
   const node = new ForcedTypeNode(marker);
@@ -45,7 +45,6 @@ export function findForcedTypeNode(node: ElementNode): ForcedTypeNode | null {
     return node;
   }
   if (!node.getChildrenSize) {
-    console.log("node does not have getChildrenSize", node);
     return null;
   }
   for (let i = 0; i < node.getChildrenSize(); i++) {

@@ -24,6 +24,7 @@ import { $createTransitionNode } from "./TransitionNode";
 import { $createParentheticalNode } from "./ParentheticalNode";
 import { $createDialogNode } from "./DialogNode";
 import { $createActionNode } from "./ActionNode";
+import { $createLyricNode } from "./LyricNode";
 
 export enum LineNodeType {
   None = "none",
@@ -33,6 +34,7 @@ export enum LineNodeType {
   Dialog = "dialog",
   Scene = "scene",
   Transition = "transition",
+  Lyric = "lyric",
 }
 
 export class LineNode extends ParagraphNode {
@@ -117,13 +119,12 @@ export class LineNode extends ParagraphNode {
   }
 
   checkForForcedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+    const currentType = this.getElementType();
+    const anchorText = anchorNode.getTextContent();
     // TODO: These need to all change to use a regex, to look for the forced
     // node in the start, replacing the character with the ForcedTypeNode, and
     // then changing the node type to the right type.
-    if (
-      this.getTextContent() === "@" &&
-      this.getElementType() !== LineNodeType.Character
-    ) {
+    if (anchorText === "@" && currentType !== LineNodeType.Character) {
       // Create new character node with forced type.
       const node = $createCharacterNode();
       const forceNode = $createForcedTypeNode("@");
@@ -135,10 +136,7 @@ export class LineNode extends ParagraphNode {
     }
 
     // Scenes start with a period.
-    if (
-      this.getTextContent() === "." &&
-      this.getElementType() !== LineNodeType.Scene
-    ) {
+    if (anchorText === "." && currentType !== LineNodeType.Scene) {
       // Create new character node with forced type.
       const node = $createSceneNode();
       const forceNode = $createForcedTypeNode(".");
@@ -149,10 +147,7 @@ export class LineNode extends ParagraphNode {
     }
 
     // Scenes start with a period.
-    if (
-      this.getTextContent() === ">" &&
-      this.getElementType() !== LineNodeType.Transition
-    ) {
+    if (anchorText === ">" && currentType !== LineNodeType.Transition) {
       // Create new character node with forced type.
       const node = $createTransitionNode();
       const forceNode = $createForcedTypeNode(">");
@@ -162,17 +157,58 @@ export class LineNode extends ParagraphNode {
       this.setForced(true);
     }
 
-    console.log("checking for forced type", this.getTextContent());
+    if (anchorText.startsWith("~") && currentType !== LineNodeType.Lyric) {
+      if (currentType === LineNodeType.None) {
+        if (this.getChildAtIndex(0) === anchorNode) {
+          const node = $createLyricNode();
+          const forceNode = $createForcedTypeNode("~");
+          node.append(forceNode);
+          anchorNode.replace(node);
+        } else {
+          const node = $createActionNode();
+          const [mark, content] =
+            this.getChildAtIndex(0)!.splitText(anchorOffset);
+          mark.remove();
+          const forcedNode = $createForcedTypeNode("~");
+          node.append(forcedNode);
+          forcedNode.select(anchorOffset, anchorOffset);
+          node.append(content);
+          this.clear();
+          this.append(node);
+        }
+        this.setElementType(LineNodeType.Lyric);
+        this.setForced(true);
+        return true;
+      }
+
+      if (this.isForced()) {
+        // Remove existing forced type node.
+        const forcedNode = findForcedTypeNode(this);
+        if (forcedNode) {
+          const text = forcedNode.getTextContent();
+          forcedNode.replace($createTextNode(text));
+        }
+      } else {
+        anchorNode.insertBefore($createForcedTypeNode("~"));
+        const [mark] = anchorNode.splitText(anchorOffset);
+        mark.remove();
+      }
+
+      this.changeTo(LineNodeType.Lyric);
+      this.setForced(true);
+      return true;
+    }
+
     // Action starts with an exclamation mark.
     if (
-      this.getTextContent().startsWith("!") &&
-      this.getElementType() !== LineNodeType.Action
+      anchorText.startsWith("!") &&
+      (currentType !== LineNodeType.Action || !this.isForced())
     ) {
-      console.log("forcing action");
-
-      if (this.getElementType() === LineNodeType.None) {
+      // TODO: This is long, complicated, and only changes with the constructor,
+      // and character. Lets abstract this, or really make a config obj for this
+      // and loop over them.
+      if (currentType === LineNodeType.None) {
         if (this.getChildAtIndex(0) === anchorNode) {
-          console.log("from start");
           const node = $createActionNode();
           const forceNode = $createForcedTypeNode("!");
           node.append(forceNode);
@@ -195,8 +231,6 @@ export class LineNode extends ParagraphNode {
       }
 
       if (this.isForced()) {
-        console.log("already forced");
-
         // Remove existing forced type node.
         const forcedNode = findForcedTypeNode(this);
         if (forcedNode) {
@@ -205,15 +239,14 @@ export class LineNode extends ParagraphNode {
           forcedNode.replace($createTextNode(text));
         }
       } else {
-        console.log("not forced");
-        this.insertAfter($createForcedTypeNode("!"));
-        // Create new character node with forced type.
+        anchorNode.insertBefore($createForcedTypeNode("!"));
+        const [mark] = anchorNode.splitText(anchorOffset);
+        mark.remove();
       }
-
-      // anchorNode.replace($createForcedTypeNode("!"));
 
       this.changeTo(LineNodeType.Action);
       this.setElementType(LineNodeType.Action);
+      this.setForced(true);
     }
 
     // Not handled.
@@ -314,6 +347,14 @@ export class LineNode extends ParagraphNode {
       return true;
     }
 
+    if (
+      this.getElementType() === LineNodeType.Lyric &&
+      !this.getTextContent().startsWith("~")
+    ) {
+      reset();
+      return true;
+    }
+
     // Scene heading no longer matches.
     if (
       this.getElementType() === LineNodeType.Scene &&
@@ -386,6 +427,14 @@ export class LineNode extends ParagraphNode {
           this.getChildAtIndex(0)!.replace($createActionNode(), true);
         } else {
           this.append($createActionNode());
+        }
+        return true;
+      case LineNodeType.Lyric:
+        this.setElementType(LineNodeType.Lyric);
+        if (this.getChildrenSize() > 0) {
+          this.getChildAtIndex(0)!.replace($createLyricNode(), true);
+        } else {
+          this.append($createLyricNode());
         }
         return true;
       default:

@@ -127,6 +127,13 @@ p {
   width: 40%;
 }
 
+.lyric {
+  font-style: italic;
+  text-align: center;
+  display: block;
+  margin: 0 5rem;
+}
+
 .editor-heading-h2 {
   font-size: 15px;
   color: rgb(101, 103, 107);
