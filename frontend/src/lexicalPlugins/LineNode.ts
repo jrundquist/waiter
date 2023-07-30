@@ -171,11 +171,24 @@ export class LineNode extends ParagraphNode {
       console.log("forcing action");
 
       if (this.getElementType() === LineNodeType.None) {
-        console.log("from none");
-        const node = $createActionNode();
-        const forceNode = $createForcedTypeNode("!");
-        node.append(forceNode);
-        anchorNode.replace(node);
+        if (this.getChildAtIndex(0) === anchorNode) {
+          console.log("from start");
+          const node = $createActionNode();
+          const forceNode = $createForcedTypeNode("!");
+          node.append(forceNode);
+          anchorNode.replace(node);
+        } else {
+          const node = $createActionNode();
+          const [mark, content] =
+            this.getChildAtIndex(0)!.splitText(anchorOffset);
+          mark.remove();
+          const forcedNode = $createForcedTypeNode("!");
+          node.append(forcedNode);
+          forcedNode.select(anchorOffset, anchorOffset);
+          node.append(content);
+          this.clear();
+          this.append(node);
+        }
         this.setElementType(LineNodeType.Action);
         this.setForced(true);
         return true;
@@ -192,6 +205,8 @@ export class LineNode extends ParagraphNode {
           forcedNode.replace($createTextNode(text));
         }
       } else {
+        console.log("not forced");
+        this.insertAfter($createForcedTypeNode("!"));
         // Create new character node with forced type.
       }
 
