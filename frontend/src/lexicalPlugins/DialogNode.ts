@@ -1,4 +1,5 @@
 import {
+  $createLineBreakNode,
   $isLineBreakNode,
   EditorConfig,
   ElementNode,
@@ -7,8 +8,10 @@ import {
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
+import { didSplitNode } from "./didSplitNode";
 
-const EXIT_ON_ENTER = true;
+const EXIT_NODE_ON_ENTER = true;
+const INSERT_EXTRA_LINE_BREAK = false;
 
 export class DialogNode extends ElementNode {
   /** @internal */
@@ -35,9 +38,14 @@ export class DialogNode extends ElementNode {
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+    if (didSplitNode(selection)) {
+      // We're in the middle of the line, so a linebreak should be inserted.
+      selection.anchor.getNode()!.splitText(selection.anchor.offset);
+      return null;
+    }
     // Double new line means we should return back to the scene
     if (
-      EXIT_ON_ENTER ||
+      EXIT_NODE_ON_ENTER ||
       $isLineBreakNode(this.getChildAtIndex(this.getChildrenSize() - 1))
     ) {
       // Remove the trailing dialog linebreak, replacing it with an empty line.
@@ -48,7 +56,9 @@ export class DialogNode extends ElementNode {
       const newLine = $createLineNode(LineNodeType.None);
       // Swap the order so they are inserted in the correct order.
       this.getParent()!.insertAfter(newLine, restoreSelection);
-      this.getParent()!.insertAfter(lineBreak, false);
+      if (INSERT_EXTRA_LINE_BREAK) {
+        this.getParent()!.insertAfter(lineBreak, false);
+      }
       return newLine;
     }
 
