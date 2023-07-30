@@ -8,11 +8,7 @@ import {
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createCharacterNode } from "./CharacterNode";
-import {
-  $createForcedTypeNode,
-  $isForcedTypeNode,
-  findForcedTypeNode,
-} from "./ForcedTypeNode";
+import { $createForcedTypeNode, findForcedTypeNode } from "./ForcedTypeNode";
 import {
   CHARACTER_PATTERN,
   PARENTHETICAL_PATTERN,
@@ -36,6 +32,40 @@ export enum LineNodeType {
   Transition = "transition",
   Lyric = "lyric",
 }
+
+interface ForceConfig {
+  character: Parameters<typeof $createForcedTypeNode>[0];
+  type: LineNodeType;
+  nodeCtr: () => ElementNode;
+}
+
+const FORCE_CONFIGS: ForceConfig[] = [
+  {
+    character: "@",
+    type: LineNodeType.Character,
+    nodeCtr: $createCharacterNode,
+  },
+  {
+    character: ".",
+    type: LineNodeType.Scene,
+    nodeCtr: $createSceneNode,
+  },
+  {
+    character: ">",
+    type: LineNodeType.Transition,
+    nodeCtr: $createTransitionNode,
+  },
+  {
+    character: "!",
+    type: LineNodeType.Action,
+    nodeCtr: $createActionNode,
+  },
+  {
+    character: "~",
+    type: LineNodeType.Lyric,
+    nodeCtr: $createLyricNode,
+  },
+];
 
 export class LineNode extends ParagraphNode {
   static getType() {
@@ -121,132 +151,54 @@ export class LineNode extends ParagraphNode {
   checkForForcedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
     const currentType = this.getElementType();
     const anchorText = anchorNode.getTextContent();
-    // TODO: These need to all change to use a regex, to look for the forced
-    // node in the start, replacing the character with the ForcedTypeNode, and
-    // then changing the node type to the right type.
-    if (anchorText === "@" && currentType !== LineNodeType.Character) {
-      // Create new character node with forced type.
-      const node = $createCharacterNode();
-      const forceNode = $createForcedTypeNode("@");
-      node.append(forceNode);
-      anchorNode.replace(node);
-      this.setElementType(LineNodeType.Character);
-      this.setForced(true);
-      return true;
-    }
 
-    // Scenes start with a period.
-    if (anchorText === "." && currentType !== LineNodeType.Scene) {
-      // Create new character node with forced type.
-      const node = $createSceneNode();
-      const forceNode = $createForcedTypeNode(".");
-      node.append(forceNode);
-      anchorNode.replace(node);
-      this.setElementType(LineNodeType.Scene);
-      this.setForced(true);
-    }
-
-    // Scenes start with a period.
-    if (anchorText === ">" && currentType !== LineNodeType.Transition) {
-      // Create new character node with forced type.
-      const node = $createTransitionNode();
-      const forceNode = $createForcedTypeNode(">");
-      node.append(forceNode);
-      anchorNode.replace(node);
-      this.setElementType(LineNodeType.Transition);
-      this.setForced(true);
-    }
-
-    if (anchorText.startsWith("~") && currentType !== LineNodeType.Lyric) {
-      if (currentType === LineNodeType.None) {
-        if (this.getChildAtIndex(0) === anchorNode) {
-          const node = $createLyricNode();
-          const forceNode = $createForcedTypeNode("~");
-          node.append(forceNode);
-          anchorNode.replace(node);
+    // For each FORCE_CONFIGS
+    for (const config of FORCE_CONFIGS) {
+      if (
+        anchorText.startsWith(config.character) &&
+        (currentType !== config.type || !this.isForced())
+      ) {
+        console.log(1);
+        if (currentType === LineNodeType.None) {
+          console.log(2);
+          const node = config.nodeCtr();
+          if (this.getChildAtIndex(0) === anchorNode) {
+            console.log(3);
+            const forceNode = $createForcedTypeNode(config.character);
+            node.append(forceNode);
+            anchorNode.replace(node);
+          } else {
+            console.log(4);
+            const [mark, content] =
+              this.getChildAtIndex(0)?.splitText(anchorOffset);
+            mark.remove();
+            const forcedNode = $createForcedTypeNode(config.character);
+            node.append(forcedNode);
+            forcedNode.select(anchorOffset, anchorOffset);
+            node.append(content);
+            this.clear();
+            this.append(node);
+          }
         } else {
-          const node = $createActionNode();
-          const [mark, content] =
-            this.getChildAtIndex(0)!.splitText(anchorOffset);
-          mark.remove();
-          const forcedNode = $createForcedTypeNode("~");
-          node.append(forcedNode);
-          forcedNode.select(anchorOffset, anchorOffset);
-          node.append(content);
-          this.clear();
-          this.append(node);
+          if (this.isForced()) {
+            // Remove existing forced type node.
+            const forcedNode = findForcedTypeNode(this);
+            if (forcedNode) {
+              const text = forcedNode.getTextContent();
+              forcedNode.replace($createTextNode(text));
+            }
+          } else {
+            anchorNode.insertBefore($createForcedTypeNode(config.character));
+            const [mark] = anchorNode.splitText(anchorOffset);
+            mark.remove();
+          }
         }
-        this.setElementType(LineNodeType.Lyric);
+        console.log(99);
+        console.log({ config });
+        this.changeTo(config.type);
         this.setForced(true);
         return true;
       }
-
-      if (this.isForced()) {
-        // Remove existing forced type node.
-        const forcedNode = findForcedTypeNode(this);
-        if (forcedNode) {
-          const text = forcedNode.getTextContent();
-          forcedNode.replace($createTextNode(text));
-        }
-      } else {
-        anchorNode.insertBefore($createForcedTypeNode("~"));
-        const [mark] = anchorNode.splitText(anchorOffset);
-        mark.remove();
-      }
-
-      this.changeTo(LineNodeType.Lyric);
-      this.setForced(true);
-      return true;
-    }
-
-    // Action starts with an exclamation mark.
-    if (
-      anchorText.startsWith("!") &&
-      (currentType !== LineNodeType.Action || !this.isForced())
-    ) {
-      // TODO: This is long, complicated, and only changes with the constructor,
-      // and character. Lets abstract this, or really make a config obj for this
-      // and loop over them.
-      if (currentType === LineNodeType.None) {
-        if (this.getChildAtIndex(0) === anchorNode) {
-          const node = $createActionNode();
-          const forceNode = $createForcedTypeNode("!");
-          node.append(forceNode);
-          anchorNode.replace(node);
-        } else {
-          const node = $createActionNode();
-          const [mark, content] =
-            this.getChildAtIndex(0)!.splitText(anchorOffset);
-          mark.remove();
-          const forcedNode = $createForcedTypeNode("!");
-          node.append(forcedNode);
-          forcedNode.select(anchorOffset, anchorOffset);
-          node.append(content);
-          this.clear();
-          this.append(node);
-        }
-        this.setElementType(LineNodeType.Action);
-        this.setForced(true);
-        return true;
-      }
-
-      if (this.isForced()) {
-        // Remove existing forced type node.
-        const forcedNode = findForcedTypeNode(this);
-        if (forcedNode) {
-          const text = forcedNode.getTextContent();
-          console.log({ forcedNode, text });
-          forcedNode.replace($createTextNode(text));
-        }
-      } else {
-        anchorNode.insertBefore($createForcedTypeNode("!"));
-        const [mark] = anchorNode.splitText(anchorOffset);
-        mark.remove();
-      }
-
-      this.changeTo(LineNodeType.Action);
-      this.setElementType(LineNodeType.Action);
-      this.setForced(true);
     }
 
     // Not handled.
@@ -406,6 +358,7 @@ export class LineNode extends ParagraphNode {
           this.getChildAtIndex(0)!.replace($createTransitionNode(), true);
           return true;
         }
+        this.setElementType(LineNodeType.Transition);
         return false;
       case LineNodeType.Character:
         this.setElementType(LineNodeType.Character);

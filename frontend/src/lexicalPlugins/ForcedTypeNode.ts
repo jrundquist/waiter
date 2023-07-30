@@ -1,10 +1,4 @@
-import {
-  EditorConfig,
-  TextNode,
-  NodeKey,
-  ElementNode,
-  LexicalNode,
-} from "lexical";
+import { EditorConfig, TextNode, NodeKey, ElementNode } from "lexical";
 
 export class ForcedTypeNode extends TextNode {
   /** @internal */
@@ -13,7 +7,7 @@ export class ForcedTypeNode extends TextNode {
   }
 
   constructor(char: string, key?: NodeKey) {
-    super(char, key);
+    super(`${char}`, key);
   }
 
   static clone(node: ForcedTypeNode): ForcedTypeNode {
