@@ -203,6 +203,9 @@ export class LineNode extends ParagraphNode {
       return false;
     }
 
+    const currentType = this.getElementType();
+    const currentText = this.getTextContent();
+
     // Some types can be changes as the text content changes.
     // Examples include:
     // - Dialog changing to a parenthetical if it starts with a (.
@@ -215,24 +218,20 @@ export class LineNode extends ParagraphNode {
       ) {
         return this.changeTo(LineNodeType.Parenthetical);
       }
-
-      // Transitions should only be initiated from a character line.
-      if (
-        this.getElementType() === LineNodeType.Character &&
-        this.getTextContent().match(TRANSITION_PATTERN)
-      ) {
-        return this.changeTo(LineNodeType.Transition);
-      }
-
-      // return false;
     }
 
-    const type = this.getElementType();
+    // Transitions should only be initiated from a character line.
+    if (
+      currentType === LineNodeType.None &&
+      currentText.match(TRANSITION_PATTERN)
+    ) {
+      return this.changeTo(LineNodeType.Transition);
+    }
 
     if (
       $isTextNode(anchorNode) &&
-      this.getTextContent().match(SCENE_HEADER_PATTERN) &&
-      type !== LineNodeType.Scene
+      currentType !== LineNodeType.Scene &&
+      currentText.match(SCENE_HEADER_PATTERN)
     ) {
       this.changeTo(LineNodeType.Scene);
       return true;
@@ -240,8 +239,8 @@ export class LineNode extends ParagraphNode {
 
     if (
       $isTextNode(anchorNode) &&
-      this.getTextContent().match(CHARACTER_PATTERN) &&
-      (type == LineNodeType.None || type === LineNodeType.Action)
+      currentText.match(CHARACTER_PATTERN) &&
+      (currentType == LineNodeType.None || currentType === LineNodeType.Action)
     ) {
       this.changeTo(LineNodeType.Character);
       return true;
@@ -250,7 +249,7 @@ export class LineNode extends ParagraphNode {
     if (
       $isTextNode(anchorNode) &&
       this.getTextContentSize() > 0 &&
-      type === LineNodeType.None
+      currentType === LineNodeType.None
     ) {
       const node = $createActionNode();
       const nameNode = $createTextNode(anchorNode.getTextContent());
@@ -340,49 +339,47 @@ export class LineNode extends ParagraphNode {
   }
 
   changeTo(type: LineNodeType): boolean {
+    const safeSwap = (node: ElementNode) => {
+      if (this.getChildrenSize() > 0) {
+        const isText = $isTextNode(this.getChildAtIndex(0));
+        if (isText) {
+          node.append(this.getChildAtIndex(0)!);
+          this.append(node);
+        } else {
+          this.getChildAtIndex(0)!.replace(node, true);
+        }
+      } else {
+        this.append(node);
+      }
+      return true;
+    };
+
     switch (type) {
       case LineNodeType.Scene:
         this.setElementType(LineNodeType.Scene);
-        this.getChildAtIndex(0)!.replace($createSceneNode(), true);
-        return true;
-      case LineNodeType.Transition:
-        if (this.getElementType() === LineNodeType.Character) {
-          this.setElementType(LineNodeType.Transition);
-          this.getChildAtIndex(0)!.replace($createTransitionNode(), true);
-          return true;
-        }
+        return safeSwap($createSceneNode());
+      case LineNodeType.Transition: {
         this.setElementType(LineNodeType.Transition);
-        return false;
-      case LineNodeType.Character:
+        return safeSwap($createTransitionNode());
+      }
+      case LineNodeType.Character: {
         this.setElementType(LineNodeType.Character);
-        this.getChildAtIndex(0)!.replace($createCharacterNode(), true);
-        return true;
+        return safeSwap($createCharacterNode());
+      }
       case LineNodeType.Parenthetical:
         if (this.getElementType() === LineNodeType.Dialog) {
           this.setElementType(LineNodeType.Parenthetical);
-          this.getChildAtIndex(0)!.replace($createParentheticalNode(), true);
-          return true;
+          return safeSwap($createParentheticalNode());
         }
       case LineNodeType.Dialog:
         this.setElementType(LineNodeType.Dialog);
-        this.getChildAtIndex(0)!.replace($createDialogNode(), true);
-        return true;
+        return safeSwap($createDialogNode());
       case LineNodeType.Action:
         this.setElementType(LineNodeType.Action);
-        if (this.getChildrenSize() > 0) {
-          this.getChildAtIndex(0)!.replace($createActionNode(), true);
-        } else {
-          this.append($createActionNode());
-        }
-        return true;
+        return safeSwap($createActionNode());
       case LineNodeType.Lyric:
         this.setElementType(LineNodeType.Lyric);
-        if (this.getChildrenSize() > 0) {
-          this.getChildAtIndex(0)!.replace($createLyricNode(), true);
-        } else {
-          this.append($createLyricNode());
-        }
-        return true;
+        return safeSwap($createLyricNode());
       default:
         console.log("changeTo not implemented", type);
     }
