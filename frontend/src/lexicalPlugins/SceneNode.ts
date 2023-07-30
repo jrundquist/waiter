@@ -1,12 +1,9 @@
-import {
-  $createParagraphNode,
-  EditorConfig,
-  ElementNode,
-  NodeKey,
-  RangeSelection,
-} from "lexical";
+import { EditorConfig, ElementNode, NodeKey, RangeSelection } from "lexical";
 import * as utils from "@lexical/utils";
+import { $createLineNode, LineNodeType } from "./LineNode";
+import { didSplitNode } from "./didSplitNode";
 
+const EXTRA_LINE_BREAK = true;
 export class SceneNode extends ElementNode {
   /** @internal */
   static getType() {
@@ -32,16 +29,18 @@ export class SceneNode extends ElementNode {
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {
-    const newElement = $createParagraphNode();
-    // const anchorOffet = selection ? selection.anchor.offset : 0;
-    // const newElement: LexicalNode =
-    //   anchorOffet > 0 && anchorOffet < this.getTextContentSize()
-    //     ? $createSceneNode()
-    //     : $createParagraphNode();
-    const direction = this.getDirection();
-    newElement.setDirection(direction);
-    this.getParent()!.insertAfter(newElement, restoreSelection);
-    return newElement;
+    if (didSplitNode(selection)) {
+      // We're in the middle of the line, so a linebreak should be inserted.
+      selection.anchor.getNode()!.splitText(selection.anchor.offset);
+      return null;
+    }
+    // Swap the order so they are inserted in the correct order.
+    const node = $createLineNode(LineNodeType.None);
+    this.getParent()!.insertAfter(node, restoreSelection);
+    if (EXTRA_LINE_BREAK) {
+      this.getParent()!.insertAfter($createLineNode(LineNodeType.None), false);
+    }
+    return node;
   }
 }
 
