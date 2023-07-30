@@ -248,7 +248,7 @@ export class LineNode extends ParagraphNode {
     if (
       $isTextNode(anchorNode) &&
       this.getTextContent().match(CHARACTER_PATTERN) &&
-      type !== LineNodeType.Character
+      (type == LineNodeType.None || type === LineNodeType.Action)
     ) {
       this.changeTo(LineNodeType.Character);
       return true;
