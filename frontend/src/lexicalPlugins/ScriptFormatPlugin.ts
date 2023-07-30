@@ -8,6 +8,7 @@ import { CharacterNode } from "./CharacterNode";
 import { TransitionNode } from "./TransitionNode";
 import { ForcedTypeNode } from "./ForcedTypeNode";
 import { DialogNode } from "./DialogNode";
+import { ParentheticalNode } from "./ParentheticalNode";
 
 type NodeList = (
   | Klass<LexicalNode>
@@ -27,6 +28,7 @@ export const SCRIPT_NODES: NodeList = [
   TransitionNode,
   CharacterNode,
   DialogNode,
+  ParentheticalNode,
 
   {
     replace: ParagraphNode,

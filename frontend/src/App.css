@@ -126,13 +126,6 @@ p {
   margin-left: 40%;
   width: 40%;
 }
-.parenthetical::before {
-  content: "(";
-}
-
-.parenthetical > span:not(:empty)::after {
-  content: ")";
-}
 
 .editor-heading-h2 {
   font-size: 15px;

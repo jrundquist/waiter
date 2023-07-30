@@ -2,23 +2,13 @@ import {
   EditorConfig,
   $applyNodeReplacement,
   ElementNode,
-  LexicalEditor,
-  SerializedLexicalNode,
-  SerializedElementNode,
   RangeSelection,
   $createParagraphNode,
-  LexicalNode,
-  ParagraphNode,
 } from "lexical";
-import * as richText from "@lexical/rich-text";
 import * as utils from "@lexical/utils";
-
-type SerializedParentheticalNode =
-  SerializedElementNode<SerializedLexicalNode> & {
-    text: string;
-    type: "parenthetical";
-    version: number;
-  };
+import { didSplitNode } from "./didSplitNode";
+import { $createDialogNode } from "./DialogNode";
+import { $createLineNode, LineNodeType } from "./LineNode";
 
 export class ParentheticalNode extends ElementNode {
   /** @internal */
@@ -35,7 +25,7 @@ export class ParentheticalNode extends ElementNode {
   }
 
   createDOM(config: EditorConfig) {
-    const element = document.createElement("div");
+    const element = document.createElement("span");
     utils.addClassNamesToElement(element, "parenthetical");
     return element;
   }
@@ -49,15 +39,19 @@ export class ParentheticalNode extends ElementNode {
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {
-    const anchorOffet = selection ? selection.anchor.offset : 0;
-    const newElement: LexicalNode =
-      anchorOffet > 0 && anchorOffet < this.getTextContentSize()
-        ? $createParentheticalNode()
-        : $createParagraphNode();
+    if (didSplitNode(selection)) {
+      // We're in the middle of the line, so a linebreak should be inserted.
+      selection.anchor.getNode()!.splitText(selection.anchor.offset);
+      return null;
+    }
+    const lineNode = $createLineNode(LineNodeType.Dialog);
+    const dialogNode = $createDialogNode();
+    lineNode.append(dialogNode);
     const direction = this.getDirection();
-    newElement.setDirection(direction);
-    this.insertAfter(newElement, restoreSelection);
-    return newElement;
+    lineNode.setDirection(direction);
+    this.getParent()!.insertAfter(lineNode, false);
+    dialogNode.select();
+    return lineNode;
   }
 
   collapseAtStart() {

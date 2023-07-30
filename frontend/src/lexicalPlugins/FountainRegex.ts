@@ -3,3 +3,5 @@ export const SCENE_HEADER_PATTERN =
 
 export const TRANSITION_PATTERN =
   /(?:\n|^)(?:[^<>\na-z]*TO:|FADE TO BLACK\.|FADE OUT\.|CUT TO BLACK\.)\s*$/;
+
+export const PARENTHETICAL_PATTERN = /^\s*\(/;

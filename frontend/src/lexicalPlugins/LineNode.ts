@@ -9,9 +9,15 @@ import {
 import * as utils from "@lexical/utils";
 import { $createCharacterNode } from "./CharacterNode";
 import { $createForcedTypeNode } from "./ForcedTypeNode";
-import { SCENE_HEADER_PATTERN, TRANSITION_PATTERN } from "./FountainRegex";
+import {
+  PARENTHETICAL_PATTERN,
+  SCENE_HEADER_PATTERN,
+  TRANSITION_PATTERN,
+} from "./FountainRegex";
 import { $createSceneNode } from "./SceneNode";
 import { $createTransitionNode } from "./TransitionNode";
+import { $createParentheticalNode } from "./ParentheticalNode";
+import { $createDialogNode } from "./DialogNode";
 
 export enum LineNodeType {
   None = "none",
@@ -151,17 +157,27 @@ export class LineNode extends ParagraphNode {
   }
 
   checkForImpliedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
-    // Safe guard against changing the type of an already typed line. This
-    // should only happen when the line is forced, which happens via
-    // checkForForcedType().
+    // Some types can be changes as the text content changes.
+    // Examples include:
+    // - Dialog changing to a parenthetical if it starts with a (.
+    // - Character changing to a transition if ends in a TO:.
     if (this.getElementType() !== LineNodeType.None) {
-      // Overwrite some types...
+      // Parentheticals can only be initiated from a dialog line.
+      if (
+        this.getElementType() === LineNodeType.Dialog &&
+        this.getTextContent().match(PARENTHETICAL_PATTERN)
+      ) {
+        return this.changeTo(LineNodeType.Parenthetical);
+      }
+
+      // Transitions should only be initiated from a character line.
       if (
         this.getElementType() === LineNodeType.Character &&
         this.getTextContent().match(TRANSITION_PATTERN)
       ) {
         return this.changeTo(LineNodeType.Transition);
       }
+
       return false;
     }
 
@@ -236,6 +252,15 @@ export class LineNode extends ParagraphNode {
       return true;
     }
 
+    // Parenthetical no longer matches, returns to dialog
+    if (
+      this.getElementType() === LineNodeType.Parenthetical &&
+      !this.getTextContent().match(PARENTHETICAL_PATTERN)
+    ) {
+      this.changeTo(LineNodeType.Dialog);
+      return true;
+    }
+
     return false;
   }
 
@@ -252,6 +277,16 @@ export class LineNode extends ParagraphNode {
           return true;
         }
         return false;
+      case LineNodeType.Parenthetical:
+        if (this.getElementType() === LineNodeType.Dialog) {
+          this.setElementType(LineNodeType.Parenthetical);
+          this.getChildAtIndex(0)!.replace($createParentheticalNode(), true);
+          return true;
+        }
+      case LineNodeType.Dialog:
+        this.setElementType(LineNodeType.Dialog);
+        this.getChildAtIndex(0)!.replace($createDialogNode(), true);
+        return true;
       default:
         console.log("changeTo not implemented", type);
     }
