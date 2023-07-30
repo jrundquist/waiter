@@ -8,7 +8,7 @@ import {
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
-import { didSplitNode } from "./didSplitNode";
+import { didSplitNode } from "./utils/didSplitNode";
 
 const EXTRA_LINE_BREAK = true;
 
@@ -46,6 +46,7 @@ export class SceneNode extends ElementNode {
   exportJSON(): SerializedSceneNode {
     const json = super.exportJSON() as SerializedSceneNode;
     json.type = "scene";
+    json.version = 1;
     return json;
   }
 

@@ -8,7 +8,7 @@ import {
   Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
-import { didSplitNode } from "./didSplitNode";
+import { didSplitNode } from "./utils/didSplitNode";
 import { $createDialogNode } from "./DialogNode";
 import { $createLineNode, LineNodeType } from "./LineNode";
 
@@ -50,6 +50,7 @@ export class ParentheticalNode extends ElementNode {
   exportJSON(): SerializedParentheticalNode {
     const json = super.exportJSON() as SerializedParentheticalNode;
     json.type = "parenthetical";
+    json.version = 1;
     return json;
   }
 

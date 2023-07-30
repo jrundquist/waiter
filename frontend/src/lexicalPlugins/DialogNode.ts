@@ -10,7 +10,7 @@ import {
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
-import { didSplitNode } from "./didSplitNode";
+import { didSplitNode } from "./utils/didSplitNode";
 
 const EXIT_NODE_ON_ENTER = true;
 const INSERT_EXTRA_LINE_BREAK = true;
