@@ -4,11 +4,20 @@ import {
   ElementNode,
   RangeSelection,
   $createParagraphNode,
+  SerializedElementNode,
+  Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { didSplitNode } from "./didSplitNode";
 import { $createDialogNode } from "./DialogNode";
 import { $createLineNode, LineNodeType } from "./LineNode";
+
+type SerializedParentheticalNode = Spread<
+  {
+    type: "parenthetical";
+  },
+  SerializedElementNode
+>;
 
 export class ParentheticalNode extends ElementNode {
   /** @internal */
@@ -36,6 +45,19 @@ export class ParentheticalNode extends ElementNode {
     config: EditorConfig
   ) {
     return false;
+  }
+
+  exportJSON(): SerializedParentheticalNode {
+    const json = super.exportJSON() as SerializedParentheticalNode;
+    json.type = "parenthetical";
+    return json;
+  }
+
+  static importJSON(
+    serializedNode: SerializedParentheticalNode
+  ): ParentheticalNode {
+    const node = $createParentheticalNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

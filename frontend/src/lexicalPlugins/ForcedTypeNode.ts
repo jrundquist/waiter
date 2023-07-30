@@ -1,4 +1,19 @@
-import { EditorConfig, TextNode, NodeKey, ElementNode } from "lexical";
+import {
+  EditorConfig,
+  TextNode,
+  NodeKey,
+  ElementNode,
+  Spread,
+  SerializedTextNode,
+} from "lexical";
+
+type SerializedForcedTypeNode = Spread<
+  {
+    type: "forcedType";
+    char: Parameters<typeof $createForcedTypeNode>[0];
+  },
+  SerializedTextNode
+>;
 
 export class ForcedTypeNode extends TextNode {
   /** @internal */
@@ -18,6 +33,18 @@ export class ForcedTypeNode extends TextNode {
     const element = super.createDOM(config);
     element.classList.add("forced");
     return element;
+  }
+
+  exportJSON(): SerializedForcedTypeNode {
+    const json = super.exportJSON() as SerializedForcedTypeNode;
+    json.type = "forcedType";
+    json.version = 1;
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedForcedTypeNode): ForcedTypeNode {
+    const node = $createForcedTypeNode(serializedNode.char);
+    return node;
   }
 }
 

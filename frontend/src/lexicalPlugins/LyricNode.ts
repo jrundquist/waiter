@@ -1,7 +1,20 @@
-import { EditorConfig, ElementNode, NodeKey, RangeSelection } from "lexical";
+import {
+  EditorConfig,
+  ElementNode,
+  NodeKey,
+  RangeSelection,
+  SerializedElementNode,
+  Spread,
+} from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, $isLineNode, LineNodeType } from "./LineNode";
-import { $createDialogNode } from "./DialogNode";
+
+type SerializedLyricNode = Spread<
+  {
+    type: "lyric";
+  },
+  SerializedElementNode
+>;
 
 export class LyricNode extends ElementNode {
   constructor(key?: NodeKey) {
@@ -24,6 +37,17 @@ export class LyricNode extends ElementNode {
 
   updateDOM(prevNode: LyricNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  exportJSON(): SerializedLyricNode {
+    const json = super.exportJSON() as SerializedLyricNode;
+    json.type = "lyric";
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedLyricNode): LyricNode {
+    const node = $createLyricNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

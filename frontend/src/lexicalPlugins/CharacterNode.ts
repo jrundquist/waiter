@@ -1,7 +1,23 @@
-import { EditorConfig, ElementNode, NodeKey, RangeSelection } from "lexical";
+import {
+  EditorConfig,
+  ElementNode,
+  NodeKey,
+  RangeSelection,
+  SerializedElementNode,
+  SerializedTextNode,
+  Spread,
+} from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, $isLineNode, LineNodeType } from "./LineNode";
 import { $createDialogNode } from "./DialogNode";
+
+type SerializedCharacterNode = Spread<
+  {
+    type: "character";
+    version: 1;
+  },
+  SerializedElementNode
+>;
 
 export class CharacterNode extends ElementNode {
   constructor(key?: NodeKey) {
@@ -24,6 +40,18 @@ export class CharacterNode extends ElementNode {
 
   updateDOM(prevNode: CharacterNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  exportJSON(): SerializedCharacterNode {
+    const json = super.exportJSON() as SerializedCharacterNode;
+    json.type = "character";
+    json.version = 1;
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedCharacterNode): CharacterNode {
+    const node = $createCharacterNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

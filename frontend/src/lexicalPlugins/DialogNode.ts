@@ -5,6 +5,8 @@ import {
   ElementNode,
   NodeKey,
   RangeSelection,
+  SerializedElementNode,
+  Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
@@ -12,6 +14,13 @@ import { didSplitNode } from "./didSplitNode";
 
 const EXIT_NODE_ON_ENTER = true;
 const INSERT_EXTRA_LINE_BREAK = true;
+
+type SerializedDialogNode = Spread<
+  {
+    type: "dialog";
+  },
+  SerializedElementNode
+>;
 
 export class DialogNode extends ElementNode {
   /** @internal */
@@ -35,6 +44,18 @@ export class DialogNode extends ElementNode {
 
   updateDOM(prevNode: DialogNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  exportJSON(): SerializedDialogNode {
+    const json = super.exportJSON() as SerializedDialogNode;
+    json.type = "dialog";
+    json.version = 1;
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedDialogNode): DialogNode {
+    const node = $createDialogNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

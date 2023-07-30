@@ -1,9 +1,24 @@
-import { EditorConfig, ElementNode, NodeKey, RangeSelection } from "lexical";
+import {
+  EditorConfig,
+  ElementNode,
+  NodeKey,
+  RangeSelection,
+  SerializedElementNode,
+  Spread,
+} from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
 import { didSplitNode } from "./didSplitNode";
 
 const EXTRA_LINE_BREAK = true;
+
+type SerializedSceneNode = Spread<
+  {
+    type: "scene";
+  },
+  SerializedElementNode
+>;
+
 export class SceneNode extends ElementNode {
   /** @internal */
   static getType() {
@@ -26,6 +41,17 @@ export class SceneNode extends ElementNode {
 
   updateDOM(prevNode: SceneNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  exportJSON(): SerializedSceneNode {
+    const json = super.exportJSON() as SerializedSceneNode;
+    json.type = "scene";
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedSceneNode): SceneNode {
+    const node = $createSceneNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

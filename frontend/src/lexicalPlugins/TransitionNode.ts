@@ -4,9 +4,18 @@ import {
   ElementNode,
   NodeKey,
   RangeSelection,
+  SerializedElementNode,
+  Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $isLineNode, LineNodeType } from "./LineNode";
+
+type SerializedTransitionNode = Spread<
+  {
+    type: "transition";
+  },
+  SerializedElementNode
+>;
 
 export class TransitionNode extends ElementNode {
   /** @internal */
@@ -30,6 +39,17 @@ export class TransitionNode extends ElementNode {
 
   updateDOM(prevNode: TransitionNode, dom: HTMLElement, config: EditorConfig) {
     return false;
+  }
+
+  exportJSON(): SerializedTransitionNode {
+    const json = super.exportJSON() as SerializedTransitionNode;
+    json.type = "transition";
+    return json;
+  }
+
+  static importJSON(serializedNode: SerializedTransitionNode): TransitionNode {
+    const node = $createTransitionNode();
+    return node;
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

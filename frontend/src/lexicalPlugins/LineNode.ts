@@ -5,6 +5,8 @@ import {
   ElementNode,
   LexicalNode,
   ParagraphNode,
+  SerializedElementNode,
+  Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createCharacterNode } from "./CharacterNode";
@@ -67,6 +69,14 @@ const FORCE_CONFIGS: ForceConfig[] = [
   },
 ];
 
+export type SerializedLineNode = Spread<
+  {
+    el: LineNodeType;
+    forced: boolean;
+  },
+  SerializedElementNode
+>;
+
 export class LineNode extends ParagraphNode {
   static getType() {
     return "line";
@@ -113,6 +123,23 @@ export class LineNode extends ParagraphNode {
       utils.addClassNamesToElement(dom, `line-${this.__elementType}`);
     }
     return isUpdated;
+  }
+
+  exportJSON(): SerializedLineNode {
+    const json: Partial<SerializedElementNode> = super.exportJSON();
+    return {
+      ...json,
+      type: LineNode.getType(),
+      el: this.__elementType,
+      forced: this.__forced,
+      version: 1,
+    } as SerializedLineNode;
+  }
+
+  static importJSON(serializedNode: SerializedLineNode): LineNode {
+    const node = $createLineNode(serializedNode.el);
+    node.setForced(serializedNode.forced);
+    return node;
   }
 
   setElementType(type: LineNodeType) {

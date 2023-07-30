@@ -46,6 +46,9 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
   useEffect(() => {
     return editor.registerUpdateListener(
       ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
+        console.groupCollapsed("update listener triggered");
+        console.log("state", editorState.toJSON());
+        console.groupEnd();
         // console.log("update listener triggered");
         // Ignore updates from undo/redo (as changes already calculated)
         if (tags.has("historic")) {
