@@ -448,12 +448,7 @@ export class LineNode extends ParagraphNode {
             char = "~";
             break;
           default:
-            console.log({
-              weirdForce: this,
-              type: this.getElementType(),
-              content: this.getTextContent(),
-            });
-            console.error(new Error("Invalid type :" + this.getElementType()));
+            console.error(`Cannot force type ${this.getElementType()}`);
             return;
         }
         if (
@@ -464,7 +459,6 @@ export class LineNode extends ParagraphNode {
           start.remove();
         }
         const force = $createForcedTypeNode(char);
-        console.log({ char, force, el });
         if (el.getFirstChild()) {
           el.getFirstChild().insertBefore(force);
         } else {
@@ -482,7 +476,7 @@ export class LineNode extends ParagraphNode {
           this.getChildren().forEach((child) => node.append(child));
           this.append(node);
         } else {
-          this.getChildAtIndex(0)!.replace(node, true);
+          this.getChildAtIndex(0)!.replace(node, false);
         }
       } else {
         this.append(node);

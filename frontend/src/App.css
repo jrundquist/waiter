@@ -109,6 +109,15 @@ body {
   font-weight: bold;
 }
 
+.scene:after {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -4rem;
+  font-weight: 400;
+  content: attr(data-scene-number);
+}
+
 .dialog {
   color: rgb(33, 111, 219);
   margin-left: 130px;

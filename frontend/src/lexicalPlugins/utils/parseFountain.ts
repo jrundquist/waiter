@@ -6,6 +6,7 @@ import {
   $getRoot,
   TextNode,
 } from "lexical";
+import { SceneNode } from "../SceneNode";
 
 const COMMENT_REGEX = /\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g;
 
@@ -93,6 +94,13 @@ function tokenToLineNode(token: Token): LineNode | null {
   if (node.impliedType() !== type) {
     node.setForcedWithMarker();
   }
+
+  if (type === LineNodeType.Scene) {
+    (node.getFirstChild() as unknown as SceneNode)!.setSceneNumber(
+      token.scene_number ?? null
+    );
+  }
+
   return node;
 }
 

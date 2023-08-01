@@ -1,4 +1,3 @@
-import { Fountain, Token } from "fountain-js";
 import { $createLineNode, LineNode, LineNodeType } from "../LineNode";
 import {
   $createLineBreakNode,
@@ -6,6 +5,7 @@ import {
   $getRoot,
   TextNode,
 } from "lexical";
+import { SceneNode } from "../SceneNode";
 
 export function parseFinalDraft(text: string) {
   const p = new DOMParser();
@@ -91,10 +91,21 @@ function elementToLineNode(element: Element): LineNode | null {
   if (type === LineNodeType.Parenthetical) {
     node.setElementType(LineNodeType.Dialog);
   }
+
   node.changeTo(type);
   if (node.impliedType() !== type) {
     node.setForcedWithMarker();
   }
+
+  if (type === LineNodeType.Scene) {
+    const sceneNumber = element.getAttribute("Number");
+    if (sceneNumber) {
+      (node.getFirstChild()! as unknown as SceneNode).setSceneNumber(
+        sceneNumber
+      );
+    }
+  }
+
   return node;
 }
 

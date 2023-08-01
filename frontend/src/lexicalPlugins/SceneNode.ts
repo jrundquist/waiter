@@ -12,9 +12,12 @@ import { didSplitNode } from "./utils/didSplitNode";
 
 const EXTRA_LINE_BREAK = true;
 
+export type SceneNumber = string | null;
+
 type SerializedSceneNode = Spread<
   {
     type: "scene";
+    number: SceneNumber;
   },
   SerializedElementNode
 >;
@@ -25,21 +28,46 @@ export class SceneNode extends ElementNode {
     return "scene";
   }
 
-  constructor(key?: NodeKey) {
-    super(key);
+  static clone(node: SceneNode): SceneNode {
+    return new SceneNode(node.__number, node.__key);
   }
 
-  static clone(node: SceneNode): SceneNode {
-    return new SceneNode(node.__key);
+  private __number: SceneNumber = null;
+
+  constructor(number: SceneNumber = null, key?: NodeKey) {
+    super(key);
+    this.__number = number;
+  }
+
+  getType() {
+    const sceneNumber = this.getSceneNumber();
+    if (!sceneNumber) {
+      return SceneNode.getType();
+    }
+    return `${SceneNode.getType()} #${sceneNumber}#`;
   }
 
   createDOM(config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "scene");
+    element.setAttribute("data-scene-number", this.getSceneNumber() ?? "");
     return element;
   }
 
+  setSceneNumber(number: SceneNumber) {
+    const self = this.getWritable();
+    self.__number = number;
+  }
+
+  getSceneNumber() {
+    const self = this.getLatest();
+    return self.__number;
+  }
+
   updateDOM(prevNode: SceneNode, dom: HTMLElement, config: EditorConfig) {
+    if (dom.getAttribute("data-scene-number") !== this.getSceneNumber()) {
+      dom.setAttribute("data-scene-number", this.getSceneNumber() ?? "");
+    }
     return false;
   }
 
@@ -47,11 +75,13 @@ export class SceneNode extends ElementNode {
     const json = super.exportJSON() as SerializedSceneNode;
     json.type = "scene";
     json.version = 1;
+    json.number = this.getSceneNumber();
     return json;
   }
 
   static importJSON(serializedNode: SerializedSceneNode): SceneNode {
     const node = $createSceneNode();
+    node.setSceneNumber(serializedNode.number);
     return node;
   }
 
