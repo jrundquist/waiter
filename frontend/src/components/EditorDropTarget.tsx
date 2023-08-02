@@ -14,7 +14,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
     display: "flex",
     flexDirection: "row",
-    backgroundColor: "lightgrey",
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? theme.palette.background.default
+        : theme.palette.grey[300],
+    caretColor: theme.palette.primary.main,
+    caretShape: "block",
     alignItems: "flex-start",
     justifyContent: "center",
     overflow: "scroll",

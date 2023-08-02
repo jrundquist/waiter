@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import "./App.css";
 import { EventsOn, EventsOff } from "@runtime/runtime";
-// import { Editor } from "./components/Editor";
-import { Toolbar } from "@components/Toolbar";
 import { Editor } from "@components/Editor";
+import { DarkLightToggle } from "@components/DarkLightToggle";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     height: "100%",
+    color: theme.palette.text.primary,
   },
 }));
 
@@ -24,9 +24,9 @@ function App() {
   }, []);
 
   const classes = useStyles();
-
   return (
     <div className={classes.root}>
+      <DarkLightToggle />
       {/* <Toolbar /> */}
       <Editor />
     </div>

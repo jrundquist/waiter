@@ -119,14 +119,15 @@ body {
 }
 
 .dialog {
-  color: rgb(33, 111, 219);
   margin-left: 130px;
   width: 360px;
   display: inline-block;
 }
 
 .forced {
-  opacity: 0.3;
+  opacity: 0.9;
+  display: inline-block;
+  margin-right: 0.2rem;
 }
 
 .character {

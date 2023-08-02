@@ -22,24 +22,18 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { makeStyles, useTheme } from "@mui/styles";
 import * as React from "react";
+import { EditorHotkeys } from "./EditorHotkeys";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  editorContainer: {
-    width: "100vw",
-    height: "100%",
-    display: "flex",
-    flexDirection: "row",
-    backgroundColor: "lightgrey",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    overflow: "scroll",
-  },
   editorInner: {
     width: "808px",
     minHeight: "100%",
-    backgroundColor: "white",
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? theme.palette.action.disabledBackground
+        : theme.palette.common.white,
     position: "relative",
   },
 
@@ -47,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: "4rem 6rem 1rem 7rem",
     width: "568px",
     outline: "none",
+    color: theme.palette.text.secondary,
   },
 }));
 
@@ -81,24 +76,41 @@ export function Editor(): React.FunctionComponentElement<{}> {
     ],
   };
 
+  const { palette } = useTheme() as Theme;
+
   return (
-    <LexicalComposer initialConfig={editorConfig}>
-      <EditorDropTarget>
-        <div className={classes.editorInner}>
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className={classes.editorInput} />
-            }
-            placeholder={null}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <ScriptFormatPlugin />
-          <TreeViewPlugin />
-          <AutoFocusPlugin />
-          <HistoryPlugin />
-        </div>
-      </EditorDropTarget>
-    </LexicalComposer>
+    <>
+      <style>
+        {`::selection {`}
+        {`  background-color: ${
+          palette.mode === "dark" ? palette.grey[400] : palette.primary.main
+        };`}
+        {`  color: ${palette.primary.contrastText};`}
+        {`}`}
+
+        {`.forced {`}
+        {`  color: ${palette.secondary.main};`}
+        {`}`}
+      </style>
+      <LexicalComposer initialConfig={editorConfig}>
+        <EditorHotkeys />
+        <EditorDropTarget>
+          <div className={classes.editorInner}>
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable className={classes.editorInput} />
+              }
+              placeholder={null}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <ScriptFormatPlugin />
+            <TreeViewPlugin />
+            <AutoFocusPlugin />
+            <HistoryPlugin />
+          </div>
+        </EditorDropTarget>
+      </LexicalComposer>
+    </>
   );
 }

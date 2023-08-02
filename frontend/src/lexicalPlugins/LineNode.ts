@@ -476,7 +476,7 @@ export class LineNode extends ParagraphNode {
           this.getChildren().forEach((child) => node.append(child));
           this.append(node);
         } else {
-          this.getChildAtIndex(0)!.replace(node, false);
+          this.getChildAtIndex(0)!.replace(node, true);
         }
       } else {
         this.append(node);
@@ -513,6 +513,7 @@ export class LineNode extends ParagraphNode {
       default:
         console.error("changeTo not implemented", type);
     }
+    console.log("changed");
     return false;
   }
 }
