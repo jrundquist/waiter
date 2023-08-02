@@ -38,12 +38,14 @@ export class ForcedTypeNode extends TextNode {
   exportJSON(): SerializedForcedTypeNode {
     const json = super.exportJSON() as SerializedForcedTypeNode;
     json.type = "forcedType";
+    json.char = this.__text as typeof json.char;
     json.version = 1;
     return json;
   }
 
   static importJSON(serializedNode: SerializedForcedTypeNode): ForcedTypeNode {
     const node = $createForcedTypeNode(serializedNode.char);
+    node.setTextContent(serializedNode.text);
     return node;
   }
 }
