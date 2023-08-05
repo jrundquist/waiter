@@ -6,6 +6,7 @@ import {
   TextNode,
 } from "lexical";
 import { SceneNode } from "../SceneNode";
+import { updatePages } from "./updatePages";
 
 export function parseFinalDraft(text: string) {
   const p = new DOMParser();

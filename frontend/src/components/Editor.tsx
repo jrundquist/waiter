@@ -27,9 +27,10 @@ import * as React from "react";
 import { EditorHotkeys } from "./EditorHotkeys";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  editorInner: {
-    width: "808px",
-    minHeight: "100%",
+  editorPaper: {
+    width: "816px", // 8.5in (1/96in per pixel)
+    minHeight: "1056px", // 11in
+    fontSize: "14px",
     backgroundColor:
       theme.palette.mode === "dark"
         ? theme.palette.action.disabledBackground
@@ -37,9 +38,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: "relative",
   },
 
-  editorInput: {
-    padding: "4rem 6rem 1rem 7rem",
-    width: "568px",
+  editorContent: {
+    // padding instead of margin to preserve click area
+    padding: "96px 96px 96px 144px", // 1in, 1in, 1in, 1.5in
     outline: "none",
     color: theme.palette.text.secondary,
   },
@@ -91,14 +92,18 @@ export function Editor(): React.FunctionComponentElement<{}> {
         {`.forced {`}
         {`  color: ${palette.secondary.main};`}
         {`}`}
+
+        {`.line[data-page]::before {`}
+        {`  border-top-color: ${palette.text.disabled};`}
+        {`}`}
       </style>
       <LexicalComposer initialConfig={editorConfig}>
         <EditorHotkeys />
         <EditorDropTarget>
-          <div className={classes.editorInner}>
+          <div className={classes.editorPaper}>
             <RichTextPlugin
               contentEditable={
-                <ContentEditable className={classes.editorInput} />
+                <ContentEditable className={classes.editorContent} />
               }
               placeholder={null}
               ErrorBoundary={LexicalErrorBoundary}

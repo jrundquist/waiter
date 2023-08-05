@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
+  $getNearestNodeFromDOMNode,
+  $getRoot,
   COMMAND_PRIORITY_HIGH,
   Klass,
   LexicalCommand,
   LexicalEditor,
   LexicalNode,
   ParagraphNode,
+  TextNode,
   createCommand,
 } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -21,6 +24,8 @@ import { ActionNode } from "./ActionNode";
 import { LyricNode } from "./LyricNode";
 import { parseFountain } from "./utils/parseFountain";
 import { parseFinalDraft } from "./utils/parseFinalDraft";
+import { ClearableWeakMap } from "./utils/clearableWeakMap";
+import { updatePages } from "./utils/updatePages";
 
 export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
   "RESET_WITH_FOUNTAIN_FILE"
@@ -60,6 +65,20 @@ export const SCRIPT_NODES: NodeList = [
   },
 ];
 
+function updateLineNodes(
+  lineNodeToEl: ClearableWeakMap<LineNode, HTMLElement>,
+  editor: LexicalEditor
+) {
+  lineNodeToEl.clear();
+  // For each line set the data-debug attribute to the dom elements offsetTop.
+  for (const line of [...editor.getRootElement()!.querySelectorAll(".line")]) {
+    const node = $getNearestNodeFromDOMNode(line as HTMLElement);
+    if (node !== null && $isLineNode(node)) {
+      lineNodeToEl.set(node, line as HTMLElement);
+    }
+  }
+}
+
 function useScriptFormatPlugin(editor: LexicalEditor) {
   useEffect(() => {
     editor.registerCommand(
@@ -72,6 +91,15 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             editor.update(() => {
               parseFountain(scriptText);
             });
+
+            // HACK to get around the fact these elements haven't been added to
+            // the DOM yet.
+            setTimeout(() => {
+              editor.update(() => {
+                updateLineNodes(lineNodeToEl, editor);
+              });
+              updatePages(editor, lineNodeToEl);
+            }, 0);
           }
         };
         reader.readAsText(fountainFile);
@@ -90,6 +118,15 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             editor.update(() => {
               parseFinalDraft(scriptText);
             });
+
+            // HACK to get around the fact these elements haven't been added to
+            // the DOM yet.
+            setTimeout(() => {
+              editor.update(() => {
+                updateLineNodes(lineNodeToEl, editor);
+              });
+              updatePages(editor, lineNodeToEl);
+            }, 0);
           }
         };
         reader.readAsText(draft);
@@ -98,7 +135,13 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
       COMMAND_PRIORITY_HIGH
     );
 
-    return editor.registerUpdateListener(
+    const lineNodeToEl = new ClearableWeakMap<LineNode, HTMLElement>();
+
+    const removeTextContentListener = editor.registerTextContentListener(() => {
+      updatePages(editor, lineNodeToEl);
+    });
+
+    const removeUpdateListener = editor.registerUpdateListener(
       ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
         // console.log("update listener triggered");
         // Ignore updates from undo/redo (as changes already calculated)
@@ -171,9 +214,15 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
           ) {
             return;
           }
+          updateLineNodes(lineNodeToEl, editor);
         });
       }
     );
+
+    return () => {
+      removeTextContentListener();
+      removeUpdateListener();
+    };
   }, [editor]);
 }
 

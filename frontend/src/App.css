@@ -43,13 +43,19 @@ p {
 
 html,
 body {
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  overflow: hidden;
+}
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
   background-color: purple;
   margin: 0;
   padding: 0;
@@ -104,6 +110,30 @@ body {
   margin-bottom: 0;
 }
 
+.line::after {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -2rem;
+  font-weight: 400;
+  font-size: 10px;
+  content: attr(data-debug);
+}
+
+.line[data-page]::before {
+  content: attr(data-page);
+  page-break-before: always;
+  position: absolute;
+  top: -1rem;
+  right: -57px;
+  font-weight: 400;
+  font-size: 14px;
+  width: 96px;
+  text-align: right;
+  border-top: 1px solid;
+  padding-top: 1rem;
+}
+
 .scene {
   text-transform: uppercase;
   font-weight: bold;
@@ -119,8 +149,8 @@ body {
 }
 
 .dialog {
-  margin-left: 130px;
-  width: 360px;
+  margin-left: 144px; /* 1.5in */
+  width: 312px; /* 3.25in */
   display: inline-block;
 }
 

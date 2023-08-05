@@ -88,6 +88,7 @@ export class LineNode extends ParagraphNode {
 
   __elementType: LineNodeType = LineNodeType.None;
   __forced: boolean = false;
+  __debug: string | null = null;
 
   constructor(
     type: LineNodeType = LineNodeType.None,
@@ -109,6 +110,10 @@ export class LineNode extends ParagraphNode {
     const dom: HTMLParagraphElement = super.createDOM(
       config
     ) as HTMLParagraphElement;
+    utils.addClassNamesToElement(dom, `line`);
+    if (this.__debug !== null) {
+      dom.setAttribute("data-debug", `${this.__debug}`);
+    }
     return dom;
   }
 
@@ -121,6 +126,13 @@ export class LineNode extends ParagraphNode {
     if (prevNode.__elementType !== this.__elementType) {
       utils.removeClassNamesFromElement(dom, `line-${prevNode.__elementType}`);
       utils.addClassNamesToElement(dom, `line-${this.__elementType}`);
+    }
+    if (prevNode.__debug !== this.__debug) {
+      if (this.__debug === null) {
+        dom.removeAttribute("data-debug");
+      } else {
+        dom.setAttribute("data-debug", `${this.__debug}`);
+      }
     }
     return isUpdated;
   }
