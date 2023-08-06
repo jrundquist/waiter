@@ -49,7 +49,7 @@ export const EditorHotkeys: React.FunctionComponent<{}> = () => {
         ref={inputRef}
         type="file"
         onChange={onOpen}
-        accept=".ftx,.fountain"
+        accept=".fdx,.fountain"
       />
     </div>
   );
