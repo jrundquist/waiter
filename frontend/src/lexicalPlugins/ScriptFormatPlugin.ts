@@ -26,6 +26,7 @@ import { parseFountain } from "./utils/parseFountain";
 import { parseFinalDraft } from "./utils/parseFinalDraft";
 import { ClearableWeakMap } from "./utils/clearableWeakMap";
 import { updatePages } from "./utils/updatePages";
+import { useScriptDetails } from "@/contexts/ScriptDetails";
 
 export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
   "RESET_WITH_FOUNTAIN_FILE"
@@ -80,6 +81,8 @@ function updateLineNodes(
 }
 
 function useScriptFormatPlugin(editor: LexicalEditor) {
+  const scriptDetails = useScriptDetails();
+
   useEffect(() => {
     editor.registerCommand(
       RESET_WITH_FOUNTAIN_FILE,
@@ -99,6 +102,13 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
                 updateLineNodes(lineNodeToEl, editor);
               });
               updatePages(editor, lineNodeToEl);
+              editor.update(() => {
+                scriptDetails?.buildScript(
+                  editor.getEditorState(),
+                  $getRoot(),
+                  lineNodeToEl
+                );
+              });
             }, 0);
           }
         };
@@ -126,6 +136,13 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
                 updateLineNodes(lineNodeToEl, editor);
               });
               updatePages(editor, lineNodeToEl);
+              editor.update(() => {
+                scriptDetails?.buildScript(
+                  editor.getEditorState(),
+                  $getRoot(),
+                  lineNodeToEl
+                );
+              });
             }, 0);
           }
         };
@@ -215,6 +232,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             return;
           }
           updateLineNodes(lineNodeToEl, editor);
+          scriptDetails?.buildScript(editorState, $getRoot(), lineNodeToEl);
         });
       }
     );

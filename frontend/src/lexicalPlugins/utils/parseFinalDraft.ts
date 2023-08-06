@@ -7,6 +7,7 @@ import {
 } from "lexical";
 import { SceneNode } from "../SceneNode";
 import { updatePages } from "./updatePages";
+import { DialogNode } from "../DialogNode";
 
 export function parseFinalDraft(text: string) {
   const p = new DOMParser();
@@ -20,29 +21,48 @@ export function parseFinalDraft(text: string) {
   if (!content) {
     throw new Error("Invalid Final Draft XML - missing Content node");
   }
-  const elements = fdNode?.querySelectorAll("Content > Paragraph");
+  const elements = [...fdNode?.querySelectorAll("Content > Paragraph")];
 
-  const transformedNodes = [...elements]
-    .flatMap<LineNode | null>((element: Element) => {
-      const line = elementToLineNode(element);
-      const type = line?.getElementType();
-      if (
-        type === LineNodeType.Parenthetical ||
-        type === LineNodeType.Character
-      ) {
-        return [line];
-      } else if (line !== null) {
-        return [line, $createLineNode(LineNodeType.None)];
-      }
-      return [];
-    })
-    .filter<LineNode>((node): node is LineNode => node !== null);
+  const transformedNodes: LineNode[] = [];
+  for (let i = 0; i < elements.length; i++) {
+    const element = elements[i];
+    const line = elementToLineNode(element);
+    const prevType = getElementType(elements[i - 1]);
+    const type = line?.getElementType();
+    if (line === null) {
+      continue;
+    }
+    if (
+      type === LineNodeType.Parenthetical ||
+      type === LineNodeType.Character
+    ) {
+      transformedNodes.push(line);
+    } else if (
+      type === LineNodeType.Dialog &&
+      prevType === LineNodeType.Dialog
+    ) {
+      // Merege this dialog with the previous one.
+      const prevDialog = transformedNodes[transformedNodes.length - 2];
+      const dialogEl = prevDialog.getFirstChild() as DialogNode;
+      dialogEl.append(...(line.getFirstChild()?.getChildren() ?? []));
+    } else {
+      transformedNodes.push(line);
+      transformedNodes.push($createLineNode(LineNodeType.None));
+    }
+  }
+
+  const finalizedNodes = transformedNodes.filter<LineNode>(
+    (node): node is LineNode => node !== null
+  );
 
   $getRoot().clear();
-  $getRoot().append(...transformedNodes);
+  $getRoot().append(...finalizedNodes);
 }
 
-function elementToLineNode(element: Element): LineNode | null {
+function getElementType(element: Element | undefined): LineNodeType | null {
+  if (!element) {
+    return null;
+  }
   let type = LineNodeType.None;
   if (!element.getAttribute("Type")) {
     console.warn("Unknown token type", element);
@@ -79,6 +99,14 @@ function elementToLineNode(element: Element): LineNode | null {
       if (element.textContent === undefined || element.textContent === "") {
         return null;
       }
+  }
+  return type;
+}
+
+function elementToLineNode(element: Element): LineNode | null {
+  const type = getElementType(element);
+  if (type === null || type === LineNodeType.None) {
+    return null;
   }
 
   const node = new LineNode(LineNodeType.None);

@@ -522,10 +522,11 @@ export class LineNode extends ParagraphNode {
       case LineNodeType.Lyric:
         this.setElementType(LineNodeType.Lyric);
         return safeSwap($createLyricNode());
+      case LineNodeType.None:
+        return false;
       default:
-        console.error("changeTo not implemented", type);
+        console.warn("changeTo not implemented", type);
     }
-    console.log("changed");
     return false;
   }
 }

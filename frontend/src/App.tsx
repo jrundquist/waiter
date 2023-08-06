@@ -5,6 +5,7 @@ import { Editor } from "@components/Editor";
 import { DarkLightToggle } from "@components/DarkLightToggle";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
+import { ScriptDetailsProvider } from "./contexts/ScriptDetails";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -26,9 +27,9 @@ function App() {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <DarkLightToggle />
-      {/* <Toolbar /> */}
-      <Editor />
+      <ScriptDetailsProvider>
+        <Editor />
+      </ScriptDetailsProvider>
     </div>
   );
 }

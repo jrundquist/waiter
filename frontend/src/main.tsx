@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { useMediaQuery } from "@mui/material";
+import { CssBaseline, darkScrollbar, useMediaQuery } from "@mui/material";
 import { usePreference } from "./hooks/preferences";
 
 const container = document.getElementById("root");
@@ -21,6 +21,24 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   const theme = React.useMemo(
     () =>
       createTheme({
+        components: {
+          MuiCssBaseline: {
+            styleOverrides: (themeParam) => ({
+              p: {
+                margin: 0,
+              },
+              body: {
+                ...(themeParam.palette.mode === "dark"
+                  ? {} // darkScrollbar()
+                  : null),
+                backgroundColor:
+                  themeParam.palette.mode === "dark"
+                    ? themeParam.palette.background.default
+                    : themeParam.palette.grey[300],
+              },
+            }),
+          },
+        },
         palette: {
           mode: systemPrefersDark ? "dark" : "light",
           primary: {
@@ -40,6 +58,7 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
 root.render(
   <React.StrictMode>
     <ThemeWrapper>
+      {/* <CssBaseline enableColorScheme /> */}
       <App />
     </ThemeWrapper>
   </React.StrictMode>
