@@ -25,6 +25,9 @@ import { Theme } from "@mui/material";
 import { makeStyles, useTheme } from "@mui/styles";
 import * as React from "react";
 import { EditorHotkeys } from "./EditorHotkeys";
+import { AutocompleteNode } from "@/lexicalPlugins/AutoComplete/AutoCompleteNode";
+import { SharedAutocompleteContext } from "@/lexicalPlugins/AutoComplete/AutoCompleteContext";
+import AutocompletePlugin from "@/lexicalPlugins/AutoComplete/AutoCompletePlugin";
 
 const useStyles = makeStyles((theme: Theme) => ({
   editorPaper: {
@@ -72,6 +75,7 @@ export function Editor(): React.FunctionComponentElement<{}> {
       TableRowNode,
       AutoLinkNode,
       LinkNode,
+      AutocompleteNode,
       LexicalHorizontalRuleNode.HorizontalRuleNode,
       ...SCRIPT_NODES,
     ],
@@ -98,23 +102,26 @@ export function Editor(): React.FunctionComponentElement<{}> {
         {`}`}
       </style>
       <LexicalComposer initialConfig={editorConfig}>
-        <EditorHotkeys />
-        <EditorDropTarget>
-          <div className={classes.editorPaper}>
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable className={classes.editorContent} />
-              }
-              placeholder={null}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-            <ScriptFormatPlugin />
-            <TreeViewPlugin />
-            <AutoFocusPlugin />
-            <HistoryPlugin />
-          </div>
-        </EditorDropTarget>
+        <SharedAutocompleteContext>
+          <AutocompletePlugin />
+          <EditorHotkeys />
+          <EditorDropTarget>
+            <div className={classes.editorPaper}>
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable className={classes.editorContent} />
+                }
+                placeholder={null}
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+              <ScriptFormatPlugin />
+              <TreeViewPlugin />
+              <AutoFocusPlugin />
+              <HistoryPlugin />
+            </div>
+          </EditorDropTarget>
+        </SharedAutocompleteContext>
       </LexicalComposer>
     </>
   );
