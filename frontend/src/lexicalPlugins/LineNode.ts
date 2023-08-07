@@ -241,6 +241,16 @@ export class LineNode extends ParagraphNode {
     self.__forced = forced;
   }
 
+  getPage() {
+    const self = this.getLatest();
+    return self.__page;
+  }
+
+  setPage(page: number | null) {
+    const self = this.getWritable();
+    self.__page = page;
+  }
+
   canMergeWith(node: ElementNode): boolean {
     return (
       node instanceof LineNode &&

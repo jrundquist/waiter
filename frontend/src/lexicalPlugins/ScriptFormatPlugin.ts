@@ -14,7 +14,7 @@ import {
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getSelection, $isRangeSelection } from "lexical";
 import { $isLineNode, LineNode, LineNodeType } from "./LineNode";
-import { SceneNode } from "./SceneNode";
+import { $isSceneNode, SceneNode } from "./SceneNode";
 import { CharacterNode } from "./CharacterNode";
 import { TransitionNode } from "./TransitionNode";
 import { ForcedTypeNode } from "./ForcedTypeNode";
@@ -158,6 +158,35 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
       updatePages(editor, lineNodeToEl);
     });
 
+    const removeSceneNumberWatcher = editor.registerNodeTransform(
+      TextNode,
+      (node) => {
+        const parent = node.getParent();
+        if (parent === null || !$isSceneNode(parent)) {
+          return;
+        }
+        const match = node
+          .getTextContent()
+          .trim()
+          .match(/#([0-9\-\_\.A-Za-z]+)#$/);
+        if (match && match[1] !== parent.getSceneNumber()) {
+          // Check for conflicts here.
+          const existingScenes = $getRoot()
+            .getChildren()
+            .filter((n): n is LineNode => $isLineNode(n))
+            .filter((n) => n.getElementType() === LineNodeType.Scene)
+            .map((n) => n.getFirstChild() as unknown as SceneNode)
+            .filter((n) => n !== parent) // We can't conflict with ourselves.
+            .map((n: SceneNode) => n.getSceneNumber());
+          let sceneNumber = match[1];
+          while (existingScenes.includes(sceneNumber)) {
+            sceneNumber = sceneNumber + ".A";
+          }
+          parent.setSceneNumber(sceneNumber);
+        }
+      }
+    );
+
     const removeUpdateListener = editor.registerUpdateListener(
       ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
         // console.log("update listener triggered");
@@ -231,6 +260,10 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
           ) {
             return;
           }
+
+          // TODO, maybe we can do this in a more efficient way, tracking the
+          // last known height of this node, and if it hasn't changed, we may be
+          // able to assume the hight of the document hasn't changed.
           updateLineNodes(lineNodeToEl, editor);
           scriptDetails?.buildScript(editorState, $getRoot(), lineNodeToEl);
         });
@@ -239,6 +272,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
 
     return () => {
       removeTextContentListener();
+      removeSceneNumberWatcher();
       removeUpdateListener();
     };
   }, [editor]);

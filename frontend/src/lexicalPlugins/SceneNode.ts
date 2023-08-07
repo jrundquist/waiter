@@ -130,7 +130,7 @@ export class SceneNode extends ElementNode {
   }
 }
 
-export function $isSceneNode(node: unknown) {
+export function $isSceneNode(node: unknown): node is SceneNode {
   return node instanceof SceneNode;
 }
 
