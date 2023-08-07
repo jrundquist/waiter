@@ -1,4 +1,5 @@
 import {
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -52,6 +53,31 @@ export class CharacterNode extends ElementNode {
   static importJSON(serializedNode: SerializedCharacterNode): CharacterNode {
     const node = $createCharacterNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isCharacterSpan(node: HTMLElement): boolean {
+      return node.classList.contains("character");
+    }
+
+    function convertCharacterSpan(el: HTMLElement) {
+      const node = $createCharacterNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isCharacterSpan(node as HTMLElement)) {
+          return {
+            conversion: convertCharacterSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

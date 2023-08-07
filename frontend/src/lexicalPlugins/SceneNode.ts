@@ -1,4 +1,5 @@
 import {
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -83,6 +84,34 @@ export class SceneNode extends ElementNode {
     const node = $createSceneNode();
     node.setSceneNumber(serializedNode.number);
     return node;
+  }
+
+  static importDOM(element: HTMLElement): DOMConversionMap | null {
+    function isSceneSpan(node: HTMLElement): boolean {
+      return node.classList.contains("scene");
+    }
+
+    function convertLineElement(el: HTMLElement) {
+      const node = $createSceneNode();
+      if (el.hasAttribute("data-scene-number")) {
+        node.__number = el.getAttribute("data-scene-number")!;
+      }
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isSceneSpan(node as HTMLElement)) {
+          return {
+            conversion: convertLineElement,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

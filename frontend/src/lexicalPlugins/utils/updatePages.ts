@@ -42,6 +42,7 @@ function _updatePages(
           currentPage++;
           remainingHeight = CONTENT_HEIGHT - height;
           el.setAttribute("data-page", `${currentPage}.`);
+          node.setPage(currentPage);
 
           // Lookback to see if we should move the previous node to the new page
           const prevNode = node.getPreviousSibling() as LineNode;
@@ -53,6 +54,7 @@ function _updatePages(
             // move the previous el to the new page too.
             const prevEl = lineNodeToEl.get(prevNode);
             if (prevEl !== undefined) {
+              prevNode.setPage(currentPage);
               prevEl.setAttribute("data-page", `${currentPage}.`);
               el.removeAttribute("data-page");
               remainingHeight -= prevEl.offsetHeight;

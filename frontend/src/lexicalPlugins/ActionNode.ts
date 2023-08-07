@@ -1,4 +1,5 @@
 import {
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -50,6 +51,31 @@ export class ActionNode extends ElementNode {
   static importJSON(serializedNode: SerializedActionNode): ActionNode {
     const node = $createActionNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isActionNode(node: HTMLElement): boolean {
+      return node.classList.contains("action");
+    }
+
+    function convertActionSpan(el: HTMLElement) {
+      const node = $createActionNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isActionNode(node as HTMLElement)) {
+          return {
+            conversion: convertActionSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

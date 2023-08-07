@@ -1,4 +1,5 @@
 import {
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -49,6 +50,31 @@ export class LyricNode extends ElementNode {
   static importJSON(serializedNode: SerializedLyricNode): LyricNode {
     const node = $createLyricNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isCharacterSpan(node: HTMLElement): boolean {
+      return node.classList.contains("lyric");
+    }
+
+    function convertLyricSpan(el: HTMLElement) {
+      const node = $createLyricNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isCharacterSpan(node as HTMLElement)) {
+          return {
+            conversion: convertLyricSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

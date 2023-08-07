@@ -1,6 +1,7 @@
 import {
   $createTextNode,
   $isTextNode,
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   LexicalNode,
@@ -73,6 +74,7 @@ export type SerializedLineNode = Spread<
   {
     el: LineNodeType;
     forced: boolean;
+    page: number | null;
   },
   SerializedElementNode
 >;
@@ -83,21 +85,29 @@ export class LineNode extends ParagraphNode {
   }
 
   static clone(node: LineNode): LineNode {
-    return new LineNode(node.__elementType, node.__forced, node.__key);
+    return new LineNode(
+      node.__elementType,
+      node.__forced,
+      node.__page,
+      node.__key
+    );
   }
 
   __elementType: LineNodeType = LineNodeType.None;
   __forced: boolean = false;
   __debug: string | null = null;
+  __page: number | null = null;
 
   constructor(
     type: LineNodeType = LineNodeType.None,
     forced: boolean = false,
+    page: number | null = null,
     key?: string
   ) {
     super(key);
     this.__elementType = type;
     this.__forced = forced;
+    this.__page = page;
   }
 
   getType() {
@@ -144,6 +154,7 @@ export class LineNode extends ParagraphNode {
       type: LineNode.getType(),
       el: this.__elementType,
       forced: this.__forced,
+      page: this.__page,
       version: 1,
     } as SerializedLineNode;
   }
@@ -151,7 +162,58 @@ export class LineNode extends ParagraphNode {
   static importJSON(serializedNode: SerializedLineNode): LineNode {
     const node = $createLineNode(serializedNode.el);
     node.setForced(serializedNode.forced);
+    node.setPage(serializedNode.page);
     return node;
+  }
+
+  exportDOM() {
+    const element = document.createElement("p");
+    utils.addClassNamesToElement(element, `line-${this.__elementType}`);
+    element.setAttribute("data-forced", `${this.__forced}`);
+
+    if (this.__debug) {
+      element.setAttribute("data-debug", this.__debug);
+    }
+    if (this.__page !== null) {
+      element.setAttribute("data-current-page", `${this.__page}`);
+    }
+
+    return {
+      element,
+    };
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isLineNodeP(node: HTMLElement): boolean {
+      return node.className.match(/line-[a-z]+/i) !== null;
+    }
+
+    function convertLineElement(node: HTMLElement) {
+      const type = node.className.match(/line-([a-z]+)/)?.[1]!;
+      const lineNode = $createLineNode(
+        type.replace(/^line-/, "") as LineNodeType
+      );
+      lineNode.__forced = node.getAttribute("data-forced") === "true";
+      lineNode.__page = node.hasAttribute("data-current-page")
+        ? parseInt(node.getAttribute("data-current-page")!)
+        : null;
+      lineNode.__debug = node.getAttribute("data-debug");
+      return {
+        node: lineNode,
+      };
+    }
+
+    return {
+      p: (el: HTMLElement) => {
+        if (isLineNodeP(el as HTMLElement)) {
+          return {
+            conversion: convertLineElement,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   setElementType(type: LineNodeType) {

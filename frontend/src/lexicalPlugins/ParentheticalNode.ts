@@ -6,6 +6,7 @@ import {
   $createParagraphNode,
   SerializedElementNode,
   Spread,
+  DOMConversionMap,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { didSplitNode } from "./utils/didSplitNode";
@@ -59,6 +60,31 @@ export class ParentheticalNode extends ElementNode {
   ): ParentheticalNode {
     const node = $createParentheticalNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isParantheticalSpan(node: HTMLElement): boolean {
+      return node.classList.contains("parenthetical");
+    }
+
+    function convertParentheticalSpan(el: HTMLElement) {
+      const node = $createParentheticalNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isParantheticalSpan(node as HTMLElement)) {
+          return {
+            conversion: convertParentheticalSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

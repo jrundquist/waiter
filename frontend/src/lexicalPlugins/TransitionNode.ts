@@ -1,5 +1,6 @@
 import {
   $createParagraphNode,
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -51,6 +52,31 @@ export class TransitionNode extends ElementNode {
   static importJSON(serializedNode: SerializedTransitionNode): TransitionNode {
     const node = $createTransitionNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isTransitionSpan(node: HTMLElement): boolean {
+      return node.classList.contains("transition");
+    }
+
+    function convertTransitionSpan(el: HTMLElement) {
+      const node = $createTransitionNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isTransitionSpan(node as HTMLElement)) {
+          return {
+            conversion: convertTransitionSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {

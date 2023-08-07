@@ -5,6 +5,7 @@ import {
   ElementNode,
   Spread,
   SerializedTextNode,
+  DOMConversionMap,
 } from "lexical";
 
 type SerializedForcedTypeNode = Spread<
@@ -14,6 +15,8 @@ type SerializedForcedTypeNode = Spread<
   },
   SerializedTextNode
 >;
+
+type ForcedOptions = "@" | "." | "!" | ">" | "~";
 
 export class ForcedTypeNode extends TextNode {
   /** @internal */
@@ -48,15 +51,41 @@ export class ForcedTypeNode extends TextNode {
     node.setTextContent(serializedNode.text);
     return node;
   }
+
+  static importDOM(): DOMConversionMap | null {
+    function isForcedSpan(node: HTMLElement): boolean {
+      return Boolean(
+        node.classList.contains("forced") &&
+          node.textContent?.match(/^[@.!>~]$/) !== null
+      );
+    }
+
+    function convertForcedSpan(el: HTMLElement) {
+      const node = $createForcedTypeNode(el.textContent as ForcedOptions);
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isForcedSpan(node as HTMLElement)) {
+          return {
+            conversion: convertForcedSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
+  }
 }
 
 export function $isForcedTypeNode(node: unknown): node is ForcedTypeNode {
   return node instanceof ForcedTypeNode;
 }
 
-export function $createForcedTypeNode(
-  marker: "@" | "." | "!" | ">" | "~"
-): ForcedTypeNode {
+export function $createForcedTypeNode(marker: ForcedOptions): ForcedTypeNode {
   // return new ForcedTypeNode();
   const node = new ForcedTypeNode(marker);
   node.setMode("token");

@@ -1,6 +1,7 @@
 import {
   $createLineBreakNode,
   $isLineBreakNode,
+  DOMConversionMap,
   EditorConfig,
   ElementNode,
   NodeKey,
@@ -56,6 +57,31 @@ export class DialogNode extends ElementNode {
   static importJSON(serializedNode: SerializedDialogNode): DialogNode {
     const node = $createDialogNode();
     return node;
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    function isDialogSpan(node: HTMLElement): boolean {
+      return node.classList.contains("dialog");
+    }
+
+    function convertDialogSpan(el: HTMLElement) {
+      const node = $createDialogNode();
+      return {
+        node,
+      };
+    }
+
+    return {
+      span: (node) => {
+        if (isDialogSpan(node as HTMLElement)) {
+          return {
+            conversion: convertDialogSpan,
+            priority: 1,
+          };
+        }
+        return null;
+      },
+    };
   }
 
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {
