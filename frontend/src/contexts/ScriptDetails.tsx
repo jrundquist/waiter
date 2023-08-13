@@ -1,7 +1,9 @@
 import { $isLineNode, LineNode, LineNodeType } from "@/lexicalPlugins/LineNode";
+import { SceneNode } from "@/lexicalPlugins/SceneNode";
 import { ClearableWeakMap } from "@/lexicalPlugins/utils/clearableWeakMap";
 import { EditorState, RootNode } from "lexical";
 import * as React from "react";
+import { EventsEmit } from "@runtime/runtime";
 
 const ScriptDetailsContext = React.createContext<null | {
   buildScript: (
@@ -16,6 +18,9 @@ export const ScriptDetailsProvider: React.FunctionComponent<
   React.PropsWithChildren<{}>
 > = ({ children }) => {
   const [characters, setCharacters] = React.useState<string[]>([]);
+  const [sceneContent, setSceneContent] = React.useState<Map<string, string>>(
+    new Map()
+  );
 
   const buildScript = React.useCallback(
     (
@@ -25,7 +30,6 @@ export const ScriptDetailsProvider: React.FunctionComponent<
     ) => {
       editorState.read(() => {
         const lineNodes = rootNode.getChildren().filter($isLineNode);
-
         const characters = lineNodes
           .filter((lineNode) => {
             return lineNode.getElementType() === LineNodeType.Character;
@@ -52,6 +56,69 @@ export const ScriptDetailsProvider: React.FunctionComponent<
           }
           return prev;
         });
+
+        type SceneAccType = {
+          currentSceneKey: null | string;
+          sceneMap: Map<string, string[]>;
+        };
+        const { sceneMap } = lineNodes.reduce<SceneAccType>(
+          (acc: SceneAccType, lineNode: LineNode) => {
+            if (
+              lineNode.getElementType() !== LineNodeType.Scene &&
+              acc.currentSceneKey === null
+            ) {
+              return acc;
+            }
+            if (lineNode.getElementType() === LineNodeType.Scene) {
+              const sceneNode = lineNode.getFirstChild()! as SceneNode;
+              const sceneText = sceneNode
+                .getTextContent()
+                .trim()
+                .replace(/^\./, "")
+                .toUpperCase();
+              const sceneNumber =
+                sceneNode.getSceneNumber() || `~${acc.sceneMap.size + 1}~`;
+              const sceneKey = `${sceneNumber} - ${sceneText}`;
+              acc.currentSceneKey = sceneKey;
+              if (!acc.sceneMap.has(sceneKey)) {
+                acc.sceneMap.set(sceneKey, []);
+              }
+              return acc;
+            }
+            if (acc.currentSceneKey !== null) {
+              acc.sceneMap
+                .get(acc.currentSceneKey)!
+                .push(lineNode.getTextContent());
+            }
+            return acc;
+          },
+          {
+            currentSceneKey: null,
+            sceneMap: new Map<string, string[]>(),
+          } as SceneAccType
+        );
+
+        setSceneContent((prev: typeof sceneContent) => {
+          function mapArray(map: Map<string, string[]>) {
+            return Array.from(map.entries()).reduce(
+              (acc: Map<string, string>, [key, val]: [string, string[]]) => {
+                acc.set(key, val.join("\n").trim());
+                return acc;
+              },
+              new Map<string, string>()
+            );
+          }
+          // Check that the maps are different.
+          if (prev.size !== sceneMap.size) {
+            return mapArray(sceneMap);
+          }
+          for (const [key, val] of sceneMap.entries()) {
+            if (!prev.has(key) || prev.get(key) !== val.join("\n").trim()) {
+              return mapArray(sceneMap);
+            }
+          }
+          return prev;
+        });
       });
     },
     [setCharacters]
@@ -60,6 +127,15 @@ export const ScriptDetailsProvider: React.FunctionComponent<
   React.useEffect(() => {
     console.log("characters", characters);
   }, [characters]);
+
+  React.useEffect(() => {
+    console.log("sceneContent", sceneContent);
+
+    EventsEmit(
+      "sceneContentChange",
+      Object.fromEntries(sceneContent.entries())
+    );
+  }, [sceneContent]);
 
   return (
     <ScriptDetailsContext.Provider

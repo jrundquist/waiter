@@ -4,11 +4,13 @@ go 1.20
 
 require (
 	github.com/nutsdb/nutsdb v0.12.3
+	github.com/pkoukk/tiktoken-go v0.1.5
+	github.com/pkoukk/tiktoken-go-loader v0.0.1
 	github.com/wailsapp/wails/v2 v2.5.1
 )
 
 require (
-	github.com/dlclark/regexp2 v1.7.0 // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/go-aie/xslices v0.0.0-20230221025134-e24f453f38b6 // indirect
 	github.com/rakyll/openai-go v1.0.7 // indirect
 	github.com/samber/go-gpt-3-encoder v0.3.1 // indirect
@@ -20,7 +22,7 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/go-aie/gptbot v0.0.0-20230707034534-82fbed77d393
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/labstack/echo/v4 v4.9.0 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect

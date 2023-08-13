@@ -2,12 +2,18 @@ package ai
 
 import (
 	"context"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
+	"waiter/backend/filesystem"
 
 	"github.com/go-aie/gptbot"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+var (
+	dbPath = path.Join(filesystem.GetAppDataFolder(), "vectorStore.db")
 )
 
 type MyStore struct {
@@ -44,4 +50,17 @@ func (s *MyStore) Query(ctx context.Context, embedding gptbot.Embedding, corpusI
 	}
 
 	return sim, nil
+}
+
+func (s *MyStore) Save() error {
+	return s.LocalVectorStore.StoreJSON(dbPath)
+}
+
+func (s *MyStore) Load(ctx context.Context) error {
+	runtime.LogInfof(ctx, "Loading vector store from %s", dbPath)
+	return s.LocalVectorStore.LoadJSON(ctx, dbPath)
+}
+
+func (s *MyStore) Clear(ctx context.Context) error {
+	return s.LocalVectorStore.Delete(ctx)
 }
