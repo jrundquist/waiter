@@ -13,10 +13,6 @@ const root = createRoot(container!);
 
 const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   const systemPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
-  const [preferredDarkTheme] = usePreference<boolean>("darkTheme", systemPrefersDark);
-
-  console.log({ systemPrefersDark, preferredDarkTheme });
-
   const theme = React.useMemo(
     () =>
       createTheme({
