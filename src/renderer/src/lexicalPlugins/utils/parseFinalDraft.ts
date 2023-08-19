@@ -1,12 +1,6 @@
 import { $createLineNode, LineNode, LineNodeType } from "../LineNode";
-import {
-  $createLineBreakNode,
-  $createTextNode,
-  $getRoot,
-  TextNode,
-} from "lexical";
+import { $createLineBreakNode, $createTextNode, $getRoot, TextNode } from "lexical";
 import { SceneNode } from "../SceneNode";
-import { updatePages } from "./updatePages";
 import { DialogNode } from "../DialogNode";
 
 export function parseFinalDraft(text: string) {
@@ -32,15 +26,9 @@ export function parseFinalDraft(text: string) {
     if (line === null) {
       continue;
     }
-    if (
-      type === LineNodeType.Parenthetical ||
-      type === LineNodeType.Character
-    ) {
+    if (type === LineNodeType.Parenthetical || type === LineNodeType.Character) {
       transformedNodes.push(line);
-    } else if (
-      type === LineNodeType.Dialog &&
-      prevType === LineNodeType.Dialog
-    ) {
+    } else if (type === LineNodeType.Dialog && prevType === LineNodeType.Dialog) {
       // Merege this dialog with the previous one.
       const prevDialog = transformedNodes[transformedNodes.length - 2];
       const dialogEl = prevDialog.getFirstChild() as DialogNode;
@@ -129,9 +117,7 @@ function elementToLineNode(element: Element): LineNode | null {
   if (type === LineNodeType.Scene) {
     const sceneNumber = element.getAttribute("Number");
     if (sceneNumber) {
-      (node.getFirstChild()! as unknown as SceneNode).setSceneNumber(
-        sceneNumber
-      );
+      (node.getFirstChild()! as unknown as SceneNode).setSceneNumber(sceneNumber);
     }
   }
 

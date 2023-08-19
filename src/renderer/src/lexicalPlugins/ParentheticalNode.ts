@@ -34,17 +34,13 @@ export class ParentheticalNode extends ElementNode {
     return new ParentheticalNode(node.__key);
   }
 
-  createDOM(config: EditorConfig) {
+  createDOM(_config: EditorConfig) {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "parenthetical");
     return element;
   }
 
-  updateDOM(
-    prevNode: ParentheticalNode,
-    dom: HTMLElement,
-    config: EditorConfig
-  ) {
+  updateDOM(_prevNode: ParentheticalNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -55,9 +51,7 @@ export class ParentheticalNode extends ElementNode {
     return json;
   }
 
-  static importJSON(
-    serializedNode: SerializedParentheticalNode
-  ): ParentheticalNode {
+  static importJSON(_serializedNode: SerializedParentheticalNode): ParentheticalNode {
     const node = $createParentheticalNode();
     return node;
   }
@@ -67,7 +61,7 @@ export class ParentheticalNode extends ElementNode {
       return node.classList.contains("parenthetical");
     }
 
-    function convertParentheticalSpan(el: HTMLElement) {
+    function convertParentheticalSpan(_el: HTMLElement) {
       const node = $createParentheticalNode();
       return {
         node,
@@ -87,7 +81,7 @@ export class ParentheticalNode extends ElementNode {
     };
   }
 
-  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+  insertNewAfter(selection: RangeSelection, _restoreSelection = true) {
     if (didSplitNode(selection)) {
       // We're in the middle of the line, so a linebreak should be inserted.
       selection.anchor.getNode()!.splitText(selection.anchor.offset);
@@ -104,9 +98,7 @@ export class ParentheticalNode extends ElementNode {
   }
 
   collapseAtStart() {
-    const newElement = !this.isEmpty()
-      ? $createParentheticalNode()
-      : $createParagraphNode();
+    const newElement = !this.isEmpty() ? $createParentheticalNode() : $createParagraphNode();
     const children = this.getChildren();
     children.forEach((child) => newElement.append(child));
     this.replace(newElement);

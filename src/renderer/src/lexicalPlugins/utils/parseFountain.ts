@@ -1,11 +1,6 @@
 import { Fountain, Token } from "fountain-js";
 import { $createLineNode, LineNode, LineNodeType } from "../LineNode";
-import {
-  $createLineBreakNode,
-  $createTextNode,
-  $getRoot,
-  TextNode,
-} from "lexical";
+import { $createLineBreakNode, $createTextNode, $getRoot, TextNode } from "lexical";
 import { SceneNode } from "../SceneNode";
 
 const COMMENT_REGEX = /\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g;
@@ -27,10 +22,7 @@ export function parseFountain(text: string) {
     .flatMap<LineNode | null>((token) => {
       const line = tokenToLineNode(token);
       const type = line?.getElementType();
-      if (
-        type === LineNodeType.Parenthetical ||
-        type === LineNodeType.Character
-      ) {
+      if (type === LineNodeType.Parenthetical || type === LineNodeType.Character) {
         return [line];
       } else if (line !== null) {
         return [line, $createLineNode(LineNodeType.None)];
@@ -96,9 +88,7 @@ function tokenToLineNode(token: Token): LineNode | null {
   }
 
   if (type === LineNodeType.Scene) {
-    (node.getFirstChild() as unknown as SceneNode)!.setSceneNumber(
-      token.scene_number ?? null
-    );
+    (node.getFirstChild() as unknown as SceneNode)!.setSceneNumber(token.scene_number ?? null);
   }
 
   return node;

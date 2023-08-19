@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   $getNearestNodeFromDOMNode,
   $getRoot,
@@ -58,7 +58,7 @@ export const SCRIPT_NODES: NodeList = [
 
   {
     replace: ParagraphNode,
-    with: (node: ParagraphNode) => {
+    with: (_node: ParagraphNode) => {
       return new LineNode();
     },
   },
@@ -175,7 +175,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
     });
 
     const removeUpdateListener = editor.registerUpdateListener(
-      ({ tags, dirtyLeaves, editorState, prevEditorState }) => {
+      ({ tags, editorState, prevEditorState }) => {
         // console.log("update listener triggered");
         // Ignore updates from undo/redo (as changes already calculated)
         if (tags.has("historic")) {

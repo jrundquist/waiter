@@ -3,9 +3,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
-import { usePreference } from "./hooks/preferences";
-
-// window.app.doThing();
 
 const container = document.getElementById("root");
 

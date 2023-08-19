@@ -30,13 +30,13 @@ export class LyricNode extends ElementNode {
     return new LyricNode(node.__key);
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "lyric");
     return element;
   }
 
-  updateDOM(prevNode: LyricNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: LyricNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -47,7 +47,7 @@ export class LyricNode extends ElementNode {
     return json;
   }
 
-  static importJSON(serializedNode: SerializedLyricNode): LyricNode {
+  static importJSON(_serializedNode: SerializedLyricNode): LyricNode {
     const node = $createLyricNode();
     return node;
   }
@@ -57,7 +57,7 @@ export class LyricNode extends ElementNode {
       return node.classList.contains("lyric");
     }
 
-    function convertLyricSpan(el: HTMLElement) {
+    function convertLyricSpan(_el: HTMLElement) {
       const node = $createLyricNode();
       return {
         node,
@@ -77,7 +77,7 @@ export class LyricNode extends ElementNode {
     };
   }
 
-  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+  insertNewAfter(_selection: RangeSelection, _restoreSelection = true) {
     const lineNode = $createLineNode(LineNodeType.None);
     const direction = this.getDirection();
     lineNode.setDirection(direction);

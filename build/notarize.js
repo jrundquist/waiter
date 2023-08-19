@@ -1,4 +1,5 @@
 const { notarize } = require("@electron/notarize");
+const builderSpec = require("../electron-builder.json");
 
 module.exports = async (context) => {
   if (process.platform !== "darwin") return;
@@ -15,7 +16,7 @@ module.exports = async (context) => {
     return;
   }
 
-  const appId = "com.electron.app";
+  const { appId } = builderSpec;
 
   const { appOutDir } = context;
 

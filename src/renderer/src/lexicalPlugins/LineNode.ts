@@ -329,7 +329,7 @@ export class LineNode extends ParagraphNode {
     return currentType;
   }
 
-  checkForImpliedType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+  checkForImpliedType(anchorNode: LexicalNode, _anchorOffset: number): boolean {
     if (this.isForced()) {
       return false;
     }
@@ -391,7 +391,7 @@ export class LineNode extends ParagraphNode {
     return false;
   }
 
-  checkForLostType(anchorNode: LexicalNode, anchorOffset: number): boolean {
+  checkForLostType(_anchorNode: LexicalNode, _anchorOffset: number): boolean {
     // Forced nodes cant lose their type.
     if (this.isForced()) {
       if (findForcedTypeNode(this) === null) {
@@ -496,7 +496,7 @@ export class LineNode extends ParagraphNode {
             return;
         }
         if (el.getTextContentSize() > 0 && el.getTextContent().startsWith(char)) {
-          const [start, rest] = el.getFirstChild()!.splitText(0);
+          const [start] = el.getFirstChild()!.splitText(0);
           start.remove();
         }
         const force = $createForcedTypeNode(char);

@@ -8,13 +8,7 @@
 
 import type { Spread } from "lexical";
 
-import {
-  DecoratorNode,
-  EditorConfig,
-  NodeKey,
-  SerializedLexicalNode,
-} from "lexical";
-import * as React from "react";
+import { DecoratorNode, EditorConfig, NodeKey, SerializedLexicalNode } from "lexical";
 
 import { useSharedAutocompleteContext } from "./AutoCompleteContext";
 import { uuid as UUID } from "./AutoCompletePlugin";
@@ -48,9 +42,7 @@ export class AutocompleteNode extends DecoratorNode<JSX.Element | null> {
     return "autocomplete";
   }
 
-  static importJSON(
-    serializedNode: SerializedAutocompleteNode
-  ): AutocompleteNode {
+  static importJSON(serializedNode: SerializedAutocompleteNode): AutocompleteNode {
     const node = $createAutocompleteNode(serializedNode.uuid);
     return node;
   }
@@ -69,15 +61,11 @@ export class AutocompleteNode extends DecoratorNode<JSX.Element | null> {
     this.__uuid = uuid;
   }
 
-  updateDOM(
-    prevNode: unknown,
-    dom: HTMLElement,
-    config: EditorConfig
-  ): boolean {
+  updateDOM(_prevNode: unknown, _dom: HTMLElement, _config: EditorConfig): boolean {
     return false;
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     return document.createElement("span");
   }
 
@@ -111,11 +99,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 function AutocompleteComponent(): JSX.Element {
   const classes = useStyles();
   const [suggestion] = useSharedAutocompleteContext();
-  const userAgentData = window.navigator.userAgentData;
-  const isMobile =
-    userAgentData !== undefined
-      ? userAgentData.mobile
-      : window.innerWidth <= 800 && window.innerHeight <= 600;
   // TODO Move to theme
   return (
     <span className={classes.autocomplete} spellCheck="false">

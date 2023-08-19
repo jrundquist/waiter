@@ -38,7 +38,6 @@ export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({ chi
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
-      const data = e.dataTransfer.getData("text/plain");
 
       const droppedItem = e.dataTransfer?.items[0] ?? null;
       if (!droppedItem) {

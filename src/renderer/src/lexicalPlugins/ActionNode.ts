@@ -5,7 +5,6 @@ import {
   NodeKey,
   RangeSelection,
   SerializedElementNode,
-  SerializedLexicalNode,
   Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
@@ -31,13 +30,13 @@ export class ActionNode extends ElementNode {
     return new ActionNode(node.__key);
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "action");
     return element;
   }
 
-  updateDOM(prevNode: ActionNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: ActionNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -48,7 +47,7 @@ export class ActionNode extends ElementNode {
     return json;
   }
 
-  static importJSON(serializedNode: SerializedActionNode): ActionNode {
+  static importJSON(_serializedNode: SerializedActionNode): ActionNode {
     const node = $createActionNode();
     return node;
   }
@@ -58,7 +57,7 @@ export class ActionNode extends ElementNode {
       return node.classList.contains("action");
     }
 
-    function convertActionSpan(el: HTMLElement) {
+    function convertActionSpan(_el: HTMLElement) {
       const node = $createActionNode();
       return {
         node,
@@ -78,7 +77,7 @@ export class ActionNode extends ElementNode {
     };
   }
 
-  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+  insertNewAfter(_selection: RangeSelection, _restoreSelection = true) {
     const lineNode = $createLineNode(LineNodeType.Action);
     const direction = this.getDirection();
     lineNode.setDirection(direction);

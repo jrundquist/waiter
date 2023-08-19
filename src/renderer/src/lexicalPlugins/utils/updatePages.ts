@@ -70,7 +70,7 @@ function _updatePages(
   });
 }
 
-let execTimeout = 0;
+let execTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // export a debounced version of the function
 export function updatePages(

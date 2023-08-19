@@ -48,7 +48,7 @@ export class SceneNode extends ElementNode {
     return `${SceneNode.getType()} #${sceneNumber}#`;
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "scene");
     element.setAttribute("data-scene-number", this.getSceneNumber() ?? "");
@@ -65,7 +65,7 @@ export class SceneNode extends ElementNode {
     return self.__number;
   }
 
-  updateDOM(prevNode: SceneNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: SceneNode, dom: HTMLElement, _config: EditorConfig) {
     if (dom.getAttribute("data-scene-number") !== this.getSceneNumber()) {
       dom.setAttribute("data-scene-number", this.getSceneNumber() ?? "");
     }
@@ -86,7 +86,7 @@ export class SceneNode extends ElementNode {
     return node;
   }
 
-  static importDOM(element: HTMLElement): DOMConversionMap | null {
+  static importDOM(_element: HTMLElement): DOMConversionMap | null {
     function isSceneSpan(node: HTMLElement): boolean {
       return node.classList.contains("scene");
     }

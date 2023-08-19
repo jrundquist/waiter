@@ -37,13 +37,13 @@ export class DialogNode extends ElementNode {
     return new DialogNode(node.__key);
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "dialog");
     return element;
   }
 
-  updateDOM(prevNode: DialogNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: DialogNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -54,7 +54,7 @@ export class DialogNode extends ElementNode {
     return json;
   }
 
-  static importJSON(serializedNode: SerializedDialogNode): DialogNode {
+  static importJSON(_serializedNode: SerializedDialogNode): DialogNode {
     const node = $createDialogNode();
     return node;
   }
@@ -64,7 +64,7 @@ export class DialogNode extends ElementNode {
       return node.classList.contains("dialog");
     }
 
-    function convertDialogSpan(el: HTMLElement) {
+    function convertDialogSpan(_el: HTMLElement) {
       const node = $createDialogNode();
       return {
         node,
@@ -91,10 +91,7 @@ export class DialogNode extends ElementNode {
       return null;
     }
     // Double new line means we should return back to the scene
-    if (
-      EXIT_NODE_ON_ENTER ||
-      $isLineBreakNode(this.getChildAtIndex(this.getChildrenSize() - 1))
-    ) {
+    if (EXIT_NODE_ON_ENTER || $isLineBreakNode(this.getChildAtIndex(this.getChildrenSize() - 1))) {
       const newLine = $createLineNode(LineNodeType.None);
       // Swap the order so they are inserted in the correct order.
       this.getParent()!.insertAfter(newLine, restoreSelection);

@@ -32,13 +32,13 @@ export class TransitionNode extends ElementNode {
     return new TransitionNode(node.__key);
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "transition");
     return element;
   }
 
-  updateDOM(prevNode: TransitionNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: TransitionNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -49,7 +49,7 @@ export class TransitionNode extends ElementNode {
     return json;
   }
 
-  static importJSON(serializedNode: SerializedTransitionNode): TransitionNode {
+  static importJSON(_serializedNode: SerializedTransitionNode): TransitionNode {
     const node = $createTransitionNode();
     return node;
   }
@@ -59,7 +59,7 @@ export class TransitionNode extends ElementNode {
       return node.classList.contains("transition");
     }
 
-    function convertTransitionSpan(el: HTMLElement) {
+    function convertTransitionSpan(_el: HTMLElement) {
       const node = $createTransitionNode();
       return {
         node,
@@ -79,7 +79,7 @@ export class TransitionNode extends ElementNode {
     };
   }
 
-  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+  insertNewAfter(_selection: RangeSelection, restoreSelection = true) {
     const newElement = $createParagraphNode();
     const direction = this.getDirection();
     newElement.setDirection(direction);

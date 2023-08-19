@@ -5,7 +5,6 @@ import {
   NodeKey,
   RangeSelection,
   SerializedElementNode,
-  SerializedTextNode,
   Spread,
 } from "lexical";
 import * as utils from "@lexical/utils";
@@ -33,13 +32,13 @@ export class CharacterNode extends ElementNode {
     return new CharacterNode(node.__key);
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const element = document.createElement("span");
     utils.addClassNamesToElement(element, "character");
     return element;
   }
 
-  updateDOM(prevNode: CharacterNode, dom: HTMLElement, config: EditorConfig) {
+  updateDOM(_prevNode: CharacterNode, _dom: HTMLElement, _config: EditorConfig) {
     return false;
   }
 
@@ -50,7 +49,7 @@ export class CharacterNode extends ElementNode {
     return json;
   }
 
-  static importJSON(serializedNode: SerializedCharacterNode): CharacterNode {
+  static importJSON(_serializedNode: SerializedCharacterNode): CharacterNode {
     const node = $createCharacterNode();
     return node;
   }
@@ -60,7 +59,7 @@ export class CharacterNode extends ElementNode {
       return node.classList.contains("character");
     }
 
-    function convertCharacterSpan(el: HTMLElement) {
+    function convertCharacterSpan(_el: HTMLElement) {
       const node = $createCharacterNode();
       return {
         node,
@@ -80,7 +79,7 @@ export class CharacterNode extends ElementNode {
     };
   }
 
-  insertNewAfter(selection: RangeSelection, restoreSelection = true) {
+  insertNewAfter(_selection: RangeSelection, _restoreSelection = true) {
     const lineNode = $createLineNode(LineNodeType.Dialog);
     const dialogNode = $createDialogNode();
     lineNode.append(dialogNode);

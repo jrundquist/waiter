@@ -20,11 +20,7 @@ export const ScriptDetailsProvider: React.FunctionComponent<React.PropsWithChild
   const [sceneContent, setSceneContent] = React.useState<Map<string, string>>(new Map());
 
   const buildScript = React.useCallback(
-    (
-      editorState: EditorState,
-      rootNode: RootNode,
-      lineNodeToEl: ClearableWeakMap<LineNode, HTMLElement>
-    ) => {
+    (editorState: EditorState, rootNode: RootNode) => {
       editorState.read(() => {
         const lineNodes = rootNode.getChildren().filter($isLineNode);
         const characters = lineNodes
