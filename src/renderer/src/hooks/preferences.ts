@@ -30,10 +30,7 @@ export function usePreference<T>(preferenceName: string, defaultValue: T) {
   React.useEffect(() => {
     window.addEventListener("prefernece_change_" + preferenceName, onChange);
     return () => {
-      window.removeEventListener(
-        "prefernece_change_" + preferenceName,
-        onChange
-      );
+      window.removeEventListener("prefernece_change_" + preferenceName, onChange);
     };
   }, [preferenceName, onChange]);
 

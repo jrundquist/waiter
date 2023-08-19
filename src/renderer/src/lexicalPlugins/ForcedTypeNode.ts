@@ -55,8 +55,7 @@ export class ForcedTypeNode extends TextNode {
   static importDOM(): DOMConversionMap | null {
     function isForcedSpan(node: HTMLElement): boolean {
       return Boolean(
-        node.classList.contains("forced") &&
-          node.textContent?.match(/^[@.!>~]$/) !== null
+        node.classList.contains("forced") && node.textContent?.match(/^[@.!>~]$/) !== null
       );
     }
 

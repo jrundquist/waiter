@@ -1,5 +1,4 @@
-export const SCENE_HEADER_PATTERN =
-  /(?:\n|^)((int|ext|est|i\.?\/e\.?|e\.?\/i\.?)($|\s|\.))/gi;
+export const SCENE_HEADER_PATTERN = /(?:\n|^)((int|ext|est|i\.?\/e\.?|e\.?\/i\.?)($|\s|\.))/gi;
 
 export const TRANSITION_PATTERN =
   /(?:\n|^)(?:[^<>\na-z]*TO:|FADE TO BLACK\.|FADE OUT\.|CUT TO BLACK\.)\s*$/;
