@@ -2,7 +2,7 @@
   "name": "wAIter",
   "private": true,
   "version": "0.0.1",
-  "main": "./out/main/index.js",
+  "main": "./out/app/main.js",
   "scripts": {
     "format": "pprettier --write '**/*.{ts,tsx,d.ts,js,json,html,scss,md,yml,yaml}' '!node_modules/**'",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",

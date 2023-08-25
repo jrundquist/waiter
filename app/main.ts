@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-import icon from "../renderer/assets/icon.png?asset";
 
 function createWindow(): void {
   // Create the browser window.
@@ -11,8 +10,7 @@ function createWindow(): void {
     minWidth: 840,
     minHeight: 580,
     show: true,
-    autoHideMenuBar: false,
-    ...(process.platform !== "win32" ? { icon } : {}),
+    titleBarStyle: "default",
     webPreferences: {
       contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),

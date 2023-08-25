@@ -6,17 +6,18 @@
   },
   "files": [
     "!**/.vscode/*",
-    "!src/*",
+    "!frontend/*",
+    "!app/*",
     "!electron.vite.config.{js,ts,mjs,cjs}",
     "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}",
     "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
     "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
   ],
   "extraResources": [
-    "assets/**"
+    "fonts/**"
   ],
   "asarUnpack": [
-    "assets/**"
+    "fonts/**"
   ],
   "afterSign": "build/notarize.js",
   "win": {
