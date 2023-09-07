@@ -3019,6 +3019,11 @@ rollup@^2.79.1:
   optionalDependencies:
     fsevents "~2.3.2"
 
+run-s@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/run-s/-/run-s-0.0.0.tgz#599912be20c00ba7698655c9936d075d31b71754"
+  integrity sha512-KPDNauF2Tpnm3nG0+0LJuJxwBFrhAdthpM8bVdDvjWQA7pWP7QoNwEl1+dJ7WVJj81AQP/i6kl6JUmAk7tg3Og==
+
 rxjs@^6.6.3:
   version "6.6.7"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.7.tgz#90ac018acabf491bf65044235d5863c4dab804c9"

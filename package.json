@@ -16,7 +16,9 @@
     "postinstall": "electron-builder install-app-deps",
     "build:win": "npm run build && electron-builder --win --config",
     "build:mac": "electron-vite build && electron-builder --mac --config",
-    "build:linux": "electron-vite build && electron-builder --linux --config"
+    "build:linux": "electron-vite build && electron-builder --linux --config",
+    "launch:mac": "if [[ ! -a dist/mac-arm64/waiter.app ]]; then npm run build:mac; fi; open dist/mac-arm64/waiter.app",
+    "buildAndLaunch:mac": "npm run build:mac && npm run launch:mac"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
@@ -32,7 +34,8 @@
     "lexical": "^0.11.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hotkeys-hook": "^4.4.1"
+    "react-hotkeys-hook": "^4.4.1",
+    "run-s": "^0.0.0"
   },
   "devDependencies": {
     "@mixer/parallel-prettier": "^2.0.3",

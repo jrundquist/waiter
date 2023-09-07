@@ -1,10 +1,25 @@
-import { app, shell, BrowserWindow } from "electron";
+import { app, shell, BrowserWindow, Menu, ipcMain } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { CreateTemplateOptionsType, createTemplate } from "./menu";
+// Keep a global reference of the window object, if you don't, the window will
+//   be closed automatically when the JavaScript object is garbage collected.
+let mainWindow: BrowserWindow | undefined;
+let settingsWindow: BrowserWindow | undefined;
+let settingsWindowCreated = false;
+
+const defaultWebPrefs = {
+  devTools: process.argv.some((arg) => arg === "--enable-dev-tools") || is.dev,
+  spellcheck: true,
+  // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5
+  enableBlinkFeatures: [].join(","),
+  contextIsolation: true,
+  sandbox: false,
+};
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1320,
     height: 780,
     minWidth: 840,
@@ -12,18 +27,16 @@ function createWindow(): void {
     show: true,
     titleBarStyle: "default",
     webPreferences: {
-      contextIsolation: true,
+      ...defaultWebPrefs,
       preload: join(__dirname, "../preload/index.js"),
-      sandbox: false,
-      devTools: is.dev,
     },
   });
 
   mainWindow.on("ready-to-show", () => {
-    mainWindow.show();
+    mainWindow?.show();
 
     if (is.dev) {
-      mainWindow.webContents.openDevTools({ mode: "detach" });
+      mainWindow?.webContents.openDevTools({ mode: "detach" });
     }
   });
 
@@ -57,11 +70,27 @@ app.whenReady().then(() => {
 
   createWindow();
 
+  setupMenu();
+
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  app.on("open-file", (event, path) => {
+    event.preventDefault();
+    console.log(path);
+  });
+});
+
+ipcMain.on("show-settings", () => {
+  if (!settingsWindowCreated) {
+    openSettings();
+  } else {
+    console.log({ settingsWindow });
+    settingsWindow?.show();
+  }
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -73,5 +102,87 @@ app.on("window-all-closed", () => {
   // }
 });
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+function showWindow() {
+  if (!mainWindow) {
+    return;
+  }
+
+  // Using focus() instead of show() seems to be important on Windows when our window
+  //   has been docked using Aero Snap/Snap Assist. A full .show() call here will cause
+  //   the window to reposition:
+  //   https://github.com/signalapp/Signal-Desktop/issues/1429
+  if (mainWindow.isVisible()) {
+    mainWindow.focus();
+  } else {
+    mainWindow.show();
+  }
+}
+
+function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
+  const { platform } = process;
+  const menuOptions: CreateTemplateOptionsType = {
+    // options
+    development: is.dev,
+    devTools: defaultWebPrefs.devTools,
+    includeSetup: false,
+    isProduction: !is.dev,
+    platform,
+
+    // actions
+    showAbout: () => {
+      console.log("showAbout");
+    },
+    showKeyboardShortcuts: () => {
+      console.log("showKeyboardShortcuts");
+    },
+    showDebugLog: () => {
+      console.log("showDebugLog");
+    },
+    showSettings: () => {
+      console.log("showSettings");
+      // trigger IPC event
+      ipcMain.emit("show-settings");
+    },
+    showWindow,
+    // overrides
+    ...options,
+  };
+  const template = createTemplate(menuOptions);
+  const menu = Menu.buildFromTemplate(template);
+
+  console.log("menuOptions", menuOptions);
+
+  Menu.setApplicationMenu(menu);
+
+  mainWindow?.webContents.send("window:set-menu-options", {
+    development: menuOptions.development,
+    devTools: menuOptions.devTools,
+    isProduction: menuOptions.isProduction,
+    platform: menuOptions.platform,
+  });
+}
+
+function openSettings() {
+  settingsWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    show: true,
+    titleBarStyle: "default",
+    webPreferences: {
+      ...defaultWebPrefs,
+      preload: join(__dirname, "../preload/index.js"),
+    },
+  });
+
+  settingsWindow.loadFile(join(__dirname, "../renderer/settings.html"));
+  settingsWindow.on("ready-to-show", () => {
+    settingsWindow?.show();
+  });
+  settingsWindow.on("closed", () => {
+    settingsWindowCreated = false;
+  });
+  settingsWindow.on("show", () => {
+    settingsWindow?.focus();
+  });
+  settingsWindowCreated = true;
+}

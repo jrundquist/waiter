@@ -11,6 +11,11 @@ export default defineConfig({
         entry: resolve(join(__dirname, "app/main.ts")),
       },
     },
+    resolve: {
+      alias: {
+        "@types": resolve(join(__dirname, "")),
+      },
+    },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
@@ -34,7 +39,10 @@ export default defineConfig({
     plugins: [react()],
     build: {
       rollupOptions: {
-        input: "index.html",
+        input: {
+          index: "index.html",
+          settings: "settings.html",
+        },
         onwarn(warning, warn) {
           if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
             return;

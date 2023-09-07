@@ -29,6 +29,13 @@
     "uninstallDisplayName": "${productName}",
     "createDesktopShortcut": "always"
   },
+  "fileAssociations": [
+    {
+      "ext": "wai",
+      "name": "Waiter File",
+      "role": "Editor"
+    }
+  ],
   "mac": {
     "icon": "build/icons/mac/icon.icns",
     "entitlementsInherit": "build/entitlements.mac.plist",
