@@ -6,6 +6,9 @@ const api = {
   doThing: (): void => {
     console.log("Doing thing");
   },
+  importPdf: (path: string): void => {
+    electronAPI.ipcRenderer.send("import:pdf", path);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

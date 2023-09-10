@@ -2,6 +2,8 @@ import { app, shell, BrowserWindow, Menu, ipcMain } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
+import { init as initImporter } from "./importer";
+import { runDevTask } from "./__devTask";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
@@ -82,6 +84,12 @@ app.whenReady().then(() => {
     event.preventDefault();
     console.log(path);
   });
+
+  initImporter();
+
+  if (is.dev) {
+    runDevTask();
+  }
 });
 
 ipcMain.on("show-settings", () => {

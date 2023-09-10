@@ -1,4 +1,5 @@
 import { isString } from "lodash";
+import { dialog, ipcMain } from "electron";
 
 import type { MenuListType, MenuOptionsType, MenuActionsType } from "@/types/menu";
 
@@ -34,6 +35,36 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           label: "Settings",
           accelerator: "CommandOrControl+,",
           click: showSettings,
+        },
+        {
+          type: "separator",
+        },
+        {
+          label: "Export",
+          click: () => {},
+        },
+        {
+          label: "Import",
+          submenu: [
+            {
+              label: "Import from PDF",
+              click: () => {
+                dialog
+                  .showOpenDialog({
+                    properties: ["openFile"],
+                    filters: [{ name: "PDF", extensions: ["pdf"] }],
+                  })
+                  .then((result) => {
+                    ipcMain.emit("import:pdf", result.filePaths[0]);
+                  });
+              },
+            },
+            {
+              label: "Import from Final Draft",
+              enabled: false,
+              click: () => {},
+            },
+          ],
         },
         {
           type: "separator",
