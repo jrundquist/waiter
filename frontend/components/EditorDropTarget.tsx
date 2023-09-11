@@ -1,4 +1,4 @@
-/// <reference types="../../preload/index.d.ts" />
+/// <reference types="../../preload/index" />
 import * as React from "react";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
@@ -52,6 +52,7 @@ export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({ chi
         } else if (file.name.toLocaleLowerCase().endsWith(".fdx")) {
           editor.dispatchCommand(RESET_WITH_FINALDRAFT_FILE, file);
         } else if (file.name.toLocaleLowerCase().endsWith(".pdf")) {
+          console.log("importing pdf", file.path);
           window.api.importPdf(file.path);
         }
       }

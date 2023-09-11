@@ -8,12 +8,16 @@
   "compilerOptions": {
     "outDir": "./out",
     "composite": true,
+    "baseUrl": ".",
     "types": [
       "electron-vite/node"
     ],
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@utils/*": [
+        "utils/*"
       ],
     }
   }

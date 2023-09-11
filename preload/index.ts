@@ -1,13 +1,24 @@
-import { contextBridge } from "electron";
-import { electronAPI } from "@electron-toolkit/preload";
+import { ScriptElement } from "@/app/importer/elements";
+import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
 // Custom APIs for renderer
 const api = {
-  doThing: (): void => {
-    console.log("Doing thing");
-  },
   importPdf: (path: string): void => {
-    electronAPI.ipcRenderer.send("import:pdf", path);
+    ipcRenderer.send("import:pdf", path);
+  },
+  isDev(): boolean {
+    return process.env.NODE_ENV === "development";
+  },
+  listenForReset: (callback: (...args: any[]) => void): (() => void) => {
+    ipcRenderer.on("script:reset", callback);
+    return () => ipcRenderer.removeListener("script:reset", callback);
+  },
+  listenForScriptElements: (callback: (elements: ScriptElement[]) => void) => {
+    const cb = (_: IpcRendererEvent, elements: ScriptElement[]) => {
+      callback(elements);
+    };
+    ipcRenderer.on("script:set-elements", cb);
+    return () => ipcRenderer.removeListener("script:set-elements", cb);
   },
 };
 
@@ -16,14 +27,14 @@ const api = {
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("electron", electronAPI);
+    // contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("api", api);
   } catch (error) {
     console.error(error);
   }
 } else {
   // @ts-ignore (define in dts)
-  window.electron = electronAPI;
+  // window.electron = electronAPI;
   // @ts-ignore (define in dts)
   window.api = api;
 }

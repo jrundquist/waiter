@@ -4,6 +4,8 @@ import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
 import { init as initImporter } from "./importer";
 import { runDevTask } from "./__devTask";
+import { ScriptElement } from "./importer/elements";
+import eventBus from "./eventBus";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
@@ -70,8 +72,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  createWindow();
-
   setupMenu();
 
   app.on("activate", function () {
@@ -87,9 +87,24 @@ app.whenReady().then(() => {
 
   initImporter();
 
+  createWindow();
+
   if (is.dev) {
-    runDevTask();
+    runDevTask(mainWindow);
   }
+});
+
+ipcMain.on("test", (_, ...args: any[]) => {
+  console.log("test", args);
+  mainWindow?.webContents.send("test:resp", args);
+});
+
+ipcMain.on("script:reset", () => {
+  mainWindow?.webContents.send("script:reset");
+});
+
+eventBus.on("script:set-elements", (elements: ScriptElement[]) => {
+  mainWindow?.webContents.send("script:set-elements", elements);
 });
 
 ipcMain.on("show-settings", () => {
@@ -157,8 +172,6 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
   };
   const template = createTemplate(menuOptions);
   const menu = Menu.buildFromTemplate(template);
-
-  console.log("menuOptions", menuOptions);
 
   Menu.setApplicationMenu(menu);
 

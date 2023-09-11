@@ -55,7 +55,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
                     filters: [{ name: "PDF", extensions: ["pdf"] }],
                   })
                   .then((result) => {
-                    ipcMain.emit("import:pdf", result.filePaths[0]);
+                    ipcMain.emit("import:pdf", null, result.filePaths[0]);
                   });
               },
             },

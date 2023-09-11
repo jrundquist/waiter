@@ -13,7 +13,9 @@ export default defineConfig({
     },
     resolve: {
       alias: {
+        "@": resolve(join(__dirname, "")),
         "@types": resolve(join(__dirname, "")),
+        "@utils": resolve(join(__dirname, "utils")),
       },
     },
   },

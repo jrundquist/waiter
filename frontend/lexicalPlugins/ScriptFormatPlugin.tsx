@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+/// <reference types="../../preload/index" />
 import {
   $getNearestNodeFromDOMNode,
   $getRoot,
@@ -27,6 +27,14 @@ import { parseFinalDraft } from "./utils/parseFinalDraft";
 import { ClearableWeakMap } from "./utils/clearableWeakMap";
 import { updatePages } from "./utils/updatePages";
 import { useScriptDetails } from "@contexts/ScriptDetails";
+import { ElementType, ScriptElement } from "@/app/importer/elements";
+import React from "react";
+import { EditorUpdateOptions } from "lexical/LexicalEditor";
+
+export const RESET_ALL: LexicalCommand<void> = createCommand("RESET_ALL");
+
+export const SET_SCRIPT_ELEMENTS: LexicalCommand<ScriptElement[]> =
+  createCommand("SET_SCRIPT_ELEMENTS");
 
 export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
   "RESET_WITH_FOUNTAIN_FILE"
@@ -81,7 +89,148 @@ function updateLineNodes(
 function useScriptFormatPlugin(editor: LexicalEditor) {
   const scriptDetails = useScriptDetails();
 
-  useEffect(() => {
+  React.useEffect(() => {
+    editor.registerCommand(
+      RESET_ALL,
+      () => {
+        editor.update(() => {
+          $getRoot().clear();
+        });
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH
+    );
+
+    editor.registerCommand(
+      SET_SCRIPT_ELEMENTS,
+      (scriptElements: ScriptElement[]) => {
+        editor.update(() => {
+          $getRoot().clear();
+
+          for (const node of scriptElements) {
+            switch (node.type) {
+              // Scene Headings
+              case ElementType.SceneHeading: {
+                const lineNode = new LineNode();
+                const sceneNode = new SceneNode(node.sceneNumber);
+                sceneNode.append(new TextNode(node.content));
+                lineNode.append(sceneNode);
+                lineNode.setElementType(LineNodeType.Scene);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                sceneNode.setSceneNumber(node.sceneNumber);
+                $getRoot().append(new LineNode());
+                break;
+              }
+              // Actions
+              case ElementType.Action: {
+                if (node.content.trim() === "") {
+                  break;
+                }
+                const lineNode = new LineNode();
+                const actionNode = new ActionNode();
+                actionNode.append(new TextNode(node.content));
+                lineNode.append(actionNode);
+                lineNode.setElementType(LineNodeType.Action);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                $getRoot().append(new LineNode());
+                break;
+              }
+              // Characters
+              case ElementType.Character: {
+                const lineNode = new LineNode();
+                const characterNode = new CharacterNode();
+                const charName = node.content.replace(/\(cont'd\)/i, "").trim();
+                if (charName === "(MORE)") {
+                  break;
+                }
+                characterNode.append(new TextNode(charName));
+                lineNode.append(characterNode);
+                lineNode.setElementType(LineNodeType.Character);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                break;
+              }
+              // Dialog
+              case ElementType.Dialogue: {
+                const lineNode = new LineNode();
+                const dialogNode = new DialogNode();
+                dialogNode.append(new TextNode(node.content));
+                lineNode.append(dialogNode);
+                lineNode.setElementType(LineNodeType.Dialog);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                $getRoot().append(new LineNode());
+                break;
+              }
+
+              // Parentheticals
+              case ElementType.Parenthetical: {
+                const lineNode = new LineNode();
+                const parentheticalNode = new ParentheticalNode();
+                parentheticalNode.append(new TextNode(node.content));
+                lineNode.append(parentheticalNode);
+                lineNode.setElementType(LineNodeType.Parenthetical);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                break;
+              }
+
+              // Transitions
+              case ElementType.Transition: {
+                const lineNode = new LineNode();
+                const transitionNode = new TransitionNode();
+                transitionNode.append(new TextNode(node.content));
+                lineNode.append(transitionNode);
+                lineNode.setElementType(LineNodeType.Transition);
+                if (lineNode.wouldRequireForce()) {
+                  lineNode.setForcedWithMarker();
+                }
+                $getRoot().append(lineNode);
+                $getRoot().append(new LineNode());
+                break;
+              }
+
+              default:
+                break;
+            }
+          }
+        });
+
+        // HACK to get around the fact these elements haven't been added to
+        // the DOM yet.
+        setTimeout(() => {
+          editor.update(
+            () => {
+              updateLineNodes(lineNodeToEl, editor);
+            },
+            {
+              onUpdate: () => {
+                updatePages(editor, lineNodeToEl);
+              },
+            } as EditorUpdateOptions
+          );
+          editor.update(() => {
+            scriptDetails?.buildScript(editor.getEditorState(), $getRoot(), lineNodeToEl);
+          });
+        }, 1);
+
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH
+    );
+
     editor.registerCommand(
       RESET_WITH_FOUNTAIN_FILE,
       (fountainFile: File) => {
@@ -266,5 +415,27 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
 export function ScriptFormatPlugin() {
   const [editor] = useLexicalComposerContext();
   useScriptFormatPlugin(editor);
+
+  React.useEffect(() => {
+    const unsub: Array<() => void> = [];
+    unsub.push(
+      window.api.listenForReset(() => {
+        console.log("resetting");
+        editor.dispatchCommand(RESET_ALL, void 0);
+      })
+    );
+
+    unsub.push(
+      window.api.listenForScriptElements((scriptElements: ScriptElement[]) => {
+        console.log("incoming script elements", scriptElements);
+        editor.dispatchCommand(SET_SCRIPT_ELEMENTS, scriptElements);
+      })
+    );
+
+    return () => {
+      unsub.forEach((u) => u());
+    };
+  }, [editor]);
+
   return null;
 }
