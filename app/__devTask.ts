@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow } from "electron";
 
 // Tasks that are only run in development on app startup.
 export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {

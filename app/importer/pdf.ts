@@ -1,11 +1,11 @@
 import { CHARACTER_PATTERN, SCENE_HEADER_PATTERN } from "@/frontend/lexicalPlugins/FountainRegex";
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
-import { dialog, ipcMain } from "electron";
+import { dialog } from "electron";
 import { getDocument, PDFDocumentProxy } from "pdfjs-dist";
 import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
 import { ElementType, type ScriptElement } from "./elements";
-import eventBus from "../eventBus";
+// import eventBus from "../eventBus";
 
 enum TokenType {
   UNKNOWN = "unknown",
@@ -290,12 +290,7 @@ export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
     })
     .then(pagesToElementsList)
     .then(cleanupParsedElements)
-    .then(mapToScriptElements)
-    .then((elements: ScriptElement[]) => {
-      eventBus.emit("script:reset");
-      eventBus.emit("script:set-elements", elements);
-      return elements;
-    });
+    .then(mapToScriptElements);
 }
 function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): ParsedElement[] {
   const hintAtTypeFromPos = createHinter(posInfo);

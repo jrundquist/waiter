@@ -19,6 +19,7 @@ export type MenuActionsType = Readonly<{
   showKeyboardShortcuts: () => unknown;
   showSettings: () => unknown;
   showWindow: () => unknown;
+  importPdfAction: () => void;
 }>;
 
 export type MenuActionType = keyof MenuActionsType;

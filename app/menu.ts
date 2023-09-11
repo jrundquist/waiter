@@ -1,5 +1,4 @@
 import { isString } from "lodash";
-import { dialog, ipcMain } from "electron";
 
 import type { MenuListType, MenuOptionsType, MenuActionsType } from "@/types/menu";
 
@@ -10,8 +9,15 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     throw new TypeError("`options.platform` must be a string");
   }
 
-  const { devTools, platform, showAbout, showDebugLog, showKeyboardShortcuts, showSettings } =
-    options;
+  const {
+    devTools,
+    platform,
+    showAbout,
+    showDebugLog,
+    showKeyboardShortcuts,
+    showSettings,
+    importPdfAction,
+  } = options;
 
   const template: MenuListType = [
     {
@@ -48,16 +54,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           submenu: [
             {
               label: "Import from PDF",
-              click: () => {
-                dialog
-                  .showOpenDialog({
-                    properties: ["openFile"],
-                    filters: [{ name: "PDF", extensions: ["pdf"] }],
-                  })
-                  .then((result) => {
-                    ipcMain.emit("import:pdf", null, result.filePaths[0]);
-                  });
-              },
+              click: importPdfAction,
             },
             {
               label: "Import from Final Draft",

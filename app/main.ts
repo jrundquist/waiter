@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, Menu, ipcMain } from "electron";
+import { app, shell, BrowserWindow, Menu, ipcMain, dialog } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
@@ -103,7 +103,7 @@ ipcMain.on("script:reset", () => {
   mainWindow?.webContents.send("script:reset");
 });
 
-eventBus.on("script:set-elements", (elements: ScriptElement[]) => {
+eventBus.on("bus:script:set-elements", (elements: ScriptElement[]) => {
   mainWindow?.webContents.send("script:set-elements", elements);
 });
 
@@ -165,6 +165,23 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       console.log("showSettings");
       // trigger IPC event
       ipcMain.emit("show-settings");
+    },
+    importPdfAction: () => {
+      dialog
+        .showOpenDialog({
+          properties: ["openFile"],
+          filters: [{ name: "PDF", extensions: ["pdf"] }],
+        })
+        .then((result) => {
+          ipcMain.emit(
+            "import:pdf",
+            {
+              reply: (channel: string, ...args: any[]) =>
+                mainWindow?.webContents.send(channel, ...args),
+            },
+            result.filePaths[0]
+          );
+        });
     },
     showWindow,
     // overrides

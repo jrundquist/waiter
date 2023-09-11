@@ -2,8 +2,7 @@ import { EventEmitter } from "events";
 import { ScriptElement } from "./importer/elements";
 
 interface EventTypes {
-  "script:reset": [];
-  "script:set-elements": [elements: ScriptElement[]];
+  "bus:script:set-elements": [elements: ScriptElement[]];
 }
 
 class EventBus<TEvents extends Record<string, any>> {

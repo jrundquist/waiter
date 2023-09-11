@@ -9,12 +9,9 @@ export const init = (): void => {
   }
   isInit = true;
 
-  ipcMain.on("import:pdf", (_: IpcMainEvent, ...args: any[]) => {
-    console.log("[IPC] import:pdf - ", args);
-    const pdfFile = args[0];
-    if (typeof pdfFile !== "string") {
-      return;
-    }
-    importPdf(pdfFile);
+  ipcMain.on("import:pdf", (event: IpcMainEvent, pdfFile: string) => {
+    importPdf(pdfFile).then((elements) => {
+      event.reply("script:set-elements", elements);
+    });
   });
 };
