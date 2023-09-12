@@ -61,6 +61,17 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    for (const path of openQueue) {
+      eventBus.emit("open", path);
+    }
+    openQueue = [];
+  });
+
+  mainWindow.on("closed", () => {
+    mainWindow = undefined;
+  });
 }
 
 function showWindow() {
@@ -192,7 +203,9 @@ let openQueue: string[] = [];
 app.on("open-file", (event, path) => {
   event.preventDefault();
   openQueue.push(path);
-  if (mainWindow) {
+  if (!mainWindow) {
+    createWindow();
+  } else {
     eventBus.emit("open", path);
   }
 });
@@ -222,13 +235,6 @@ app.whenReady().then(() => {
   initImporter();
 
   createWindow();
-
-  mainWindow?.webContents.on("did-finish-load", () => {
-    for (const path of openQueue) {
-      eventBus.emit("open", path);
-    }
-    openQueue = [];
-  });
 
   if (is.dev) {
     runDevTask(mainWindow);
