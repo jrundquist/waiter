@@ -6,11 +6,16 @@ import { init as initImporter } from "./importer";
 import { runDevTask } from "./__devTask";
 import { ScriptElement } from "./importer/elements";
 import eventBus from "./eventBus";
+import { State, initialState, reducer } from "./state";
+import { loadFile, saveState } from "./loader";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
 let settingsWindow: BrowserWindow | undefined;
 let settingsWindowCreated = false;
+let menuOptions: CreateTemplateOptionsType | undefined;
+
+let appState: State = initialState;
 
 const defaultWebPrefs = {
   devTools: process.argv.some((arg) => arg === "--enable-dev-tools") || is.dev,
@@ -58,73 +63,6 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId("com.jrundquist");
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on("browser-window-created", (_, window) => {
-    optimizer.watchWindowShortcuts(window);
-  });
-
-  setupMenu();
-
-  app.on("activate", function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-
-  app.on("open-file", (event, path) => {
-    event.preventDefault();
-    console.log(path);
-  });
-
-  initImporter();
-
-  createWindow();
-
-  if (is.dev) {
-    runDevTask(mainWindow);
-  }
-});
-
-ipcMain.on("test", (_, ...args: any[]) => {
-  console.log("test", args);
-  mainWindow?.webContents.send("test:resp", args);
-});
-
-ipcMain.on("script:reset", () => {
-  mainWindow?.webContents.send("script:reset");
-});
-
-eventBus.on("bus:script:set-elements", (elements: ScriptElement[]) => {
-  mainWindow?.webContents.send("script:set-elements", elements);
-});
-
-ipcMain.on("show-settings", () => {
-  if (!settingsWindowCreated) {
-    openSettings();
-  } else {
-    console.log({ settingsWindow });
-    settingsWindow?.show();
-  }
-});
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  // if (process.platform !== "darwin") {
-  app.quit();
-  // }
-});
-
 function showWindow() {
   if (!mainWindow) {
     return;
@@ -143,7 +81,7 @@ function showWindow() {
 
 function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
   const { platform } = process;
-  const menuOptions: CreateTemplateOptionsType = {
+  menuOptions = {
     // options
     development: is.dev,
     devTools: defaultWebPrefs.devTools,
@@ -152,6 +90,56 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     platform,
 
     // actions
+    newAction: () => {
+      if (appState.isDirty) {
+        const res = dialog.showMessageBoxSync(mainWindow!, {
+          type: "question",
+          buttons: ["Yes", "No"],
+          title: "Confirm",
+          message: "Unsaved changes will be lost. Are you sure you want to continue?",
+        });
+        if (res === 1) {
+          return;
+        }
+      }
+    },
+    openAction: () => {
+      if (appState.isDirty) {
+        const res = dialog.showMessageBoxSync(mainWindow!, {
+          type: "question",
+          buttons: ["Yes", "No"],
+          title: "Confirm",
+          message: "Unsaved changes will be lost. Are you sure you want to continue?",
+        });
+        if (res === 1) {
+          return;
+        }
+      }
+      const file = dialog.showOpenDialogSync({
+        properties: ["openFile"],
+        filters: [{ name: "Waiter Files", extensions: ["wai"] }],
+      });
+      if (file !== undefined && file.length > 0) {
+        eventBus.emit("open", file[0]);
+      }
+    },
+
+    saveAction: (saveAs: boolean = false) => {
+      if (appState.scriptFile && !saveAs) {
+        eventBus.emit("state:save", appState.scriptFile);
+        return;
+      }
+      const pathName = dialog.showSaveDialogSync({
+        title: "Save Script",
+        filters: [{ name: "Waiter Files", extensions: ["wai"] }],
+      });
+
+      if (pathName === undefined) {
+        return;
+      }
+      eventBus.emit("state:save", pathName);
+    },
+
     showAbout: () => {
       console.log("showAbout");
     },
@@ -199,6 +187,102 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     platform: menuOptions.platform,
   });
 }
+
+let openQueue: string[] = [];
+app.on("open-file", (event, path) => {
+  event.preventDefault();
+  openQueue.push(path);
+  if (mainWindow) {
+    eventBus.emit("open", path);
+  }
+});
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.whenReady().then(() => {
+  // Set app user model id for windows
+  electronApp.setAppUserModelId("com.jrundquist");
+
+  // Default open or close DevTools by F12 in development
+  // and ignore CommandOrControl + R in production.
+  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  app.on("browser-window-created", (_, window) => {
+    optimizer.watchWindowShortcuts(window);
+  });
+
+  setupMenu();
+
+  app.on("activate", function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+
+  initImporter();
+
+  createWindow();
+
+  mainWindow?.webContents.on("did-finish-load", () => {
+    for (const path of openQueue) {
+      eventBus.emit("open", path);
+    }
+    openQueue = [];
+  });
+
+  if (is.dev) {
+    runDevTask(mainWindow);
+  }
+});
+
+ipcMain.on("file:open", () => {
+  menuOptions?.openAction();
+});
+
+ipcMain.on("script:reset", () => {
+  mainWindow?.webContents.send("script:reset");
+});
+
+eventBus.on("bus:script:set-elements", (elements: ScriptElement[]) => {
+  appState = reducer(appState, { type: "state:set-elements", payload: elements });
+  console.log({ appState });
+  mainWindow?.webContents.send("script:set-elements", elements);
+});
+
+ipcMain.on("show-settings", () => {
+  if (!settingsWindowCreated) {
+    openSettings();
+  } else {
+    console.log({ settingsWindow });
+    settingsWindow?.show();
+  }
+});
+
+eventBus.on("open", (file: string) => {
+  loadFile(file).then((state) => {
+    appState = state;
+    appState.scriptFile = file;
+    mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
+    mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
+  });
+});
+
+eventBus.on("state:save", (file: string) => {
+  console.log("state:save", file);
+  if (saveState(file, appState)) {
+    appState = reducer(appState, { type: "state:saved", file });
+    mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
+  }
+});
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
 
 function openSettings() {
   settingsWindow = new BrowserWindow({

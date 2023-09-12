@@ -20,6 +20,9 @@ export type MenuActionsType = Readonly<{
   showSettings: () => unknown;
   showWindow: () => unknown;
   importPdfAction: () => void;
+  newAction: () => void;
+  openAction: () => void;
+  saveAction: (saveAs?: boolean) => void;
 }>;
 
 export type MenuActionType = keyof MenuActionsType;

@@ -33,7 +33,8 @@
     {
       "ext": "wai",
       "name": "Waiter File",
-      "role": "Editor"
+      "role": "Editor",
+      "icon": "build/icons/mac/fileicon.icns"
     }
   ],
   "mac": {
@@ -48,7 +49,8 @@
       {
         "NSDownloadsFolderUsageDescription": "Application requests access to the user's Downloads folder."
       }
-    ]
+    ],
+    "target": "dir"
   },
   "dmg": {
     "artifactName": "${name}-${version}.${ext}"

@@ -1,8 +1,12 @@
 import { EventEmitter } from "events";
 import { ScriptElement } from "./importer/elements";
+import { State } from "./state";
 
 interface EventTypes {
   "bus:script:set-elements": [elements: ScriptElement[]];
+  open: [file: string];
+  "state:loaded": [state: State];
+  "state:save": [file: string];
 }
 
 class EventBus<TEvents extends Record<string, any>> {

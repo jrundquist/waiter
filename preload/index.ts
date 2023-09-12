@@ -9,6 +9,9 @@ const api = {
   isDev(): boolean {
     return process.env.NODE_ENV === "development";
   },
+  openFile: () => {
+    ipcRenderer.send("file:open");
+  },
   listenForReset: (callback: (...args: any[]) => void): (() => void) => {
     ipcRenderer.on("script:reset", callback);
     return () => ipcRenderer.removeListener("script:reset", callback);

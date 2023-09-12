@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.1",
   "main": "./out/app/main.js",
+  "author": {
+    "name": "James Rundquist",
+    "email": "james@roboticdonut.com"
+  },
+  "description": "An AI assisted script wiring tool",
   "scripts": {
     "format": "pprettier --write '**/*.{ts,tsx,d.ts,js,json,html,scss,md,yml,yaml}' '!node_modules/**'",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",

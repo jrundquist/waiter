@@ -10,10 +10,7 @@ export const EditorHotkeys: React.FunctionComponent<{}> = () => {
   const [editor] = useLexicalComposerContext();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const onOpenHotkey = React.useCallback(() => {
-    const input = inputRef.current;
-    if (input) {
-      input.click();
-    }
+    window.api.openFile();
   }, [inputRef]);
   const onOpen = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

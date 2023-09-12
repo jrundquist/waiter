@@ -17,6 +17,9 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     showKeyboardShortcuts,
     showSettings,
     importPdfAction,
+    newAction,
+    openAction,
+    saveAction,
   } = options;
 
   const template: MenuListType = [
@@ -26,16 +29,38 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         {
           label: "New",
           accelerator: "CmdOrCtrl+N",
-          click: () => {},
+          click: newAction,
         },
         {
           label: "Open",
           accelerator: "CmdOrCtrl+O",
-          click: () => {},
+          click: openAction,
         },
         {
           label: "Open Recent",
           role: "recentDocuments",
+          submenu: [
+            {
+              label: "Clear Recent",
+              role: "clearRecentDocuments",
+            },
+          ],
+        },
+        {
+          type: "separator",
+        },
+        {
+          label: "Save",
+          accelerator: "CmdOrCtrl+S",
+          click: () => saveAction(),
+        },
+        {
+          label: "Save As",
+          accelerator: "CmdOrCtrl+Shift+S",
+          click: () => saveAction(true),
+        },
+        {
+          type: "separator",
         },
         {
           label: "Settings",
