@@ -270,6 +270,7 @@ eventBus.on("open", (file: string) => {
     appState.scriptFile = file;
     mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
     mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
+    mainWindow?.show();
   });
 });
 
