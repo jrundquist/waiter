@@ -1,3 +1,4 @@
+/// <reference types="../preload/index" />
 import { useEffect } from "react";
 import "./App.css";
 // import { EventsOn, EventsOff } from "@runtime/runtime";
@@ -16,12 +17,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 function App() {
   useEffect(() => {
-    // EventsOn("file:open", (file) => {
-    //   console.log("file:open", file);
-    // });
-    // return () => {
-    //   EventsOff("file:open");
-    // };
+    window.api.log.info("App.tsx: App mounted", { window });
+    return () => {
+      window.api.log.info("App.tsx: App unmounted");
+    };
   }, []);
 
   const classes = useStyles();

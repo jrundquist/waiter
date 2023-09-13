@@ -23,6 +23,40 @@ const api = {
     ipcRenderer.on("script:set-elements", cb);
     return () => ipcRenderer.removeListener("script:set-elements", cb);
   },
+  log: {
+    debug: (message: string, ...args: any[]) => {
+      console.debug(message, ...args);
+      try {
+        ipcRenderer.send("browserLog:debug", message, ...args);
+      } catch (e) {
+        console.warn("failed to send log", e);
+      }
+    },
+    error: (message: string, ...args: any[]) => {
+      console.error(message, ...args);
+      try {
+        ipcRenderer.send("browserLog:error", message, ...args);
+      } catch (e) {
+        console.warn("failed to send log", e);
+      }
+    },
+    info: (message: string, ...args: any[]) => {
+      console.info(message, ...args);
+      try {
+        ipcRenderer.send("browserLog:info", message, ...args);
+      } catch (e) {
+        console.warn("failed to send log", e);
+      }
+    },
+    warn: (message: string, ...args: any[]) => {
+      console.warn(message, ...args);
+      try {
+        ipcRenderer.send("browserLog:warn", message, ...args);
+      } catch (e) {
+        console.warn("failed to send log", e);
+      }
+    },
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

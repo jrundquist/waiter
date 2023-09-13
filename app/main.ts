@@ -8,7 +8,7 @@ import { ScriptElement } from "./importer/elements";
 import eventBus from "./eventBus";
 import { State, initialState, reducer } from "./state";
 import { loadFile, saveState } from "./loader";
-import { log, browserLog } from "./logger";
+import { log, browserLog, logPath, browserLogPath } from "./logger";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
@@ -161,7 +161,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       console.log("showKeyboardShortcuts");
     },
     showDebugLog: () => {
-      console.log("showDebugLog");
+      eventBus.emit("show-logs");
     },
     showSettings: () => {
       console.log("showSettings");
@@ -283,6 +283,11 @@ eventBus.on("state:save", (file: string) => {
     appState = reducer(appState, { type: "state:saved", file });
     mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
   }
+});
+
+eventBus.on("show-logs", () => {
+  shell.openExternal(`file://${logPath}`);
+  shell.openExternal(`file://${browserLogPath}`);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

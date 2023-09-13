@@ -7,6 +7,7 @@ interface EventTypes {
   open: [file: string];
   "state:loaded": [state: State];
   "state:save": [file: string];
+  "show-logs": [];
 }
 
 class EventBus<TEvents extends Record<string, any>> {

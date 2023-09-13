@@ -1,5 +1,4 @@
 import { app, dialog } from "electron";
-import eventBus from "./eventBus";
 import fs from "fs";
 import { State } from "./state";
 

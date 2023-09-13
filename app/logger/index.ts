@@ -1,8 +1,9 @@
 import pino from "pino";
-import { app } from "electron";
+import { IpcMainEvent, app } from "electron";
 import path from "path";
 import { is } from "@electron-toolkit/utils";
 import fs from "fs";
+import { ipcMain } from "electron";
 
 const startTime = Date.now();
 
@@ -116,3 +117,19 @@ browserLog.debug(`Startup Time: ${startTime}`);
 browserLog.debug(`Is Dev: ${is.dev}`);
 browserLog.debug(`Process platform: ${platform}`);
 browserLog.debug("========= End Browser Info  =========");
+
+ipcMain.on("browserLog:debug", (_: IpcMainEvent, message: string, ...args: unknown[]) => {
+  browserLog.debug(message, ...args);
+});
+
+ipcMain.on("browserLog:error", (_: IpcMainEvent, message: string, ...args: unknown[]) => {
+  browserLog.error(message, ...args);
+});
+
+ipcMain.on("browserLog:info", (_: IpcMainEvent, message: string, ...args: unknown[]) => {
+  browserLog.info(message, ...args);
+});
+
+ipcMain.on("browserLog:warn", (_: IpcMainEvent, message: string, ...args: unknown[]) => {
+  browserLog.warn(message, ...args);
+});

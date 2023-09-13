@@ -2,6 +2,13 @@ import { resolve, join } from "path";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import react from "@vitejs/plugin-react";
 
+const alias = {
+  "@": resolve(join(__dirname, "")),
+  "@renderer": resolve(join(__dirname, "frontend")),
+  "@components": resolve(join(__dirname, "frontend/components")),
+  "@contexts": resolve(join(__dirname, "frontend/contexts")),
+};
+
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
@@ -21,6 +28,7 @@ export default defineConfig({
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    resolve: { alias },
     build: {
       outDir: "out/preload",
       lib: {
@@ -30,14 +38,7 @@ export default defineConfig({
   },
   renderer: {
     root: resolve(__dirname),
-    resolve: {
-      alias: {
-        "@": resolve(join(__dirname, "")),
-        "@renderer": resolve(join(__dirname, "frontend")),
-        "@components": resolve(join(__dirname, "frontend/components")),
-        "@contexts": resolve(join(__dirname, "frontend/contexts")),
-      },
-    },
+    resolve: { alias },
     plugins: [react()],
     build: {
       rollupOptions: {
