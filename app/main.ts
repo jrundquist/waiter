@@ -8,6 +8,7 @@ import { ScriptElement } from "./importer/elements";
 import eventBus from "./eventBus";
 import { State, initialState, reducer } from "./state";
 import { loadFile, saveState } from "./loader";
+import { log, browserLog } from "./logger";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
@@ -28,6 +29,8 @@ const defaultWebPrefs = {
 
 function createWindow(): void {
   // Create the browser window.
+  log.info("Creating main window");
+  browserLog.info("Creating main window");
   mainWindow = new BrowserWindow({
     width: 1320,
     height: 780,

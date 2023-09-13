@@ -38,6 +38,8 @@
     "fountain-js": "^1.1.0",
     "lexical": "^0.11.2",
     "pdfjs-dist": "^3.10.111",
+    "pino": "^8.15.1",
+    "pino-pretty": "^10.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.4.1",
