@@ -5,6 +5,7 @@ import { dialog } from "electron";
 import { getDocument, PDFDocumentProxy } from "pdfjs-dist";
 import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
 import { ElementType, type ScriptElement } from "./elements";
+import { log } from "../logger";
 // import eventBus from "../eventBus";
 
 enum TokenType {
@@ -80,12 +81,12 @@ function createHinter(posInfo: PositionInfo): (line: TextItem) => TokenType {
       return TokenType.Transition;
     }
 
-    if (roughlyEqual(endPos, posInfo.pageNumberEndPos ?? 0, 10)) {
-      return TokenType.PageNumber;
+    if (roughlyEqual(x, posInfo.leftEdgePos, 6)) {
+      return TokenType.Action;
     }
 
-    if (roughlyEqual(x, posInfo.leftEdgePos, 2)) {
-      return TokenType.Action;
+    if (roughlyEqual(endPos, posInfo.pageNumberEndPos ?? 0, 10) && line.str.match(/[0-9]+\.?$/)) {
+      return TokenType.PageNumber;
     }
 
     return TokenType.UNKNOWN;
@@ -252,7 +253,6 @@ function loadPage(doc: PDFDocumentProxy, pageNumber: number): Promise<PageConten
     const pageHeight = vp.height;
 
     const tokenizedText = await page.getTextContent();
-    console.log(`--> Page ${pageNumber} loaded`);
     return {
       pageNumber,
       width: pageWidth,
@@ -263,24 +263,24 @@ function loadPage(doc: PDFDocumentProxy, pageNumber: number): Promise<PageConten
 }
 
 export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
-  console.log("import:pdf", pdfFile);
   return getDocument(pdfFile)
     .promise.then((doc: PDFDocumentProxy) => {
       const numPages = doc.numPages;
-      console.log("# Document Loaded");
-      console.log("Number of Pages: " + numPages);
+      log.info("# Document Loaded");
+      log.info("Number of Pages: " + numPages);
 
       const pageLoaders: Promise<PageContents>[] = [];
       for (let i = 1; i <= numPages; i++) {
         pageLoaders.push(loadPage(doc, i));
       }
       return Promise.all(pageLoaders).catch((err) => {
+        log.error("Failed to Parse PDF. " + err.message);
         dialog.showErrorBox("Failed to Parse PDF", err.message);
       });
     })
     .catch((err: Error) => {
-      console.error("err", err);
-      dialog.showErrorBox("Failed to Import PDF", err.message);
+      log.error("Failed to Import PDF. " + err.message);
+      dialog.showErrorBox("Failed to Import PDF.\n", err.message);
     })
     .then((pages) => {
       if (!pages) {
@@ -388,14 +388,6 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
           type = TokenType.Action;
         }
 
-        if (item.str.startsWith("She's thrown")) {
-          console.log({
-            type,
-            prevType,
-            y,
-            prevPositionY,
-          });
-        }
         if (
           type === TokenType.Action &&
           prevType === TokenType.Action &&
@@ -423,6 +415,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
 
   return elements;
 }
+
 function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
   let prevElement = elements[0];
 
@@ -459,7 +452,6 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
       if (prevElement.type === TokenType.SceneHeading) {
         const match = prevElement.content.match(/^(\d[\w\d]*\.?)\s/);
         if (match) {
-          console.log(match);
           prevElement.meta = { sceneNumber: match[1] };
           prevElement.content = prevElement.content.replace(match[0], "").trim();
         }
@@ -485,7 +477,6 @@ function mapToScriptElements(elements: ParsedElement[]): ScriptElement[] {
   const scriptElements = elements.map((element): ScriptElement => {
     switch (element.type) {
       case TokenType.SceneNumber:
-        console.log({ element });
         return {
           type: ElementType.SceneHeading,
           content: element.content,

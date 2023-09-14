@@ -2,7 +2,7 @@ import { ScriptElement } from "@/app/importer/elements";
 import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
 // Custom APIs for renderer
-const api = {
+export const api = {
   importPdf: (path: string): void => {
     ipcRenderer.send("import:pdf", path);
   },
