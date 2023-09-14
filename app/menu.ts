@@ -72,15 +72,6 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           type: "separator",
         },
         {
-          label: "Export",
-          submenu: [
-            {
-              label: "Export to Final Draft",
-              click: exportFinalDraft,
-            },
-          ],
-        },
-        {
           label: "Import",
           submenu: [
             {
@@ -91,6 +82,15 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
               label: "Import from Final Draft",
               enabled: false,
               click: () => {},
+            },
+          ],
+        },
+        {
+          label: "Export",
+          submenu: [
+            {
+              label: "Export to Final Draft",
+              click: exportFinalDraft,
             },
           ],
         },

@@ -439,7 +439,7 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
       element.meta = { sceneNumber: prevElement.content };
     }
 
-    if (element.type === TokenType.Character) {
+    if (element.type === TokenType.Character || element.type === TokenType.Parenthetical) {
       // Fix for (MORE) being classified as a character
       if (element.content === "(MORE)") {
         continue;
@@ -448,7 +448,7 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
 
     if (element.type === TokenType.Character) {
       // Strip (cont'd) from character names
-      element.content = element.content.replace(/\(CONT'D\)\s*$/i, "").trim();
+      element.content = element.content.replace(/\(CONT[’']D\)\s*/i, "").trim();
     }
 
     if (element.type === prevElement.type && element.canMergeUp) {
