@@ -466,6 +466,13 @@ export class LineNode extends ParagraphNode {
     if (this.getElementType() === LineNodeType.Action && this.getTextContentSize() === 0) {
       return true;
     }
+
+    if (
+      this.getElementType() === LineNodeType.Action &&
+      this.getTextContent().match(CHARACTER_PATTERN)
+    ) {
+      return true;
+    }
     return false;
   }
 

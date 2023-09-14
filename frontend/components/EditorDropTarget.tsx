@@ -54,6 +54,8 @@ export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({ chi
         } else if (file.name.toLocaleLowerCase().endsWith(".pdf")) {
           console.log("importing pdf", file.path);
           window.api.importPdf(file.path);
+        } else if (file.name.toLocaleLowerCase().endsWith(".wai")) {
+          window.api.openFile(file.path);
         }
       }
       setIsDragging(false);

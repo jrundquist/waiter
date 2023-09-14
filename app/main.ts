@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, Menu, ipcMain, dialog } from "electron";
+import { app, shell, BrowserWindow, Menu, ipcMain, dialog, IpcMainEvent } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
@@ -17,6 +17,7 @@ let settingsWindowCreated = false;
 let menuOptions: CreateTemplateOptionsType | undefined;
 
 let appState: State = initialState;
+let isReady = false;
 
 const defaultWebPrefs = {
   devTools: process.argv.some((arg) => arg === "--enable-dev-tools") || is.dev,
@@ -206,7 +207,7 @@ let openQueue: string[] = [];
 app.on("open-file", (event, path) => {
   event.preventDefault();
   openQueue.push(path);
-  if (!mainWindow) {
+  if (!mainWindow && isReady) {
     createWindow();
   } else {
     eventBus.emit("open", path);
@@ -217,6 +218,9 @@ app.on("open-file", (event, path) => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // Mark the app as ready
+  isReady = true;
+
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.jrundquist");
 
@@ -244,8 +248,12 @@ app.whenReady().then(() => {
   }
 });
 
-ipcMain.on("file:open", () => {
-  menuOptions?.openAction();
+ipcMain.on("file:open", (_: IpcMainEvent, file: string | undefined) => {
+  if (file) {
+    eventBus.emit("open", file);
+  } else {
+    menuOptions?.openAction();
+  }
 });
 
 ipcMain.on("script:reset", () => {

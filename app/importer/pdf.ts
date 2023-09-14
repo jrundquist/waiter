@@ -439,6 +439,18 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
       element.meta = { sceneNumber: prevElement.content };
     }
 
+    if (element.type === TokenType.Character) {
+      // Fix for (MORE) being classified as a character
+      if (element.content === "(MORE)") {
+        continue;
+      }
+    }
+
+    if (element.type === TokenType.Character) {
+      // Strip (cont'd) from character names
+      element.content = element.content.replace(/\(CONT'D\)\s*$/i, "").trim();
+    }
+
     if (element.type === prevElement.type && element.canMergeUp) {
       prevElement.content = `${prevElement.content} ${element.content.trimStart()}`.trim();
       prevElement.items.push(...element.items);
@@ -453,12 +465,15 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
         }
       }
 
+      // Merged up, so don't add this element to the list.
       continue;
     }
     if (element.type === TokenType.PageNumber) {
       prevElement = element;
+      // Don't add page numbers to the script.
       continue;
     }
+
     newElements.push(element);
     prevElement = element;
   }
