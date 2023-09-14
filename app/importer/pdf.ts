@@ -333,7 +333,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
           isInDualDialogue &&
           roughlyEqual(y, dualDialogueLineY, 2)
         ) {
-          type = TokenType.DualDialogueFirstChar;
+          type = TokenType.DualDialogueSecondChar;
         } else if (
           type === TokenType.UNKNOWN &&
           x > posInfo.leftEdgePos &&
@@ -433,15 +433,28 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
     }
 
     if (element.type === TokenType.Character || element.type === TokenType.Parenthetical) {
-      // Fix for (MORE) being classified as a character
-      if (element.content === "(MORE)") {
+      // Fix for (MORE) being classified as a character.
+      // More should actually be removed as it is a meta decoration.
+      if (element.content.trim().match(/^\(\s?MORE\s?\)$/i)) {
         continue;
       }
     }
 
-    if (element.type === TokenType.Character) {
+    if (
+      element.type === TokenType.Character &&
+      element.content.match(/^(INT|EXT|EST|INT\/EXT|EXT\/INT)\.\s*/)
+    ) {
+      // Fix for scene headings being classified as characters
+      element.type = TokenType.SceneHeading;
+    }
+
+    if (
+      element.type === TokenType.Character ||
+      element.type === TokenType.DualDialogueFirstChar ||
+      element.type === TokenType.DualDialogueSecondChar
+    ) {
       // Strip (cont'd) from character names
-      element.content = element.content.replace(/\(CONT[’']D\)\s*/i, "").trim();
+      element.content = element.content.replace(/\(\s?CONT[’']?D\s?\)\s*/i, "").trim();
     }
 
     if (element.type === prevElement.type && element.canMergeUp) {
