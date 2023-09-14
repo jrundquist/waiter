@@ -50,7 +50,7 @@ function createWindow(): void {
   mainWindow.on("ready-to-show", () => {
     mainWindow?.show();
 
-    if (is.dev) {
+    if (is.dev && process.env["OPEN_DEV_TOOLS"]) {
       mainWindow?.webContents.openDevTools({ mode: "detach" });
     }
   });
