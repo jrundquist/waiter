@@ -1,16 +1,17 @@
-import { app, shell, BrowserWindow, Menu, ipcMain, dialog, IpcMainEvent } from "electron";
-import { join } from "path";
-import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-import { CreateTemplateOptionsType, createTemplate } from "./menu";
-import { init as initImporter } from "./importer";
-import { runDevTask } from "./__devTask";
-import { ScriptElement } from "./importer/elements";
-import eventBus from "./eventBus";
-import { State, initialState, reducer } from "./state";
-import { loadFile, saveState } from "./loader";
-import { log, browserLog, logPath, browserLogPath } from "./logger";
+import { electronApp, is, optimizer } from "@electron-toolkit/utils";
+import { BrowserWindow, IpcMainEvent, Menu, app, dialog, ipcMain, shell } from "electron";
 import fs from "fs";
+import { join } from "path";
+import { runDevTask } from "./__devTask";
+import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
+import { init as initImporter } from "./importer";
+import { ScriptElement } from "./importer/elements";
+import { loadFile, saveState } from "./loader";
+import { browserLog, browserLogPath, log, logPath } from "./logger";
+import { CreateTemplateOptionsType, createTemplate } from "./menu";
+import { State, initialState, reducer } from "./state";
+
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;

@@ -1,7 +1,30 @@
 import { isString } from "lodash";
+import type { MenuItemConstructorOptions } from "electron";
 
-import type { MenuListType, MenuOptionsType, MenuActionsType } from "@/types/menu";
+export type MenuListType = Array<MenuItemConstructorOptions>;
 
+export type MenuOptionsType = Readonly<{
+  development: boolean;
+  devTools: boolean;
+  includeSetup: boolean;
+  isProduction: boolean;
+  platform: string;
+}>;
+
+export type MenuActionsType = Readonly<{
+  showAbout: () => unknown;
+  showDebugLog: () => unknown;
+  showKeyboardShortcuts: () => unknown;
+  showSettings: () => unknown;
+  showWindow: () => unknown;
+  importPdfAction: () => void;
+  newAction: () => void;
+  openAction: () => void;
+  saveAction: (saveAs?: boolean) => void;
+  exportFinalDraft: () => void;
+}>;
+
+export type MenuActionType = keyof MenuActionsType;
 export type CreateTemplateOptionsType = MenuOptionsType & MenuActionsType;
 
 export const createTemplate = (options: CreateTemplateOptionsType): MenuListType => {
