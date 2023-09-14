@@ -9,6 +9,8 @@ import eventBus from "./eventBus";
 import { State, initialState, reducer } from "./state";
 import { loadFile, saveState } from "./loader";
 import { log, browserLog, logPath, browserLogPath } from "./logger";
+import fs from "fs";
+import { exportToFinalDraft } from "./exporter/finalDraft";
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | undefined;
@@ -186,6 +188,21 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
           );
         });
     },
+    exportFinalDraft: () => {
+      let pathName = dialog.showSaveDialogSync({
+        title: "Export to Final Draft",
+        filters: [{ name: "Final Draft", extensions: ["fdx"] }],
+      });
+
+      if (pathName === undefined) {
+        return;
+      } else if (!pathName.endsWith(".fdx")) {
+        pathName = `${pathName}.fdx`;
+      }
+
+      const content = exportToFinalDraft(appState.scriptElements);
+      fs.writeFileSync(pathName, content);
+    },
     showWindow,
     // overrides
     ...options,
@@ -282,6 +299,12 @@ eventBus.on("open", (file: string) => {
     mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
     mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
     mainWindow?.show();
+
+    const fdxFile = file.replace(".wai", ".fdx");
+    const content = exportToFinalDraft(appState.scriptElements);
+    console.log({ content });
+    console.log(fdxFile);
+    fs.writeFileSync(fdxFile, content);
   });
 });
 

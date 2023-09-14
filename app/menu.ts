@@ -20,6 +20,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     newAction,
     openAction,
     saveAction,
+    exportFinalDraft,
   } = options;
 
   const template: MenuListType = [
@@ -72,7 +73,12 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         },
         {
           label: "Export",
-          click: () => {},
+          submenu: [
+            {
+              label: "Export to Final Draft",
+              click: exportFinalDraft,
+            },
+          ],
         },
         {
           label: "Import",

@@ -50,6 +50,7 @@ export declare interface Transition {
 
 export declare interface DualDialogue {
   type: ElementType.DualDialogue;
+  firstCharacter: Character;
   firstContent: (Dialogue | Parenthetical)[];
   secondCharacter: Character;
   secondContent: (Dialogue | Parenthetical)[];

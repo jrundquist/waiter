@@ -23,6 +23,7 @@ export type MenuActionsType = Readonly<{
   newAction: () => void;
   openAction: () => void;
   saveAction: (saveAs?: boolean) => void;
+  exportFinalDraft: () => void;
 }>;
 
 export type MenuActionType = keyof MenuActionsType;
