@@ -205,6 +205,13 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       fs.writeFileSync(pathName, content);
     },
     showWindow,
+
+    reloadWindow: () => {
+      if (!mainWindow) {
+        return;
+      }
+      mainWindow.reload();
+    },
     // overrides
     ...options,
   };

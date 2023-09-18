@@ -22,6 +22,7 @@ export type MenuActionsType = Readonly<{
   openAction: () => void;
   saveAction: (saveAs?: boolean) => void;
   exportFinalDraft: () => void;
+  reloadWindow: () => void;
 }>;
 
 export type MenuActionType = keyof MenuActionsType;
@@ -44,6 +45,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     openAction,
     saveAction,
     exportFinalDraft,
+    reloadWindow,
   } = options;
 
   const template: MenuListType = [
@@ -192,6 +194,11 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         {
           label: "Debug Log",
           click: showDebugLog,
+        },
+        {
+          label: "Refresh",
+          accelerator: "CmdOrCtrl+R",
+          click: reloadWindow,
         },
         ...(devTools
           ? [
