@@ -1,4 +1,14 @@
-import { $createTextNode, $getRoot, EditorState, LexicalEditor, TextNode } from "lexical";
+import {
+  $createTextNode,
+  $getNearestNodeFromDOMNode,
+  $getRoot,
+  $getSelection,
+  $isRangeSelection,
+  EditorState,
+  LexicalEditor,
+  TextNode,
+} from "lexical";
+import { $getNearestNodeOfType } from "@lexical/utils";
 import { $isLineNode, LineNode } from "../LineNode";
 
 const MAX_RESULTS = 100;
@@ -11,6 +21,10 @@ export class FindController {
   private lastState: EditorState | null = null;
 
   private highlightedText: TextNode[] = [];
+  private lastSearchParams: SearchParams | null = null;
+
+  public resultCount: number | null = null;
+  public resultIndex = 0;
 
   constructor(
     private editor: LexicalEditor,
@@ -22,11 +36,25 @@ export class FindController {
       let reaminingResults = MAX_RESULTS;
       this.highlightedText = [];
       const strLength = params.searchString.length;
-      const regex = new RegExp(params.searchString, "gi");
+      const regex = new RegExp(
+        params.searchString.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"),
+        "gi"
+      );
       const children = $getRoot().getChildren();
+
+      const selection = this.editor.getEditorState().read($getSelection);
+      let nearestLineNode: LineNode | null = null;
+      if ($isRangeSelection(selection)) {
+        nearestLineNode = $getNearestNodeOfType(selection.anchor.getNode(), LineNode);
+      }
+
+      let shiftPoint = 0;
       for (const child of children) {
         if (!$isLineNode(child)) continue;
         const lineNode: LineNode = child;
+        if (child === nearestLineNode) {
+          shiftPoint = this.highlightedText.length;
+        }
         const text = lineNode.getTextContent();
 
         const indexes: number[] = [];
@@ -64,6 +92,15 @@ export class FindController {
           insertPoint.append(textNode);
         }
       }
+
+      // Re-order the highlighted text so that the nearest match is first,
+      // wrapping around if necessary.
+      while (shiftPoint > 0) {
+        this.highlightedText.push(this.highlightedText.shift() as TextNode);
+        shiftPoint--;
+      }
+
+      this.resultCount = this.highlightedText.length;
     };
   }
 
@@ -86,9 +123,16 @@ export class FindController {
   }
 
   public handleSearch = (params: SearchParams) => {
+    if (this.lastSearchParams?.searchString === params.searchString) {
+      this.moveToNextResult();
+      return;
+    }
+
+    this.lastSearchParams = params;
+
     // Save the editor state before the search, since we will be modifying the
     // editor state to highlight the search results.
-    this.lastState = this.editor.getEditorState();
+    const lastState = this.editor.getEditorState();
 
     this.setHighlightRects([]);
     if (params.searchString.length <= 0) return;
@@ -102,9 +146,15 @@ export class FindController {
         // Measure the rects of the new text nodes.
         this.measureHighlightRects().then(() => {
           // Restore the editor state to it's pre-search state
-          this.editor.setEditorState(this.lastState!);
+          this.editor.setEditorState(lastState);
+          this.editor.setEditable(true);
         });
       },
     });
+  };
+
+  public moveToNextResult = () => {
+    if (!this.resultCount) return;
+    this.resultIndex = (this.resultIndex + 1) % this.resultCount;
   };
 }

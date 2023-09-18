@@ -1,5 +1,6 @@
 import { isString } from "lodash";
 import type { MenuItemConstructorOptions } from "electron";
+import eventBus from "./eventBus";
 
 export type MenuListType = Array<MenuItemConstructorOptions>;
 
@@ -161,6 +162,16 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         {
           role: "selectAll",
           label: "Select All",
+        },
+        {
+          type: "separator",
+        },
+        {
+          label: "Find",
+          accelerator: "CmdOrCtrl+F",
+          click: () => {
+            eventBus.emit("find");
+          },
         },
       ],
     },

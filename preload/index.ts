@@ -12,6 +12,10 @@ export const api = {
   openFile: (file: string | undefined = undefined) => {
     ipcRenderer.send("file:open", file);
   },
+  listenForFind: (callback: (...args: any[]) => void): (() => void) => {
+    ipcRenderer.on("find", callback);
+    return () => ipcRenderer.removeListener("find", callback);
+  },
   listenForReset: (callback: (...args: any[]) => void): (() => void) => {
     ipcRenderer.on("script:reset", callback);
     return () => ipcRenderer.removeListener("script:reset", callback);

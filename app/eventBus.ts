@@ -8,6 +8,7 @@ interface EventTypes {
   "state:loaded": [state: State];
   "state:save": [file: string];
   "show-logs": [];
+  find: [];
 }
 
 class EventBus<TEvents extends Record<string, any>> {
