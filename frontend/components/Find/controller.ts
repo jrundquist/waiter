@@ -6,6 +6,7 @@ import {
   LexicalEditor,
   TextNode,
 } from "lexical";
+import { isEqual } from "lodash";
 import { $getNearestNodeOfType } from "@lexical/utils";
 import { $isLineNode, LineNode } from "../../lexicalPlugins/LineNode";
 
@@ -13,6 +14,7 @@ const MAX_RESULTS = 100;
 
 export declare interface SearchParams {
   searchString: string;
+  matchCase: boolean;
 }
 
 type StateSetter<T> = React.Dispatch<React.SetStateAction<T>>;
@@ -22,7 +24,6 @@ export class FindController {
   private highlightedText: TextNode[] = [];
   private lastSearchParams: SearchParams | null = null;
 
-  public resultCount: number | null = null;
   public resultIndex = 0;
 
   private setHighlightRects: StateSetter<DOMRect[]>;
@@ -42,6 +43,14 @@ export class FindController {
     this.setCurrentResultIndex = setters.setCurrentResultIndex;
   }
 
+  private get didSearch() {
+    return this.lastSearchParams?.searchString && this.lastSearchParams?.searchString.length > 0;
+  }
+
+  private get resultCount() {
+    return this.highlightedText.length;
+  }
+
   private replaceMatchesWithNewNodes(params: SearchParams) {
     return () => {
       let reaminingResults = MAX_RESULTS;
@@ -49,7 +58,7 @@ export class FindController {
       const strLength = params.searchString.length;
       const regex = new RegExp(
         params.searchString.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"),
-        "gi"
+        params.matchCase ? "g" : "gi"
       );
       const children = $getRoot().getChildren();
 
@@ -111,7 +120,6 @@ export class FindController {
         shiftPoint--;
       }
 
-      this.resultCount = this.highlightedText.length;
       this.setResultCount(this.resultCount);
     };
   }
@@ -135,7 +143,7 @@ export class FindController {
   }
 
   public handleSearch = (params: SearchParams) => {
-    if (this.lastSearchParams?.searchString === params.searchString) {
+    if (isEqual(this.lastSearchParams, params)) {
       this.moveToNextResult();
       return;
     }
@@ -171,8 +179,11 @@ export class FindController {
   };
 
   public moveToNextResult = () => {
-    if (!this.resultCount) return this.setCurrentResultIndex(null);
-    this.resultIndex = (this.resultIndex + 1) % this.resultCount;
+    if (!this.didSearch) {
+      return this.setCurrentResultIndex(null);
+    }
+    const i = this.resultIndex;
+    this.resultIndex = (i + 1) % this.resultCount;
     this.setCurrentResultIndex(this.resultIndex);
   };
 }

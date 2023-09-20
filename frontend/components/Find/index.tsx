@@ -11,18 +11,21 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: "fixed",
     top: 0,
     right: 150,
-    width: 250,
+    minWidth: 250,
     padding: "10px",
-    background: "white",
+    background: theme.palette.background.paper,
     border: "3px solid grey",
     borderTop: "none",
     display: "flex",
     flexDirection: "row",
+    color: theme.palette.text.secondary,
   },
 
   input: {
     width: 150,
     border: "none",
+    color: theme.palette.text.secondary,
+    background: "transparent",
     "&:focus": {
       outline: "none",
     },
@@ -30,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
   inputContainer: {
     "&:focus-within": {
-      borderColor: theme.palette.secondary.main,
+      borderColor: theme.palette.primary.main,
     },
     display: "flex",
     alignItems: "flex-start",
@@ -39,13 +42,39 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingRight: 10,
     border: "1px solid grey",
     borderRadius: "5px",
+    color: theme.palette.text.secondary,
   },
   resultCount: {
-    color: "rgba(0,0,0,.5)",
     fontSize: "0.9rem",
     fontFamily: "Helvetica, sans-serif",
     width: 61,
     textAlign: "right",
+    color: theme.palette.text.secondary,
+  },
+
+  toggle: {
+    display: "block",
+    background: theme.palette.background.paper,
+    cursor: "pointer",
+    padding: 3,
+    marginLeft: 4,
+    border: "1px solid rgba(0,0,0,0)",
+    borderRadius: 3,
+    userSelect: "none",
+    color: theme.palette.text.primary,
+    "&:hover": {
+      background:
+        theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[800],
+      border: "1px solid black",
+    },
+    '&[data-set="true"]': {
+      border: "1px solid black",
+      background: theme.palette.primary.light,
+      color: theme.palette.primary.contrastText,
+    },
+    '&[data-set="true"]:hover': {
+      background: theme.palette.primary.light,
+    },
   },
 
   hidden: {
@@ -54,7 +83,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Find = () => {
+  const theme = useTheme() as Theme;
   const classes = useStyles();
+
   const [editor] = useLexicalComposerContext();
   // Note: The script will wipe out all existing styles so we save the editor state
   const [highlightRects, setHighlightRects] = useState<DOMRect[]>([]); // [start, end, start, end, ...
@@ -65,20 +96,26 @@ export const Find = () => {
   const [resultCount, setResultCount] = React.useState<number | null>(null);
   const [currentResultIndex, setCurrentResultIndex] = React.useState<number | null>(null);
 
+  const [matchCase, setMatchCase] = React.useState<boolean>(false);
+  const toggleMatchCase = React.useCallback(() => {
+    setMatchCase(!matchCase);
+  }, [matchCase, setMatchCase]);
+
   const findController = React.useMemo<FindController>(() => {
     return new FindController(editor, { setHighlightRects, setResultCount, setCurrentResultIndex });
   }, [editor, setHighlightRects, setResultCount, setCurrentResultIndex]);
 
   const updateSearch = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const searchString = e.target.value;
-      setSearchValue(searchString);
-      findController.handleSearch({ searchString });
+      setSearchValue(e.target.value);
     },
-    [findController]
+    [findController, matchCase]
   );
 
-  const theme = useTheme() as Theme;
+  // When params change, update the search.
+  React.useEffect(() => {
+    findController.handleSearch({ searchString: searchValue, matchCase });
+  }, [searchValue, matchCase, findController]);
 
   React.useEffect(() => {
     return window.api.listenForFind(() => {
@@ -95,13 +132,13 @@ export const Find = () => {
       }
 
       if (searchValue) {
-        findController.handleSearch({ searchString: searchValue });
-        if (atResult !== findController.resultIndex) {
-          setAtResult(findController.resultIndex);
-        }
+        findController.handleSearch({
+          searchString: searchValue,
+          matchCase,
+        });
       }
     });
-  }, [atResult, isShowing, searchFieldRef, searchValue, findController]);
+  }, [atResult, isShowing, searchFieldRef, searchValue, matchCase, findController]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -117,48 +154,56 @@ export const Find = () => {
     [searchFieldRef, findController]
   );
 
-  const content = React.useMemo(
-    () => (
-      <>
-        {isShowing &&
-          highlightRects.map((rect, index) => (
-            <div
-              key={index}
-              style={{
-                position: "absolute",
-                top: rect.top,
-                left: rect.left,
-                width: rect.width,
-                height: rect.height,
-                background: theme.palette.primary.main,
-                border: index === atResult ? "1px solid black" : "",
-                opacity: 0.5,
-              }}
-            />
-          ))}
-        <div id="find-root" className={[classes.findRoot, !isShowing && classes.hidden].join(" ")}>
-          <div className={classes.inputContainer}>
-            <input
-              type="text"
-              placeholder="Find..."
-              onChange={updateSearch}
-              onKeyDown={handleKeyDown}
-              ref={searchFieldRef}
-              value={searchValue}
-              className={classes.input}
-            />
-            <div className={classes.resultCount}>
-              {resultCount !== null &&
-                `${(currentResultIndex ?? 0) + resultCount > 0 ? 1 : 0} of ${resultCount}`}
-            </div>
-          </div>
-          <div>
-            <button>Aa</button>
+  const content = (
+    <>
+      {isShowing &&
+        highlightRects.map((rect, index) => (
+          <div
+            key={index}
+            style={{
+              position: "absolute",
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+              background: theme.palette.primary.contrastText,
+              border:
+                index === atResult
+                  ? `1px solid ${theme.palette.secondary.main}`
+                  : `1px solid ${theme.palette.primary.main}`,
+              opacity: 0.5,
+            }}
+          />
+        ))}
+      <div id="find-root" className={[classes.findRoot, !isShowing && classes.hidden].join(" ")}>
+        <div className={classes.inputContainer}>
+          <input
+            type="text"
+            placeholder="Find..."
+            onChange={updateSearch}
+            onKeyDown={handleKeyDown}
+            ref={searchFieldRef}
+            value={searchValue}
+            className={classes.input}
+          />
+          <div className={classes.resultCount}>
+            {resultCount === null
+              ? null
+              : `${(currentResultIndex ?? 0) + ((resultCount ?? 0) > 0 ? 1 : 0)} of ${resultCount}`}
           </div>
         </div>
-      </>
-    ),
-    [isShowing, highlightRects, findController.resultCount, atResult]
+        <div>
+          <div
+            className={classes.toggle}
+            data-set={matchCase}
+            onClick={toggleMatchCase}
+            title="Match Case"
+          >
+            Aa
+          </div>
+        </div>
+      </div>
+    </>
   );
 
   return ReactDOM.createPortal(content, document.body!);
