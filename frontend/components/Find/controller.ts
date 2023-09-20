@@ -2,11 +2,12 @@ import {
   $createTextNode,
   $getRoot,
   $getSelection,
+  $getTextContent,
   $isRangeSelection,
+  $setSelection,
   LexicalEditor,
   TextNode,
 } from "lexical";
-import { isEqual } from "lodash";
 import { $getNearestNodeOfType } from "@lexical/utils";
 import { $isLineNode, LineNode } from "../../lexicalPlugins/LineNode";
 
@@ -30,6 +31,8 @@ export class FindController {
   private setResultCount: StateSetter<number | null>;
   private setCurrentResultIndex: StateSetter<number | null>;
 
+  public searchText: string | null = null;
+
   constructor(
     private editor: LexicalEditor,
     setters: {
@@ -43,7 +46,7 @@ export class FindController {
     this.setCurrentResultIndex = setters.setCurrentResultIndex;
   }
 
-  private get didSearch() {
+  get isCurrentlySearching() {
     return this.lastSearchParams?.searchString && this.lastSearchParams?.searchString.length > 0;
   }
 
@@ -84,7 +87,6 @@ export class FindController {
 
         if (!indexes.length) continue;
         const insertPoint = lineNode.getLastChild();
-        console.log({ insertPoint });
         if (!insertPoint) continue;
 
         if (lineNode.getChildrenSize() > 1) {
@@ -125,6 +127,7 @@ export class FindController {
   }
 
   private async measureHighlightRects() {
+    const scrollEl = this.editor.getRootElement()!.parentElement!.parentElement!;
     return new Promise<DOMRect[]>((resolve) => {
       this.editor.getEditorState().read(() => {
         const rects: DOMRect[] = [];
@@ -132,7 +135,12 @@ export class FindController {
           const el: HTMLSpanElement | null = this.editor.getElementByKey(highlight.getKey());
           if (el) {
             const rect = el.getBoundingClientRect();
-            const sumRect = new DOMRect(rect.left, rect.top, rect.width, rect.height);
+            const sumRect = new DOMRect(
+              rect.left + scrollEl.scrollLeft,
+              rect.top + scrollEl.scrollTop,
+              rect.width,
+              rect.height
+            );
             rects.push(sumRect);
           }
         }
@@ -143,27 +151,26 @@ export class FindController {
   }
 
   public handleSearch = (params: SearchParams) => {
-    if (isEqual(this.lastSearchParams, params)) {
-      this.moveToNextResult();
-      return;
-    }
-
+    this.clearSearch();
     this.lastSearchParams = params;
 
     // Save the editor state before the search, since we will be modifying the
     // editor state to highlight the search results.
     const lastState = this.editor.getEditorState();
+    // Save the current selection so we can restore it after the search.
+    const selection = lastState.read($getSelection);
+
+    const focusedEl = document.activeElement;
 
     this.setHighlightRects([]);
     if (params.searchString.length <= 0) {
-      this.setCurrentResultIndex(null);
-      this.setResultCount(null);
-      this.setHighlightRects([]);
+      this.clearSearch();
       return;
     }
 
     // We should not be able to edit the editor while searching.
     this.editor.setEditable(false);
+    this.searchText = lastState.read($getTextContent);
 
     // Replace all matches with new text nodes.
     this.editor.update(this.replaceMatchesWithNewNodes(params), {
@@ -173,17 +180,45 @@ export class FindController {
           // Restore the editor state to it's pre-search state
           this.editor.setEditorState(lastState);
           this.editor.setEditable(true);
+          // Restore the selection
+
+          if (focusedEl === this.editor.getRootElement()) {
+            this.editor.focus(() => {
+              $setSelection(selection);
+            });
+          } else if (focusedEl) {
+            (focusedEl as HTMLElement).focus();
+          }
         });
       },
     });
   };
 
+  public clearSearch() {
+    this.lastSearchParams = null;
+    this.resultIndex = 0;
+    this.highlightedText = [];
+    this.setCurrentResultIndex(null);
+    this.setResultCount(null);
+    this.setHighlightRects([]);
+  }
+
   public moveToNextResult = () => {
-    if (!this.didSearch) {
+    if (!this.isCurrentlySearching) {
       return this.setCurrentResultIndex(null);
     }
     const i = this.resultIndex;
-    this.resultIndex = (i + 1) % this.resultCount;
+    this.resultIndex = (i + 1) % this.resultCount ?? 0;
+    this.setCurrentResultIndex(this.resultIndex);
+  };
+
+  public moveToPreviousResult = () => {
+    if (!this.isCurrentlySearching) {
+      return this.setCurrentResultIndex(null);
+    }
+    if (this.resultIndex-- === 0) {
+      this.resultIndex = this.resultCount - 1;
+    }
     this.setCurrentResultIndex(this.resultIndex);
   };
 }

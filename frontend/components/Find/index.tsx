@@ -94,7 +94,6 @@ export const Find = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const searchFieldRef = React.useRef<HTMLInputElement>(null);
   const [isShowing, setIsShowing] = React.useState(false);
-  const [atResult, setAtResult] = React.useState(0);
   const [resultCount, setResultCount] = React.useState<number | null>(null);
   const [currentResultIndex, setCurrentResultIndex] = React.useState<number | null>(null);
 
@@ -114,10 +113,16 @@ export const Find = () => {
     [findController, matchCase]
   );
 
-  // When params change, update the search.
-  React.useEffect(() => {
+  const performSearch = React.useCallback(() => {
     findController.handleSearch({ searchString: searchValue, matchCase });
   }, [searchValue, matchCase, findController]);
+
+  // When params change, update the search.
+  React.useEffect(() => {
+    if (isShowing) {
+      performSearch();
+    }
+  }, [performSearch, isShowing]);
 
   React.useEffect(() => {
     return window.api.listenForFind(() => {
@@ -133,36 +138,53 @@ export const Find = () => {
         console.error("searchFieldRef.current is null");
       }
 
-      if (searchValue) {
-        findController.handleSearch({
-          searchString: searchValue,
-          matchCase,
-        });
+      if (findController.isCurrentlySearching) {
+        findController.moveToNextResult();
       }
     });
-  }, [atResult, isShowing, searchFieldRef, searchValue, matchCase, findController]);
+  }, [isShowing, searchFieldRef, searchValue, matchCase, findController]);
+
+  React.useEffect(() => {
+    return editor.registerTextContentListener((text: string) => {
+      if (isShowing && findController.isCurrentlySearching && findController.searchText !== text) {
+        // Update the search
+        performSearch();
+      }
+    });
+  }, [findController, isShowing, performSearch]);
 
   const closeFind = React.useCallback(() => {
     setIsShowing(false);
+    findController.clearSearch();
     searchFieldRef.current?.blur();
+    editor.focus();
   }, [setIsShowing, searchFieldRef]);
+
+  const moveToNext = React.useCallback(() => {
+    findController.moveToNextResult();
+  }, [findController]);
+
+  const moveToPrevious = React.useCallback(() => {
+    findController.moveToPreviousResult();
+  }, [findController]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
-        findController.moveToNextResult();
-        setAtResult(findController.resultIndex);
+        moveToNext();
       }
       if (e.key === "Escape") {
         closeFind();
       }
     },
-    [closeFind, findController]
+    [closeFind, moveToNext]
   );
 
   const content = (
     <>
-      {isShowing ? <ResultDecorators rects={highlightRects} selected={atResult} /> : null}
+      {isShowing ? (
+        <ResultDecorators rects={highlightRects} selected={currentResultIndex ?? 0} />
+      ) : null}
       <div id="find-root" className={[classes.findRoot, !isShowing && classes.hidden].join(" ")}>
         <div className={classes.inputContainer}>
           <input
@@ -181,6 +203,12 @@ export const Find = () => {
           </div>
         </div>
         <div style={{ display: "flex" }}>
+          <div className={classes.toggle} onClick={moveToPrevious} title="Previous Result">
+            &and;
+          </div>
+          <div className={classes.toggle} onClick={moveToNext} title="Next Result (⌘F)">
+            &or;
+          </div>
           <div
             className={classes.toggle}
             data-set={matchCase}
@@ -189,7 +217,7 @@ export const Find = () => {
           >
             Aa
           </div>
-          <div className={classes.toggle} onClick={closeFind} title="Close Find">
+          <div className={classes.toggle} onClick={closeFind} title="Close Find [Esc]">
             &#10006;
           </div>
         </div>

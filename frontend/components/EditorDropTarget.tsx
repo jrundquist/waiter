@@ -12,7 +12,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 const useStyles = makeStyles((theme: Theme) => ({
   editorContainer: {
     width: "100vw",
-    height: "100%",
+    height: "100vh",
     display: "flex",
     flexDirection: "row",
     backgroundColor:
