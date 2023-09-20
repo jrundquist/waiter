@@ -1,15 +1,13 @@
 import {
   $createTextNode,
-  $getNearestNodeFromDOMNode,
   $getRoot,
   $getSelection,
   $isRangeSelection,
-  EditorState,
   LexicalEditor,
   TextNode,
 } from "lexical";
 import { $getNearestNodeOfType } from "@lexical/utils";
-import { $isLineNode, LineNode } from "../LineNode";
+import { $isLineNode, LineNode } from "../../lexicalPlugins/LineNode";
 
 const MAX_RESULTS = 100;
 
@@ -17,19 +15,32 @@ export declare interface SearchParams {
   searchString: string;
 }
 
-export class FindController {
-  private lastState: EditorState | null = null;
+type StateSetter<T> = React.Dispatch<React.SetStateAction<T>>;
 
+export class FindController {
+  currentResultIndex;
   private highlightedText: TextNode[] = [];
   private lastSearchParams: SearchParams | null = null;
 
   public resultCount: number | null = null;
   public resultIndex = 0;
 
+  private setHighlightRects: StateSetter<DOMRect[]>;
+  private setResultCount: StateSetter<number | null>;
+  private setCurrentResultIndex: StateSetter<number | null>;
+
   constructor(
     private editor: LexicalEditor,
-    private setHighlightRects: (rects: DOMRect[]) => void
-  ) {}
+    setters: {
+      setHighlightRects: StateSetter<DOMRect[]>;
+      setResultCount: StateSetter<number | null>;
+      setCurrentResultIndex: StateSetter<number | null>;
+    }
+  ) {
+    this.setHighlightRects = setters.setHighlightRects;
+    this.setResultCount = setters.setResultCount;
+    this.setCurrentResultIndex = setters.setCurrentResultIndex;
+  }
 
   private replaceMatchesWithNewNodes(params: SearchParams) {
     return () => {
@@ -101,6 +112,7 @@ export class FindController {
       }
 
       this.resultCount = this.highlightedText.length;
+      this.setResultCount(this.resultCount);
     };
   }
 
@@ -135,7 +147,12 @@ export class FindController {
     const lastState = this.editor.getEditorState();
 
     this.setHighlightRects([]);
-    if (params.searchString.length <= 0) return;
+    if (params.searchString.length <= 0) {
+      this.setCurrentResultIndex(null);
+      this.setResultCount(null);
+      this.setHighlightRects([]);
+      return;
+    }
 
     // We should not be able to edit the editor while searching.
     this.editor.setEditable(false);
@@ -154,7 +171,8 @@ export class FindController {
   };
 
   public moveToNextResult = () => {
-    if (!this.resultCount) return;
+    if (!this.resultCount) return this.setCurrentResultIndex(null);
     this.resultIndex = (this.resultIndex + 1) % this.resultCount;
+    this.setCurrentResultIndex(this.resultIndex);
   };
 }

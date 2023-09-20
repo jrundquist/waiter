@@ -5,16 +5,51 @@ import React from "react";
 import { useState } from "react";
 import ReactDOM from "react-dom";
 import { FindController } from "./controller";
-import { $getRoot } from "lexical";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   findRoot: {
     position: "fixed",
     top: 0,
-    right: 100,
-    width: 300,
-    height: 50,
+    right: 150,
+    width: 250,
+    padding: "10px",
     background: "white",
+    border: "3px solid grey",
+    borderTop: "none",
+    display: "flex",
+    flexDirection: "row",
+  },
+
+  input: {
+    width: 150,
+    border: "none",
+    "&:focus": {
+      outline: "none",
+    },
+  },
+
+  inputContainer: {
+    "&:focus-within": {
+      borderColor: theme.palette.secondary.main,
+    },
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    padding: 5,
+    paddingRight: 10,
+    border: "1px solid grey",
+    borderRadius: "5px",
+  },
+  resultCount: {
+    color: "rgba(0,0,0,.5)",
+    fontSize: "0.9rem",
+    fontFamily: "Helvetica, sans-serif",
+    width: 61,
+    textAlign: "right",
+  },
+
+  hidden: {
+    display: "none",
   },
 }));
 
@@ -27,10 +62,12 @@ export const Find = () => {
   const searchFieldRef = React.useRef<HTMLInputElement>(null);
   const [isShowing, setIsShowing] = React.useState(false);
   const [atResult, setAtResult] = React.useState(0);
+  const [resultCount, setResultCount] = React.useState<number | null>(null);
+  const [currentResultIndex, setCurrentResultIndex] = React.useState<number | null>(null);
 
   const findController = React.useMemo<FindController>(() => {
-    return new FindController(editor, setHighlightRects);
-  }, [editor, setHighlightRects]);
+    return new FindController(editor, { setHighlightRects, setResultCount, setCurrentResultIndex });
+  }, [editor, setHighlightRects, setResultCount, setCurrentResultIndex]);
 
   const updateSearch = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,8 +110,8 @@ export const Find = () => {
         setAtResult(findController.resultIndex);
       }
       if (e.key === "Escape") {
-        searchFieldRef.current?.blur();
         setIsShowing(false);
+        searchFieldRef.current?.blur();
       }
     },
     [searchFieldRef, findController]
@@ -83,33 +120,41 @@ export const Find = () => {
   const content = React.useMemo(
     () => (
       <>
-        {highlightRects.map((rect, index) => (
-          <div
-            key={index}
-            style={{
-              position: "absolute",
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-              background: theme.palette.primary.main,
-              border: index === atResult ? "1px solid black" : "",
-              opacity: 0.5,
-            }}
-          />
-        ))}
-        <div id="find-root" className={classes.findRoot} hidden={!isShowing}>
-          <input
-            type="text"
-            placeholder="Search"
-            onChange={updateSearch}
-            onKeyDown={handleKeyDown}
-            ref={searchFieldRef}
-            value={searchValue}
-          />
-          <span>
-            {atResult}/{findController.resultCount}
-          </span>
+        {isShowing &&
+          highlightRects.map((rect, index) => (
+            <div
+              key={index}
+              style={{
+                position: "absolute",
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                background: theme.palette.primary.main,
+                border: index === atResult ? "1px solid black" : "",
+                opacity: 0.5,
+              }}
+            />
+          ))}
+        <div id="find-root" className={[classes.findRoot, !isShowing && classes.hidden].join(" ")}>
+          <div className={classes.inputContainer}>
+            <input
+              type="text"
+              placeholder="Find..."
+              onChange={updateSearch}
+              onKeyDown={handleKeyDown}
+              ref={searchFieldRef}
+              value={searchValue}
+              className={classes.input}
+            />
+            <div className={classes.resultCount}>
+              {resultCount !== null &&
+                `${(currentResultIndex ?? 0) + resultCount > 0 ? 1 : 0} of ${resultCount}`}
+            </div>
+          </div>
+          <div>
+            <button>Aa</button>
+          </div>
         </div>
       </>
     ),

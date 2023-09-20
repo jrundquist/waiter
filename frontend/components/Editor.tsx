@@ -25,7 +25,7 @@ import { EditorHotkeys } from "./EditorHotkeys";
 import { AutocompleteNode } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteNode";
 import { SharedAutocompleteContext } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteContext";
 import AutocompletePlugin from "@renderer/lexicalPlugins/AutoComplete/AutoCompletePlugin";
-import Find from "../lexicalPlugins/Find";
+import Find from "./Find";
 
 const useStyles = makeStyles((theme: Theme) => ({
   editorPaper: {

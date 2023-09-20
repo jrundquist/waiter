@@ -1,4 +1,5 @@
 import { BrowserWindow } from "electron";
+import eventBus from "./eventBus";
 
 // Tasks that are only run in development on app startup.
 export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
@@ -6,13 +7,7 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/sample-06.pdf");
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/sample-06_beat.pdf");
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/sample-06_scene.pdf");
-    // ipcMain.emit(
-    //   "import:pdf",
-    //   {
-    //     reply: (channel: string, ...args: any[]) => mainWindow?.webContents.send(channel, ...args),
-    //   },
-    //   "/Users/jrundquist/Desktop/Demo.pdf"
-    // );
+    eventBus.emit("open", "/Users/jrundquist/Desktop/simple.wai");
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/HauntedMemories.pdf");
     // mainWindow?.minimize();
   });
