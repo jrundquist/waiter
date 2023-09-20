@@ -38,7 +38,7 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
             main: "#00c8ff",
           },
           secondary: {
-            main: "#ff3700",
+            main: "#ff3d00",
           },
         },
       }),

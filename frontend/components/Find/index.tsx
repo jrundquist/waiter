@@ -1,10 +1,11 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Theme } from "@mui/material";
-import { makeStyles, useTheme } from "@mui/styles";
+import { makeStyles } from "@mui/styles";
 import React from "react";
 import { useState } from "react";
 import ReactDOM from "react-dom";
 import { FindController } from "./controller";
+import { ResultDecorators } from "./ResultDecorators";
 
 const useStyles = makeStyles((theme: Theme) => ({
   findRoot: {
@@ -83,7 +84,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Find = () => {
-  const theme = useTheme() as Theme;
   const classes = useStyles();
 
   const [editor] = useLexicalComposerContext();
@@ -156,25 +156,7 @@ export const Find = () => {
 
   const content = (
     <>
-      {isShowing &&
-        highlightRects.map((rect, index) => (
-          <div
-            key={index}
-            style={{
-              position: "absolute",
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-              background: theme.palette.primary.contrastText,
-              border:
-                index === atResult
-                  ? `1px solid ${theme.palette.secondary.main}`
-                  : `1px solid ${theme.palette.primary.main}`,
-              opacity: 0.5,
-            }}
-          />
-        ))}
+      {isShowing ? <ResultDecorators rects={highlightRects} selected={atResult} /> : null}
       <div id="find-root" className={[classes.findRoot, !isShowing && classes.hidden].join(" ")}>
         <div className={classes.inputContainer}>
           <input
