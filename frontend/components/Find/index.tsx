@@ -59,6 +59,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     cursor: "pointer",
     padding: 3,
     marginLeft: 4,
+    minWidth: 20,
+    textAlign: "center",
     border: "1px solid rgba(0,0,0,0)",
     borderRadius: 3,
     userSelect: "none",
@@ -140,6 +142,11 @@ export const Find = () => {
     });
   }, [atResult, isShowing, searchFieldRef, searchValue, matchCase, findController]);
 
+  const closeFind = React.useCallback(() => {
+    setIsShowing(false);
+    searchFieldRef.current?.blur();
+  }, [setIsShowing, searchFieldRef]);
+
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
@@ -147,11 +154,10 @@ export const Find = () => {
         setAtResult(findController.resultIndex);
       }
       if (e.key === "Escape") {
-        setIsShowing(false);
-        searchFieldRef.current?.blur();
+        closeFind();
       }
     },
-    [searchFieldRef, findController]
+    [closeFind, findController]
   );
 
   const content = (
@@ -174,7 +180,7 @@ export const Find = () => {
               : `${(currentResultIndex ?? 0) + ((resultCount ?? 0) > 0 ? 1 : 0)} of ${resultCount}`}
           </div>
         </div>
-        <div>
+        <div style={{ display: "flex" }}>
           <div
             className={classes.toggle}
             data-set={matchCase}
@@ -182,6 +188,9 @@ export const Find = () => {
             title="Match Case"
           >
             Aa
+          </div>
+          <div className={classes.toggle} onClick={closeFind} title="Close Find">
+            &#10006;
           </div>
         </div>
       </div>
