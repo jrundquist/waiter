@@ -11,6 +11,7 @@ import { loadFile, saveState } from "./loader";
 import { browserLog, browserLogPath, log, logPath } from "./logger";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
 import { State, initialState, reducer } from "./state";
+import { autoUpdater } from "electron-updater";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -159,7 +160,15 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     },
 
     showAbout: () => {
-      console.log("showAbout");
+      dialog.showMessageBox(mainWindow!, {
+        type: "info",
+        buttons: ["OK"],
+        title: "About",
+        message: "Waiter",
+        detail: `Version: ${app.getVersion()}\nPlatform: ${process.platform}\nChannel: ${
+          autoUpdater.channel
+        }`,
+      });
     },
     showKeyboardShortcuts: () => {
       console.log("showKeyboardShortcuts");
@@ -239,6 +248,29 @@ app.on("open-file", (event, path) => {
   }
 });
 
+autoUpdater.logger = log;
+autoUpdater.on("checking-for-update", () => {
+  log.info("Checking for update...");
+});
+autoUpdater.on("update-available", (info) => {
+  log.info("Update available.", info);
+});
+autoUpdater.on("update-not-available", (info) => {
+  log.info("Update not available.", info);
+});
+autoUpdater.on("error", (err) => {
+  log.error("Error in auto-updater. " + err);
+});
+autoUpdater.on("download-progress", (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + " - Downloaded " + progressObj.percent + "%";
+  log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
+  log.info(log_message);
+});
+autoUpdater.on("update-downloaded", (info) => {
+  log.info("Update downloaded", info);
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -271,6 +303,8 @@ app.whenReady().then(() => {
   if (is.dev) {
     runDevTask(mainWindow);
   }
+
+  autoUpdater.checkForUpdatesAndNotify();
 });
 
 ipcMain.on("file:open", (_: IpcMainEvent, file: string | undefined) => {
@@ -333,15 +367,6 @@ eventBus.on("find", () => {
   mainWindow?.webContents.send("find");
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
 function openSettings() {
   settingsWindow = new BrowserWindow({
     width: 800,
@@ -366,3 +391,12 @@ function openSettings() {
   });
   settingsWindowCreated = true;
 }
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});

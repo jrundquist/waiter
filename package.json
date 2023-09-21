@@ -23,7 +23,10 @@
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
     "launch:mac": "if [[ ! -a dist/mac-arm64/waiter.app ]]; then npm run build:mac; fi; open dist/mac-arm64/waiter.app",
-    "buildAndLaunch:mac": "npm run build:mac && npm run launch:mac"
+    "buildAndLaunch:mac": "npm run build:mac && npm run launch:mac",
+    "dist": "electron-vite build && electron-builder --publish always",
+    "dist:beta": "electron-vite build && electron-builder --publish always --config.extraMetadata.version=$npm_package_version-beta",
+    "dist:alpha": "electron-vite build && electron-builder --publish always --config.extraMetadata.version=$npm_package_version-alpha"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
@@ -36,9 +39,11 @@
     "@mui/material": "^5.14.10",
     "@mui/styled-engine-sc": "^5.14.10",
     "@mui/styles": "^5.14.0",
+    "electron-updater": "^6.1.4",
     "fountain-js": "^1.1.0",
     "lexical": "^0.11.2",
     "lodash": "^4.17.21",
+    "node-jq": "^4.0.1",
     "pdfjs-dist": "^3.10.111",
     "pino": "^8.15.1",
     "pino-pretty": "^10.2.0",
