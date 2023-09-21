@@ -8,6 +8,7 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/sample-06_beat.pdf");
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/sample-06_scene.pdf");
     eventBus.emit("open", "/Users/jrundquist/Desktop/simple.wai");
+    // eventBus.emit("open", "/Users/jrundquist/Desktop/HauntedMemories.wai");
     // ipcMain.emit("import:pdf", "/Users/jrundquist/Downloads/HauntedMemories.pdf");
     // mainWindow?.minimize();
   });

@@ -24,6 +24,8 @@ export type MenuActionsType = Readonly<{
   saveAction: (saveAs?: boolean) => void;
   exportFinalDraft: () => void;
   reloadWindow: () => void;
+  numberScenes: () => void;
+  clearSceneNumbers: () => void;
 }>;
 
 export type MenuActionType = keyof MenuActionsType;
@@ -47,6 +49,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     saveAction,
     exportFinalDraft,
     reloadWindow,
+    numberScenes,
   } = options;
 
   const template: MenuListType = [
@@ -172,6 +175,19 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           click: () => {
             eventBus.emit("find");
           },
+        },
+      ],
+    },
+    {
+      label: "&Screenplay",
+      submenu: [
+        {
+          label: "Number Scenes",
+          click: numberScenes,
+        },
+        {
+          label: "Clear Scene Numbers",
+          click: options.clearSceneNumbers,
         },
       ],
     },

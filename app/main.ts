@@ -6,7 +6,7 @@ import { runDevTask } from "./__devTask";
 import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
 import { init as initImporter } from "./importer";
-import { ScriptElement } from "./importer/elements";
+import { ElementType, ScriptElement } from "./importer/elements";
 import { loadFile, saveState } from "./loader";
 import { browserLog, browserLogPath, log, logPath } from "./logger";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
@@ -220,6 +220,26 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
         return;
       }
       mainWindow.reload();
+    },
+
+    numberScenes: () => {
+      appState.scriptElements.reduce((nextAvailScene, element) => {
+        if (element.type === ElementType.SceneHeading) {
+          element.sceneNumber = `${nextAvailScene}`;
+          return nextAvailScene + 1;
+        }
+        return nextAvailScene;
+      }, 1);
+      eventBus.emit("bus:script:set-elements", appState.scriptElements);
+    },
+
+    clearSceneNumbers: () => {
+      appState.scriptElements.forEach((element) => {
+        if (element.type === ElementType.SceneHeading) {
+          element.sceneNumber = "";
+        }
+      });
+      eventBus.emit("bus:script:set-elements", appState.scriptElements);
     },
     // overrides
     ...options,
