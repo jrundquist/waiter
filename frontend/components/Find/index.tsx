@@ -1,13 +1,13 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from 'tss-react/mui';
 import React from "react";
 import { useState } from "react";
 import ReactDOM from "react-dom";
 import { FindController } from "./controller";
 import { ResultDecorators } from "./ResultDecorators";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   findRoot: {
     position: "fixed",
     top: 0,
@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Find = () => {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   const [editor] = useLexicalComposerContext();
   // Note: The script will wipe out all existing styles so we save the editor state

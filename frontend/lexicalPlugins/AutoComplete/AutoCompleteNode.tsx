@@ -12,7 +12,7 @@ import { DecoratorNode, EditorConfig, NodeKey, SerializedLexicalNode } from "lex
 
 import { useSharedAutocompleteContext } from "./AutoCompleteContext";
 import { uuid as UUID } from "./AutoCompletePlugin";
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from 'tss-react/mui';
 import { Theme } from "@mui/material";
 
 declare global {
@@ -81,7 +81,7 @@ export function $createAutocompleteNode(uuid: string): AutocompleteNode {
   return new AutocompleteNode(uuid);
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   autocomplete: {
     color: theme.palette.primary.main,
     opacity: 0.5,
@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function AutocompleteComponent(): JSX.Element {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const [suggestion] = useSharedAutocompleteContext();
   // TODO Move to theme
   return (

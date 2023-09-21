@@ -19,7 +19,8 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { Theme } from "@mui/material";
-import { makeStyles, useTheme } from "@mui/styles";
+import { makeStyles } from "tss-react/mui";
+import useTheme from "@mui/material/styles/useTheme";
 import * as React from "react";
 import { EditorHotkeys } from "./EditorHotkeys";
 import { AutocompleteNode } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteNode";
@@ -27,7 +28,7 @@ import { SharedAutocompleteContext } from "@renderer/lexicalPlugins/AutoComplete
 import AutocompletePlugin from "@renderer/lexicalPlugins/AutoComplete/AutoCompletePlugin";
 import Find from "./Find";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   editorPaper: {
     width: "816px", // 8.5in (1/96in per pixel)
     minHeight: "1056px", // 11in
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export function Editor(): React.FunctionComponentElement<{}> {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   const editorConfig: Parameters<typeof LexicalComposer>[0]["initialConfig"] = {
     // The editor theme

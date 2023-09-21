@@ -33,7 +33,8 @@
     "@emotion/styled": "^11.11.0",
     "@lexical/react": "^0.11.2",
     "@mui/icons-material": "^5.14.0",
-    "@mui/material": "^5.14.0",
+    "@mui/material": "^5.14.10",
+    "@mui/styled-engine-sc": "^5.14.10",
     "@mui/styles": "^5.14.0",
     "fountain-js": "^1.1.0",
     "lexical": "^0.11.2",
@@ -45,6 +46,8 @@
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.4.1",
     "run-s": "^0.0.0",
+    "styled-components": "^6.0.8",
+    "tss-react": "^4.9.2",
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {

@@ -51,7 +51,6 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
 root.render(
   <React.StrictMode>
     <ThemeWrapper>
-      {/* <CssBaseline enableColorScheme /> */}
       <App />
     </ThemeWrapper>
   </React.StrictMode>

@@ -1,6 +1,6 @@
 /// <reference types="../../preload/index" />
 import * as React from "react";
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from 'tss-react/mui';
 import { Theme } from "@mui/material";
 
 import {
@@ -9,7 +9,7 @@ import {
 } from "@renderer/lexicalPlugins/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   editorContainer: {
     width: "100vw",
     height: "100vh",
@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface Props {}
 
 export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({ children }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const [editor] = useLexicalComposerContext();
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
 

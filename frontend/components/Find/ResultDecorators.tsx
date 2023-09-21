@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from 'tss-react/mui';
 import React from "react";
 import { throttle } from "lodash";
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 const SCROLL_PADDING_TOP = 80;
 const SCROLL_PADDING_BOTTOM = 20;
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     position: "fixed",
     top: 0,
@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const ResultDecorators: React.FC<Props> = ({ rects, selected }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   const [editor] = useLexicalComposerContext();
   const scrollEl = React.useMemo(
