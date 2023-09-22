@@ -1,4 +1,4 @@
-import { ScriptElement } from "./importer/elements";
+import { ScriptElement } from "../state/elements/elements";
 import path from "node:path";
 
 export interface State {

@@ -4,7 +4,7 @@ import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";
 import { getDocument, PDFDocumentProxy } from "pdfjs-dist";
 import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
-import { ElementType, type ScriptElement } from "./elements";
+import { ElementType, type ScriptElement } from "../../state/elements/elements";
 import { log } from "../logger";
 // import eventBus from "../eventBus";
 

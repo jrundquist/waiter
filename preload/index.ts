@@ -1,4 +1,5 @@
-import { ScriptElement } from "@/app/importer/elements";
+import eventBus from "@/app/eventBus";
+import { ScriptElement } from "../state/elements/elements";
 import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
 // Custom APIs for renderer
@@ -26,6 +27,9 @@ export const api = {
     };
     ipcRenderer.on("script:set-elements", cb);
     return () => ipcRenderer.removeListener("script:set-elements", cb);
+  },
+  broadcastNewScriptContent: (els: ScriptElement[]) => {
+    ipcRenderer.send("script:content-from-browser", els);
   },
   log: {
     debug: (message: string, ...args: any[]) => {

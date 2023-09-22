@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { ScriptElement } from "./importer/elements";
+import { ScriptElement } from "../state/elements/elements";
 import { State } from "./state";
 
 interface EventTypes {

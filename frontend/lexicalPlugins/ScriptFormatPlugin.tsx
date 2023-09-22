@@ -27,9 +27,11 @@ import { parseFinalDraft } from "./utils/parseFinalDraft";
 import { ClearableWeakMap } from "./utils/clearableWeakMap";
 import { updatePages } from "./utils/updatePages";
 import { useScriptDetails } from "@contexts/ScriptDetails";
-import { ElementType, ScriptElement } from "@/app/importer/elements";
+import { ScriptElement } from "../../state/elements/elements";
 import React from "react";
 import { EditorUpdateOptions } from "lexical/LexicalEditor";
+import { toLexical } from "@/state/elements/toLexical";
+import { fromLexical } from "@/state/elements/fromLexical";
 
 export const RESET_ALL: LexicalCommand<void> = createCommand("RESET_ALL");
 
@@ -106,106 +108,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
       (scriptElements: ScriptElement[]) => {
         editor.update(() => {
           $getRoot().clear();
-
-          for (const node of scriptElements) {
-            switch (node.type) {
-              // Scene Headings
-              case ElementType.SceneHeading: {
-                const lineNode = new LineNode();
-                const sceneNode = new SceneNode(node.sceneNumber);
-                sceneNode.append(new TextNode(node.content));
-                lineNode.append(sceneNode);
-                lineNode.setElementType(LineNodeType.Scene);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                sceneNode.setSceneNumber(node.sceneNumber);
-                $getRoot().append(new LineNode());
-                break;
-              }
-              // Actions
-              case ElementType.Action: {
-                if (node.content.trim() === "") {
-                  break;
-                }
-                const lineNode = new LineNode();
-                const actionNode = new ActionNode();
-                actionNode.append(new TextNode(node.content));
-                lineNode.append(actionNode);
-                lineNode.setElementType(LineNodeType.Action);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                $getRoot().append(new LineNode());
-                break;
-              }
-              // Characters
-              case ElementType.Character: {
-                const lineNode = new LineNode();
-                const characterNode = new CharacterNode();
-                const charName = node.content.replace(/\(cont'd\)/i, "").trim();
-                if (charName === "(MORE)") {
-                  break;
-                }
-                characterNode.append(new TextNode(charName));
-                lineNode.append(characterNode);
-                lineNode.setElementType(LineNodeType.Character);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                break;
-              }
-              // Dialog
-              case ElementType.Dialogue: {
-                const lineNode = new LineNode();
-                const dialogNode = new DialogNode();
-                dialogNode.append(new TextNode(node.content));
-                lineNode.append(dialogNode);
-                lineNode.setElementType(LineNodeType.Dialog);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                $getRoot().append(new LineNode());
-                break;
-              }
-
-              // Parentheticals
-              case ElementType.Parenthetical: {
-                const lineNode = new LineNode();
-                const parentheticalNode = new ParentheticalNode();
-                parentheticalNode.append(new TextNode(node.content));
-                lineNode.append(parentheticalNode);
-                lineNode.setElementType(LineNodeType.Parenthetical);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                break;
-              }
-
-              // Transitions
-              case ElementType.Transition: {
-                const lineNode = new LineNode();
-                const transitionNode = new TransitionNode();
-                transitionNode.append(new TextNode(node.content));
-                lineNode.append(transitionNode);
-                lineNode.setElementType(LineNodeType.Transition);
-                if (lineNode.wouldRequireForce()) {
-                  lineNode.setForcedWithMarker();
-                }
-                $getRoot().append(lineNode);
-                $getRoot().append(new LineNode());
-                break;
-              }
-
-              default:
-                break;
-            }
-          }
+          toLexical(scriptElements, $getRoot());
         });
 
         // HACK to get around the fact these elements haven't been added to
@@ -295,6 +198,16 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
 
     const removeTextContentListener = editor.registerTextContentListener(() => {
       updatePages(editor, lineNodeToEl);
+    });
+
+    const removeSceneSync = editor.registerTextContentListener(() => {
+      editor.getEditorState().read(() => {
+        const start = performance.now();
+        const nodes = $getRoot().getChildren();
+        const scriptEls = fromLexical(nodes);
+        const timeToSerialize = performance.now() - start;
+        window.api.broadcastNewScriptContent(scriptEls);
+      });
     });
 
     const removeSceneNumberWatcher = editor.registerNodeTransform(TextNode, (node) => {
@@ -408,6 +321,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
       removeTextContentListener();
       removeSceneNumberWatcher();
       removeUpdateListener();
+      removeSceneSync();
     };
   }, [editor]);
 }

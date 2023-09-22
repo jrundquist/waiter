@@ -1,4 +1,4 @@
-import { ElementType, ScriptElement } from "../importer/elements";
+import { ElementType, ScriptElement } from "../../state/elements/elements";
 import * as builder from "xmlbuilder";
 
 export function exportToFinalDraft(script: ScriptElement[]): string {

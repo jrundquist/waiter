@@ -49,7 +49,6 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     saveAction,
     exportFinalDraft,
     reloadWindow,
-    numberScenes,
   } = options;
 
   const template: MenuListType = [
@@ -183,7 +182,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
       submenu: [
         {
           label: "Number Scenes",
-          click: numberScenes,
+          click: options.numberScenes,
         },
         {
           label: "Clear Scene Numbers",

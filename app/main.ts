@@ -6,12 +6,13 @@ import { runDevTask } from "./__devTask";
 import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
 import { init as initImporter } from "./importer";
-import { ElementType, ScriptElement } from "./importer/elements";
+import { ElementType, ScriptElement } from "../state/elements/elements";
 import { loadFile, saveState } from "./loader";
 import { browserLog, browserLogPath, log, logPath } from "./logger";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
 import { State, initialState, reducer } from "./state";
 import { autoUpdater } from "electron-updater";
+import { isEqual } from "lodash";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -339,13 +340,24 @@ ipcMain.on("script:reset", () => {
   mainWindow?.webContents.send("script:reset");
 });
 
+ipcMain.on("script:content-from-browser", (_: IpcMainEvent, els: ScriptElement[]) => {
+  if (!isEqual(appState.scriptElements, els)) {
+    appState = reducer(appState, { type: "state:set-elements", payload: els });
+    if (appState.isDirty) {
+      mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}*`);
+    }
+  }
+});
+
 eventBus.on("bus:script:set-elements", (elements: ScriptElement[]) => {
+  log.debug("bus:script:set-elements", elements);
   appState = reducer(appState, { type: "state:set-elements", payload: elements });
-  console.log({ appState });
   mainWindow?.webContents.send("script:set-elements", elements);
 });
 
 ipcMain.on("show-settings", () => {
+  log.debug("show-settings");
+
   if (!settingsWindowCreated) {
     openSettings();
   } else {
@@ -361,20 +373,15 @@ eventBus.on("open", (file: string) => {
     mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
     mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
     mainWindow?.show();
-
-    const fdxFile = file.replace(".wai", ".fdx");
-    const content = exportToFinalDraft(appState.scriptElements);
-    console.log({ content });
-    console.log(fdxFile);
-    fs.writeFileSync(fdxFile, content);
   });
 });
 
 eventBus.on("state:save", (file: string) => {
-  console.log("state:save", file);
+  log.info("Saving file: " + file);
   if (saveState(file, appState)) {
     appState = reducer(appState, { type: "state:saved", file });
     mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
+    log.debug("File saved: " + file);
   }
 });
 
