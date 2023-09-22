@@ -43,7 +43,14 @@ function createWindow(): void {
     minWidth: 840,
     minHeight: 580,
     show: true,
-    titleBarStyle: "default",
+    // titleBarStyle: "default",
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: "#ff0000",
+      height: 48,
+    },
+    trafficLightPosition: { x: 15, y: 15 },
+    autoHideMenuBar: false,
     webPreferences: {
       ...defaultWebPrefs,
       preload: join(__dirname, "../preload/index.js"),
@@ -344,7 +351,7 @@ ipcMain.on("script:content-from-browser", (_: IpcMainEvent, els: ScriptElement[]
   if (!isEqual(appState.scriptElements, els)) {
     appState = reducer(appState, { type: "state:set-elements", payload: els });
     if (appState.isDirty) {
-      mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}*`);
+      eventBus.emit("bus:window:set-title", `Waiter - ${appState.scriptName ?? "Untitled"}*`);
     }
   }
 });
@@ -370,9 +377,10 @@ eventBus.on("open", (file: string) => {
   loadFile(file).then((state) => {
     appState = state;
     appState.scriptFile = file;
-    mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
     mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
     mainWindow?.show();
+    const title = `Waiter - ${appState.scriptName ?? "Untitled"}`;
+    eventBus.emit("bus:window:set-title", title);
   });
 });
 
@@ -380,9 +388,20 @@ eventBus.on("state:save", (file: string) => {
   log.info("Saving file: " + file);
   if (saveState(file, appState)) {
     appState = reducer(appState, { type: "state:saved", file });
-    mainWindow?.setTitle(`Waiter - ${appState.scriptName ?? "Untitled"}`);
+    const title = `Waiter - ${appState.scriptName ?? "Untitled"}`;
+    eventBus.emit("bus:window:set-title", title);
     log.debug("File saved: " + file);
   }
+});
+
+eventBus.on("bus:window:set-title", (title: string) => {
+  mainWindow?.setTitle(title);
+  console.log("setting title", title);
+  mainWindow?.webContents.send("app:window-title-changed", title);
+});
+
+ipcMain.handle("app:get-window-title", () => {
+  return mainWindow?.getTitle();
 });
 
 eventBus.on("show-logs", () => {

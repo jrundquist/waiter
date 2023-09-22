@@ -1,6 +1,6 @@
 /// <reference types="../../preload/index" />
 import * as React from "react";
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
 
 import {
@@ -11,8 +11,8 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 
 const useStyles = makeStyles()((theme: Theme) => ({
   editorContainer: {
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    height: "100%",
     display: "flex",
     flexDirection: "row",
     backgroundColor:

@@ -408,6 +408,13 @@ function updateForMac(template: MenuListType, options: CreateTemplateOptionsType
       role: "front",
       label: "Bring All to Front",
     },
+    {
+      label: "Random Window Title",
+      click: () => {
+        eventBus.emit("bus:window:set-title", "Random Window Title" + Math.random());
+      },
+      accelerator: "CmdOrCtrl+Shift+R",
+    },
   ];
 
   return template;

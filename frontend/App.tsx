@@ -9,11 +9,21 @@ import { makeStyles } from "tss-react/mui";
 
 import { Theme } from "@mui/material";
 import { ScriptDetailsProvider } from "@contexts/ScriptDetails";
+import TitleBar from "./components/Titlebar";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
-    height: "100%",
     color: theme.palette.text.primary,
+    height: "100vh",
+    width: "100vw",
+    overflow: "hidden",
+  },
+  content: {
+    position: "fixed",
+    height: "calc(100vh - env(titlebar-area-height, var(--fallback-title-bar-height)))",
+    top: "calc(0px + env(titlebar-area-height, var(--fallback-title-bar-height)))",
+    overflow: "scroll",
+    width: "100vw",
   },
 }));
 
@@ -27,11 +37,14 @@ function App() {
 
   const { classes } = useStyles();
   return (
-    <div className={classes.root}>
-      <ScriptDetailsProvider>
-        <Editor />
-      </ScriptDetailsProvider>
-    </div>
+    <ScriptDetailsProvider>
+      <div className={classes.root}>
+        <TitleBar />
+        <div className={classes.content}>
+          <Editor />
+        </div>
+      </div>
+    </ScriptDetailsProvider>
   );
 }
 

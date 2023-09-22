@@ -1,4 +1,3 @@
-import eventBus from "@/app/eventBus";
 import { ScriptElement } from "../state/elements/elements";
 import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
@@ -30,6 +29,19 @@ export const api = {
   },
   broadcastNewScriptContent: (els: ScriptElement[]) => {
     ipcRenderer.send("script:content-from-browser", els);
+  },
+  subscribeToTitleChanges: (callback: (title: string) => void) => {
+    const cb = (_: IpcRendererEvent, title: string) => {
+      callback(title);
+    };
+    debugger;
+    ipcRenderer.on("app:window-title-changed", cb);
+    return () => {
+      ipcRenderer.removeListener("app:window-title-changed", cb);
+    };
+  },
+  getCurrentTitle: () => {
+    return ipcRenderer.invoke("app:get-window-title");
   },
   log: {
     debug: (message: string, ...args: any[]) => {

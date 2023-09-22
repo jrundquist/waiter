@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Theme } from "@mui/material";
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from "tss-react/mui";
 import React from "react";
 import { useState } from "react";
 import ReactDOM from "react-dom";
@@ -10,7 +10,7 @@ import { ResultDecorators } from "./ResultDecorators";
 const useStyles = makeStyles()((theme: Theme) => ({
   findRoot: {
     position: "fixed",
-    top: 0,
+    top: "env(titlebar-area-height, var(--fallback-title-bar-height))",
     right: 150,
     minWidth: 250,
     padding: "10px",
