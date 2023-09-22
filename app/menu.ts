@@ -285,17 +285,17 @@ function updateForMac(template: MenuListType, options: CreateTemplateOptionsType
   const { showAbout, showSettings, showWindow } = options;
 
   // Remove About item and separator from Help menu, since they're in the app menu
-  const aboutMenu = template[4];
+  const aboutMenu = template.find((m) => m.role === "help")!;
   if (Array.isArray(aboutMenu.submenu)) {
-    aboutMenu.submenu.pop();
-    aboutMenu.submenu.pop();
+    // aboutMenu.submenu.pop();
+    // aboutMenu.submenu.pop();
   } else {
     throw new Error("updateForMac: help.submenu was not an array!");
   }
 
   // Remove preferences, separator, and quit from the File menu, since they're
   // in the app menu
-  const fileMenu = template[0];
+  const fileMenu = template.find((m) => m.label === "&File")!;
   if (Array.isArray(fileMenu.submenu)) {
     // And insert "close".
     fileMenu.submenu.push(
@@ -360,7 +360,7 @@ function updateForMac(template: MenuListType, options: CreateTemplateOptionsType
     ],
   });
 
-  const editMenu = template[2];
+  const editMenu = template.find((m) => m.label === "&Edit")!;
   if (Array.isArray(editMenu.submenu)) {
     editMenu.submenu.push(
       {
@@ -386,7 +386,7 @@ function updateForMac(template: MenuListType, options: CreateTemplateOptionsType
 
   // Replace Window menu
   // eslint-disable-next-line no-param-reassign
-  template[4].submenu = [
+  template.find((m) => m.role === "window")!.submenu = [
     {
       label: "Minimize",
       accelerator: "CmdOrCtrl+M",
