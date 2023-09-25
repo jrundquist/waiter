@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { Theme } from "@mui/material";
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from "tss-react/mui";
 import React from "react";
 import { throttle } from "lodash";
 interface Props {
@@ -34,7 +34,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const ResultDecorators: React.FC<Props> = ({ rects, selected }) => {
+export const ResultDecorators: React.FunctionComponent<Props> = ({ rects, selected }) => {
   const { classes } = useStyles();
 
   const [editor] = useLexicalComposerContext();
@@ -86,25 +86,29 @@ export const ResultDecorators: React.FC<Props> = ({ rects, selected }) => {
 
   console.log({ scrollTop, scrollLeft });
 
-  return rects.map((rect, index) => {
-    const classNames = [classes.resultDecorator];
-    if (index === selected) {
-      classNames.push(classes.resultDecoratorActive);
-    }
+  return (
+    <>
+      {rects.map((rect, index) => {
+        const classNames = [classes.resultDecorator];
+        if (index === selected) {
+          classNames.push(classes.resultDecoratorActive);
+        }
 
-    return (
-      <div className={classes.container}>
-        <div
-          key={`res-${index}`}
-          className={classNames.join(" ")}
-          style={{
-            top: rect.top - scrollTop,
-            left: rect.left - scrollLeft,
-            width: rect.width,
-            height: rect.height,
-          }}
-        />
-      </div>
-    );
-  });
+        return (
+          <div className={classes.container}>
+            <div
+              key={`res-${index}`}
+              className={classNames.join(" ")}
+              style={{
+                top: rect.top - scrollTop,
+                left: rect.left - scrollLeft,
+                width: rect.width,
+                height: rect.height,
+              }}
+            />
+          </div>
+        );
+      })}
+    </>
+  );
 };

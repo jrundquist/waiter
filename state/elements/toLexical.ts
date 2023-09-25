@@ -1,12 +1,12 @@
 import { RootNode, TextNode } from "lexical";
 import { ElementType, ScriptElement } from "./elements";
-import { LineNode, LineNodeType } from "@/frontend/lexicalPlugins/LineNode";
-import { SceneNode } from "@/frontend/lexicalPlugins/SceneNode";
-import { ActionNode } from "@/frontend/lexicalPlugins/ActionNode";
-import { CharacterNode } from "@/frontend/lexicalPlugins/CharacterNode";
-import { DialogNode } from "@/frontend/lexicalPlugins/DialogNode";
-import { ParentheticalNode } from "@/frontend/lexicalPlugins/ParentheticalNode";
-import { TransitionNode } from "@/frontend/lexicalPlugins/TransitionNode";
+import { LineNode, LineNodeType } from "../../screenFormatPlugin/LineNode";
+import { SceneNode } from "../../screenFormatPlugin/SceneNode";
+import { ActionNode } from "../../screenFormatPlugin/ActionNode";
+import { CharacterNode } from "../../screenFormatPlugin/CharacterNode";
+import { DialogNode } from "../../screenFormatPlugin/DialogNode";
+import { ParentheticalNode } from "../../screenFormatPlugin/ParentheticalNode";
+import { TransitionNode } from "../../screenFormatPlugin/TransitionNode";
 import _ from "lodash";
 
 (window as any)._ = _;

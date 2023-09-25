@@ -1,15 +1,15 @@
 import { LexicalNode } from "lexical";
 import { ElementType, ScriptElement } from "./elements";
-import { $isLineNode, LineNodeType } from "@/frontend/lexicalPlugins/LineNode";
-import { $isSceneNode, SceneNode } from "@/frontend/lexicalPlugins/SceneNode";
-import { $isActionNode, ActionNode } from "@/frontend/lexicalPlugins/ActionNode";
-import { $isCharacterNode, CharacterNode } from "@/frontend/lexicalPlugins/CharacterNode";
-import { $isTransitionNode, TransitionNode } from "@/frontend/lexicalPlugins/TransitionNode";
-import { $isForcedTypeNode } from "@/frontend/lexicalPlugins/ForcedTypeNode";
+import { $isLineNode, LineNodeType } from "../../screenFormatPlugin/LineNode";
+import { $isSceneNode, SceneNode } from "../../screenFormatPlugin/SceneNode";
+import { $isActionNode, ActionNode } from "../../screenFormatPlugin/ActionNode";
+import { $isCharacterNode, CharacterNode } from "../../screenFormatPlugin/CharacterNode";
+import { $isTransitionNode, TransitionNode } from "../../screenFormatPlugin/TransitionNode";
+import { $isForcedTypeNode } from "../../screenFormatPlugin/ForcedTypeNode";
 import {
   $isParentheticalNode,
   ParentheticalNode,
-} from "@/frontend/lexicalPlugins/ParentheticalNode";
+} from "../../screenFormatPlugin/ParentheticalNode";
 
 export function fromLexical(rootChildren: LexicalNode[]): ScriptElement[] {
   const lineNodes = rootChildren.filter($isLineNode);

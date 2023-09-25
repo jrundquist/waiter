@@ -1,15 +1,8 @@
-/// <reference types="../preload/index" />
 import React from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 
-const container = document.getElementById("root");
-
-const root = createRoot(container!);
-
-const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+export const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   const systemPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
   const theme = React.useMemo(
     () =>
@@ -47,11 +40,3 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
 
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 };
-
-root.render(
-  <React.StrictMode>
-    <ThemeWrapper>
-      <App />
-    </ThemeWrapper>
-  </React.StrictMode>
-);

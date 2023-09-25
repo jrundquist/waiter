@@ -1,6 +1,6 @@
-import { $isLineNode, LineNode, LineNodeType } from "@renderer/lexicalPlugins/LineNode";
-import { SceneNode } from "@renderer/lexicalPlugins/SceneNode";
-import { ClearableWeakMap } from "@renderer/lexicalPlugins/utils/clearableWeakMap";
+import { $isLineNode, LineNode, LineNodeType } from "../screenFormatPlugin/LineNode";
+import { SceneNode } from "../screenFormatPlugin/SceneNode";
+import { ClearableWeakMap } from "../screenFormatPlugin/utils/clearableWeakMap";
 import { EditorState, RootNode } from "lexical";
 import * as React from "react";
 

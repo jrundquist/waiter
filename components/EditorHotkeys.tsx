@@ -3,7 +3,7 @@ import * as React from "react";
 import {
   RESET_WITH_FOUNTAIN_FILE,
   RESET_WITH_FINALDRAFT_FILE,
-} from "@renderer/lexicalPlugins/ScriptFormatPlugin";
+} from "../screenFormatPlugin/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 export const EditorHotkeys: React.FunctionComponent<{}> = () => {

@@ -1,5 +1,7 @@
+/// <reference types="../preload/index" />
 import React from "react";
 import { createRoot } from "react-dom/client";
+import App from "@components/App";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 
@@ -36,7 +38,7 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
             main: "#00c8ff",
           },
           secondary: {
-            main: "#ff3700",
+            main: "#ff3d00",
           },
         },
       }),
@@ -49,7 +51,7 @@ const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
 root.render(
   <React.StrictMode>
     <ThemeWrapper>
-      <div>Settings</div>
+      <App />
     </ThemeWrapper>
   </React.StrictMode>
 );

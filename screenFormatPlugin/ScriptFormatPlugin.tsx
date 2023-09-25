@@ -1,4 +1,4 @@
-/// <reference types="../../preload/index" />
+/// <reference types="../preload/index" />
 import {
   $getNearestNodeFromDOMNode,
   $getRoot,
@@ -26,8 +26,8 @@ import { parseFountain } from "./utils/parseFountain";
 import { parseFinalDraft } from "./utils/parseFinalDraft";
 import { ClearableWeakMap } from "./utils/clearableWeakMap";
 import { updatePages } from "./utils/updatePages";
-import { useScriptDetails } from "@contexts/ScriptDetails";
-import { ScriptElement } from "../../state/elements/elements";
+import { useScriptDetails } from "../contexts/ScriptDetails";
+import { ScriptElement } from "../state/elements/elements";
 import React from "react";
 import { EditorUpdateOptions } from "lexical/LexicalEditor";
 import { toLexical } from "@/state/elements/toLexical";
@@ -206,6 +206,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
         const nodes = $getRoot().getChildren();
         const scriptEls = fromLexical(nodes);
         const timeToSerialize = performance.now() - start;
+        window.api.log.debug(`Time to serialize: ${timeToSerialize}ms`);
         window.api.broadcastNewScriptContent(scriptEls);
       });
     });

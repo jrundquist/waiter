@@ -16,16 +16,22 @@
         "./*"
       ],
       "@components/*": [
-        "frontend/components/*"
+        "components/*"
       ],
       "@contexts/*": [
-        "frontend/contexts/*"
+        "contexts/*"
       ],
-      "@renderer/*": [
-        "frontend/*"
+      "@windows/*": [
+        "windows/*"
       ],
       "@utils/*": [
         "utils/*"
+      ],
+      "@screenFormatPlugin/*": [
+        "screenFormatPlugin/*"
+      ],
+      "@styles": [
+        "styles"
       ],
     }
   }

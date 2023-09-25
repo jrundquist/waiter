@@ -4,7 +4,7 @@ import { makeStyles } from "tss-react/mui";
 import React from "react";
 import ReactDOM from "react-dom";
 import { ResultDecorators } from "./ResultDecorators";
-import { useFindContext } from "@/frontend/contexts/Find";
+import { useFindContext } from "../../contexts/Find";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   findRoot: {

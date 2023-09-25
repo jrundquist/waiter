@@ -1,4 +1,4 @@
-/// <reference types="../../preload/index" />
+/// <reference types="../preload/index" />
 import * as React from "react";
 import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
@@ -6,7 +6,7 @@ import { Theme } from "@mui/material";
 import {
   RESET_WITH_FINALDRAFT_FILE,
   RESET_WITH_FOUNTAIN_FILE,
-} from "@renderer/lexicalPlugins/ScriptFormatPlugin";
+} from "../screenFormatPlugin/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 const useStyles = makeStyles()((theme: Theme) => ({

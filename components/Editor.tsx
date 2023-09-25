@@ -1,7 +1,8 @@
-import { SCRIPT_NODES, ScriptFormatPlugin } from "@renderer/lexicalPlugins/ScriptFormatPlugin";
-import TreeViewPlugin from "@renderer/lexicalPlugins/TreeViewPlugin";
 import { EditorDropTarget } from "@components/EditorDropTarget";
+import { EditorHotkeys } from "@components/EditorHotkeys";
 import { ExampleTheme } from "@components/ExampleTheme";
+import Find from "@components/Find/Find";
+import { FindContext } from "@contexts/Find";
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
@@ -19,15 +20,14 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { Theme } from "@mui/material";
-import { makeStyles } from "tss-react/mui";
 import useTheme from "@mui/material/styles/useTheme";
+import { SharedAutocompleteContext } from "@screenFormatPlugin/AutoComplete/AutoCompleteContext";
+import { AutocompleteNode } from "@screenFormatPlugin/AutoComplete/AutoCompleteNode";
+import AutocompletePlugin from "@screenFormatPlugin/AutoComplete/AutoCompletePlugin";
+import { SCRIPT_NODES, ScriptFormatPlugin } from "@screenFormatPlugin/ScriptFormatPlugin";
+import TreeViewPlugin from "@screenFormatPlugin/TreeViewPlugin";
 import * as React from "react";
-import { EditorHotkeys } from "./EditorHotkeys";
-import { AutocompleteNode } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteNode";
-import { SharedAutocompleteContext } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteContext";
-import AutocompletePlugin from "@renderer/lexicalPlugins/AutoComplete/AutoCompletePlugin";
-import Find from "./Find";
-import { FindContext } from "../contexts/Find";
+import { makeStyles } from "tss-react/mui";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   editorPaper: {

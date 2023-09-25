@@ -26,7 +26,7 @@ import { useCallback, useEffect } from "react";
 
 import { useSharedAutocompleteContext } from "./AutoCompleteContext";
 import { $createAutocompleteNode, AutocompleteNode } from "./AutoCompleteNode";
-import { addSwipeRightListener } from "@renderer/uilts/swipe";
+import { addSwipeRightListener } from "@utils/swipe";
 import { useScriptDetails } from "@contexts/ScriptDetails";
 import { $isLineNode, LineNode, LineNodeType } from "../LineNode";
 

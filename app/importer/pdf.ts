@@ -1,4 +1,4 @@
-import { CHARACTER_PATTERN, SCENE_HEADER_PATTERN } from "@/frontend/lexicalPlugins/FountainRegex";
+import { CHARACTER_PATTERN, SCENE_HEADER_PATTERN } from "../../screenFormatPlugin/FountainRegex";
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";

@@ -4,9 +4,13 @@ import react from "@vitejs/plugin-react";
 
 const alias = {
   "@": resolve(join(__dirname, "")),
-  "@renderer": resolve(join(__dirname, "frontend")),
-  "@components": resolve(join(__dirname, "frontend/components")),
-  "@contexts": resolve(join(__dirname, "frontend/contexts")),
+  "@types": resolve(join(__dirname, "")),
+  "@windows": resolve(join(__dirname, "windows")),
+  "@components": resolve(join(__dirname, "components")),
+  "@contexts": resolve(join(__dirname, "contexts")),
+  "@utils": resolve(join(__dirname, "utils")),
+  "@screenFormatPlugin": resolve(join(__dirname, "screenFormatPlugin")),
+  "@styles": resolve(join(__dirname, "styles")),
 };
 
 export default defineConfig({
@@ -19,11 +23,7 @@ export default defineConfig({
       },
     },
     resolve: {
-      alias: {
-        "@": resolve(join(__dirname, "")),
-        "@types": resolve(join(__dirname, "")),
-        "@utils": resolve(join(__dirname, "utils")),
-      },
+      alias,
     },
   },
   preload: {

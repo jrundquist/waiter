@@ -1,15 +1,11 @@
 /// <reference types="../preload/index" />
-import { useEffect } from "react";
-import "./App.css";
-// import { EventsOn, EventsOff } from "@runtime/runtime";
 import { Editor } from "@components/Editor";
-
-// import { DarkLightToggle } from "@/renderer/components/DarkLightToggle";
-import { makeStyles } from "tss-react/mui";
-
-import { Theme } from "@mui/material";
+import TitleBar from "@components/Titlebar";
 import { ScriptDetailsProvider } from "@contexts/ScriptDetails";
-import TitleBar from "./components/Titlebar";
+import { Theme } from "@mui/material";
+import "@styles/App.css";
+import { useEffect } from "react";
+import { makeStyles } from "tss-react/mui";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -27,7 +23,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-function App() {
+export function App() {
   useEffect(() => {
     window.api.log.info("App.tsx: App mounted", { window });
     return () => {

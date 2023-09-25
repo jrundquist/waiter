@@ -9,7 +9,7 @@ import {
   TextNode,
 } from "lexical";
 import { $getNearestNodeOfType } from "@lexical/utils";
-import { $isLineNode, LineNode } from "../../lexicalPlugins/LineNode";
+import { $isLineNode, LineNode } from "../../screenFormatPlugin/LineNode";
 
 const MAX_RESULTS = 100;
 
