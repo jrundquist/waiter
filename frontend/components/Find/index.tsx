@@ -2,10 +2,9 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { Theme } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import React from "react";
-import { useState } from "react";
 import ReactDOM from "react-dom";
-import { FindController } from "./controller";
 import { ResultDecorators } from "./ResultDecorators";
+import { useFindContext } from "@/frontend/contexts/Find";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   findRoot: {
@@ -82,29 +81,25 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
   hidden: {
     display: "none",
+    visibility: "hidden",
   },
 }));
 
 export const Find = () => {
   const { classes } = useStyles();
-
   const [editor] = useLexicalComposerContext();
-  // Note: The script will wipe out all existing styles so we save the editor state
-  const [highlightRects, setHighlightRects] = useState<DOMRect[]>([]); // [start, end, start, end, ...
-  const [searchValue, setSearchValue] = useState<string>("");
+  const [isShowing, setIsShowing] = React.useState<boolean>(false);
   const searchFieldRef = React.useRef<HTMLInputElement>(null);
-  const [isShowing, setIsShowing] = React.useState(false);
-  const [resultCount, setResultCount] = React.useState<number | null>(null);
-  const [currentResultIndex, setCurrentResultIndex] = React.useState<number | null>(null);
-
-  const [matchCase, setMatchCase] = React.useState<boolean>(false);
-  const toggleMatchCase = React.useCallback(() => {
-    setMatchCase(!matchCase);
-  }, [matchCase, setMatchCase]);
-
-  const findController = React.useMemo<FindController>(() => {
-    return new FindController(editor, { setHighlightRects, setResultCount, setCurrentResultIndex });
-  }, [editor, setHighlightRects, setResultCount, setCurrentResultIndex]);
+  const {
+    findController,
+    setSearchValue,
+    matchCase,
+    searchValue,
+    highlightRects,
+    currentResultIndex,
+    resultCount,
+    toggleMatchCase,
+  } = useFindContext();
 
   const updateSearch = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

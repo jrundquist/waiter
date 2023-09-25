@@ -13,6 +13,7 @@ import { CreateTemplateOptionsType, createTemplate } from "./menu";
 import { State, initialState, reducer } from "./state";
 import { autoUpdater } from "electron-updater";
 import { isEqual } from "lodash";
+import { IPCEvents } from "@/ipc/events";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -128,6 +129,9 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
         if (res === 1) {
           return;
         }
+        appState = reducer(appState, { type: "state:new" });
+        eventBus.emit("bus:script:set-elements", appState.scriptElements);
+        eventBus.emit("bus:window:set-title", `Waiter - ${appState.scriptName ?? "Untitled"}`);
       }
     },
     openAction: () => {
@@ -185,9 +189,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       eventBus.emit("show-logs");
     },
     showSettings: () => {
-      console.log("showSettings");
-      // trigger IPC event
-      ipcMain.emit("show-settings");
+      ipcMain.emit(IPCEvents.SETTINGS_OPEN);
     },
     importPdfAction: () => {
       dialog
@@ -197,7 +199,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
         })
         .then((result) => {
           ipcMain.emit(
-            "import:pdf",
+            IPCEvents.DO_OPEN_PDF,
             {
               reply: (channel: string, ...args: any[]) =>
                 mainWindow?.webContents.send(channel, ...args),
@@ -257,7 +259,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
 
   Menu.setApplicationMenu(menu);
 
-  mainWindow?.webContents.send("window:set-menu-options", {
+  mainWindow?.webContents.send(IPCEvents.SET_WINDOW_OPTIONS, {
     development: menuOptions.development,
     devTools: menuOptions.devTools,
     isProduction: menuOptions.isProduction,
@@ -335,7 +337,7 @@ app.whenReady().then(() => {
   autoUpdater.checkForUpdatesAndNotify();
 });
 
-ipcMain.on("file:open", (_: IpcMainEvent, file: string | undefined) => {
+ipcMain.on(IPCEvents.OPEN_FILE, (_: IpcMainEvent, file: string | undefined) => {
   if (file) {
     eventBus.emit("open", file);
   } else {
@@ -343,11 +345,11 @@ ipcMain.on("file:open", (_: IpcMainEvent, file: string | undefined) => {
   }
 });
 
-ipcMain.on("script:reset", () => {
-  mainWindow?.webContents.send("script:reset");
+ipcMain.on(IPCEvents.CLEAR_SCREEN_ELEMENTS, () => {
+  mainWindow?.webContents.send(IPCEvents.CLEAR_SCREEN_ELEMENTS);
 });
 
-ipcMain.on("script:content-from-browser", (_: IpcMainEvent, els: ScriptElement[]) => {
+ipcMain.on(IPCEvents.SCREEN_ELEMENTS_CHANGE_TO_BACKEND, (_: IpcMainEvent, els: ScriptElement[]) => {
   if (!isEqual(appState.scriptElements, els)) {
     appState = reducer(appState, { type: "state:set-elements", payload: els });
     if (appState.isDirty) {
@@ -359,11 +361,11 @@ ipcMain.on("script:content-from-browser", (_: IpcMainEvent, els: ScriptElement[]
 eventBus.on("bus:script:set-elements", (elements: ScriptElement[]) => {
   log.debug("bus:script:set-elements", elements);
   appState = reducer(appState, { type: "state:set-elements", payload: elements });
-  mainWindow?.webContents.send("script:set-elements", elements);
+  mainWindow?.webContents.send(IPCEvents.SET_SCREEN_ELEMENTS, elements);
 });
 
-ipcMain.on("show-settings", () => {
-  log.debug("show-settings");
+ipcMain.on(IPCEvents.SETTINGS_OPEN, () => {
+  log.debug(IPCEvents.SETTINGS_OPEN);
 
   if (!settingsWindowCreated) {
     openSettings();
@@ -377,7 +379,7 @@ eventBus.on("open", (file: string) => {
   loadFile(file).then((state) => {
     appState = state;
     appState.scriptFile = file;
-    mainWindow?.webContents.send("script:set-elements", appState.scriptElements);
+    mainWindow?.webContents.send(IPCEvents.SET_SCREEN_ELEMENTS, appState.scriptElements);
     mainWindow?.show();
     const title = `Waiter - ${appState.scriptName ?? "Untitled"}`;
     eventBus.emit("bus:window:set-title", title);
@@ -396,11 +398,10 @@ eventBus.on("state:save", (file: string) => {
 
 eventBus.on("bus:window:set-title", (title: string) => {
   mainWindow?.setTitle(title);
-  console.log("setting title", title);
-  mainWindow?.webContents.send("app:window-title-changed", title);
+  mainWindow?.webContents.send(IPCEvents.APP_WINDOW_TITLE_CHANGED, title);
 });
 
-ipcMain.handle("app:get-window-title", () => {
+ipcMain.handle(IPCEvents.APP_GET_WINDOW_TITLE, () => {
   return mainWindow?.getTitle();
 });
 
@@ -410,7 +411,7 @@ eventBus.on("show-logs", () => {
 });
 
 eventBus.on("find", () => {
-  mainWindow?.webContents.send("find");
+  mainWindow?.webContents.send(IPCEvents.FIND);
 });
 
 function openSettings() {

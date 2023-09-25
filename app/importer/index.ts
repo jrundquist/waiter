@@ -1,6 +1,7 @@
 import { IpcMainEvent, ipcMain } from "electron";
 import { importPdf } from "./pdf";
 import eventBus from "../eventBus";
+import { IPCEvents } from "@/ipc/events";
 
 let isInit = false;
 
@@ -10,10 +11,10 @@ export const init = (): void => {
   }
   isInit = true;
 
-  ipcMain.on("import:pdf", (event: IpcMainEvent, pdfFile: string) => {
+  ipcMain.on(IPCEvents.DO_OPEN_PDF, (event: IpcMainEvent, pdfFile: string) => {
     importPdf(pdfFile).then((elements) => {
       eventBus.emit("bus:script:set-elements", elements);
-      event.reply("script:set-elements", elements);
+      event.reply(IPCEvents.SET_SCREEN_ELEMENTS, elements);
     });
   });
 };

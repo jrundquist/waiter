@@ -263,6 +263,7 @@ function loadPage(doc: PDFDocumentProxy, pageNumber: number): Promise<PageConten
 }
 
 export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
+  log.debug("Importing PDF: " + pdfFile);
   return getDocument(pdfFile)
     .promise.then((doc: PDFDocumentProxy) => {
       const numPages = doc.numPages;

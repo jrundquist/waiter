@@ -51,6 +51,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingRight: 10,
     width: "calc(var(--side-size) - env(titlebar-area-x, 0px))",
   },
+  settingsButton: {
+    cursor: "pointer",
+  },
 }));
 
 export function TitleBar() {
@@ -67,13 +70,19 @@ export function TitleBar() {
     return window.api.subscribeToTitleChanges(setTitle);
   }, [setTitle]);
 
+  const openSettings = React.useCallback(() => {
+    window.api.openSettings();
+  }, []);
+
   return (
     <div className={classes.root}>
       <div className={classes.content}>
         <div className={`${classes.sideBlock} ${classes.firtBlock}`}></div>
         <div className={classes.centeredTitle}>{title}</div>
         <div className={classes.sideBlock}>
-          <div>[settings?]</div>
+          <div onClick={openSettings} className={classes.settingsButton}>
+            ⚙️
+          </div>
         </div>
       </div>
     </div>

@@ -1,53 +1,56 @@
 import { ScriptElement } from "../state/elements/elements";
 import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
+import { IPCEvents } from "../ipc/events";
 
 // Custom APIs for renderer
 export const api = {
   importPdf: (path: string): void => {
-    ipcRenderer.send("import:pdf", path);
+    ipcRenderer.send(IPCEvents.DO_OPEN_PDF, path);
   },
   isDev(): boolean {
     return process.env.NODE_ENV === "development";
   },
   openFile: (file: string | undefined = undefined) => {
-    ipcRenderer.send("file:open", file);
+    ipcRenderer.send(IPCEvents.OPEN_FILE, file);
+  },
+  openSettings: () => {
+    ipcRenderer.send(IPCEvents.SETTINGS_OPEN);
   },
   listenForFind: (callback: (...args: any[]) => void): (() => void) => {
-    ipcRenderer.on("find", callback);
-    return () => ipcRenderer.removeListener("find", callback);
+    ipcRenderer.on(IPCEvents.FIND, callback);
+    return () => ipcRenderer.removeListener(IPCEvents.FIND, callback);
   },
   listenForReset: (callback: (...args: any[]) => void): (() => void) => {
-    ipcRenderer.on("script:reset", callback);
-    return () => ipcRenderer.removeListener("script:reset", callback);
+    ipcRenderer.on(IPCEvents.CLEAR_SCREEN_ELEMENTS, callback);
+    return () => ipcRenderer.removeListener(IPCEvents.CLEAR_SCREEN_ELEMENTS, callback);
   },
   listenForScriptElements: (callback: (elements: ScriptElement[]) => void) => {
     const cb = (_: IpcRendererEvent, elements: ScriptElement[]) => {
       callback(elements);
     };
-    ipcRenderer.on("script:set-elements", cb);
-    return () => ipcRenderer.removeListener("script:set-elements", cb);
+    ipcRenderer.on(IPCEvents.SET_SCREEN_ELEMENTS, cb);
+    return () => ipcRenderer.removeListener(IPCEvents.SET_SCREEN_ELEMENTS, cb);
   },
   broadcastNewScriptContent: (els: ScriptElement[]) => {
-    ipcRenderer.send("script:content-from-browser", els);
+    ipcRenderer.send(IPCEvents.SCREEN_ELEMENTS_CHANGE_TO_BACKEND, els);
   },
   subscribeToTitleChanges: (callback: (title: string) => void) => {
     const cb = (_: IpcRendererEvent, title: string) => {
       callback(title);
     };
-    debugger;
-    ipcRenderer.on("app:window-title-changed", cb);
+    ipcRenderer.on(IPCEvents.APP_WINDOW_TITLE_CHANGED, cb);
     return () => {
-      ipcRenderer.removeListener("app:window-title-changed", cb);
+      ipcRenderer.removeListener(IPCEvents.APP_WINDOW_TITLE_CHANGED, cb);
     };
   },
   getCurrentTitle: () => {
-    return ipcRenderer.invoke("app:get-window-title");
+    return ipcRenderer.invoke(IPCEvents.APP_GET_WINDOW_TITLE);
   },
   log: {
     debug: (message: string, ...args: any[]) => {
       console.debug(message, ...args);
       try {
-        ipcRenderer.send("browserLog:debug", message, ...args);
+        ipcRenderer.send(IPCEvents.LOG_DEBUG, message, ...args);
       } catch (e) {
         console.warn("failed to send log", e);
       }
@@ -55,7 +58,7 @@ export const api = {
     error: (message: string, ...args: any[]) => {
       console.error(message, ...args);
       try {
-        ipcRenderer.send("browserLog:error", message, ...args);
+        ipcRenderer.send(IPCEvents.LOG_ERROR, message, ...args);
       } catch (e) {
         console.warn("failed to send log", e);
       }
@@ -63,7 +66,7 @@ export const api = {
     info: (message: string, ...args: any[]) => {
       console.info(message, ...args);
       try {
-        ipcRenderer.send("browserLog:info", message, ...args);
+        ipcRenderer.send(IPCEvents.LOG_INFO, message, ...args);
       } catch (e) {
         console.warn("failed to send log", e);
       }
@@ -71,7 +74,7 @@ export const api = {
     warn: (message: string, ...args: any[]) => {
       console.warn(message, ...args);
       try {
-        ipcRenderer.send("browserLog:warn", message, ...args);
+        ipcRenderer.send(IPCEvents.LOG_WARN, message, ...args);
       } catch (e) {
         console.warn("failed to send log", e);
       }

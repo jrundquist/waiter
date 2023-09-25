@@ -10,6 +10,10 @@ export interface State {
   isDirty: boolean;
 }
 
+export type New = {
+  type: "state:new";
+};
+
 export type SetElements = {
   type: "state:set-elements";
   payload: ScriptElement[];
@@ -20,7 +24,7 @@ export type Saved = {
   file: string;
 };
 
-export type StateAction = SetElements | Saved;
+export type StateAction = SetElements | Saved | New;
 
 export const initialState: State = {
   scriptElements: [],
@@ -33,6 +37,13 @@ export const initialState: State = {
 
 export const reducer = (state: State, action: StateAction): State => {
   switch (action.type) {
+    case "state:new":
+      return {
+        ...initialState,
+        lastSaved: null,
+        scriptFile: null,
+        isDirty: false,
+      };
     case "state:set-elements":
       return {
         ...state,

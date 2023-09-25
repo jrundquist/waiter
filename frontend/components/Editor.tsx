@@ -27,6 +27,7 @@ import { AutocompleteNode } from "@renderer/lexicalPlugins/AutoComplete/AutoComp
 import { SharedAutocompleteContext } from "@renderer/lexicalPlugins/AutoComplete/AutoCompleteContext";
 import AutocompletePlugin from "@renderer/lexicalPlugins/AutoComplete/AutoCompletePlugin";
 import Find from "./Find";
+import { FindContext } from "../contexts/Find";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   editorPaper: {
@@ -101,25 +102,27 @@ export function Editor(): React.FunctionComponentElement<{}> {
         {`}`}
       </style>
       <LexicalComposer initialConfig={editorConfig}>
-        <SharedAutocompleteContext>
-          <AutocompletePlugin />
-          <EditorHotkeys />
-          <EditorDropTarget>
-            <div className={classes.editorPaper}>
-              <RichTextPlugin
-                contentEditable={<ContentEditable className={classes.editorContent} />}
-                placeholder={null}
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <ScriptFormatPlugin />
-              <TreeViewPlugin />
-              <AutoFocusPlugin />
-              <HistoryPlugin />
-              <Find />
-            </div>
-          </EditorDropTarget>
-        </SharedAutocompleteContext>
+        <FindContext>
+          <SharedAutocompleteContext>
+            <AutocompletePlugin />
+            <EditorHotkeys />
+            <EditorDropTarget>
+              <div className={classes.editorPaper}>
+                <RichTextPlugin
+                  contentEditable={<ContentEditable className={classes.editorContent} />}
+                  placeholder={null}
+                  ErrorBoundary={LexicalErrorBoundary}
+                />
+                <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+                <ScriptFormatPlugin />
+                <TreeViewPlugin />
+                <AutoFocusPlugin />
+                <HistoryPlugin />
+                <Find />
+              </div>
+            </EditorDropTarget>
+          </SharedAutocompleteContext>
+        </FindContext>
       </LexicalComposer>
     </>
   );
