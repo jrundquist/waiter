@@ -426,7 +426,11 @@ function openSettings() {
     },
   });
 
-  settingsWindow.loadFile(join(__dirname, "../renderer/settings.html"));
+  if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+    settingsWindow.loadURL(process.env["ELECTRON_RENDERER_URL"] + "/settings.html");
+  } else {
+    settingsWindow.loadFile(join(__dirname, "../renderer/settings.html"));
+  }
   settingsWindow.on("ready-to-show", () => {
     settingsWindow?.show();
   });

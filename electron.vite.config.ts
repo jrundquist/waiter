@@ -31,8 +31,10 @@ export default defineConfig({
     resolve: { alias },
     build: {
       outDir: "out/preload",
-      lib: {
-        entry: resolve(join(__dirname, "preload/index.ts")),
+      rollupOptions: {
+        input: {
+          index: resolve(join(__dirname, "preload/index.ts")),
+        },
       },
     },
   },
@@ -43,8 +45,8 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          index: "index.html",
-          settings: "settings.html",
+          index: resolve(join(__dirname, "index.html")),
+          settings: resolve(join(__dirname, "settings.html")),
         },
         onwarn(warning, warn) {
           if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
