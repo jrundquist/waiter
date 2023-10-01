@@ -17,6 +17,11 @@ export enum IPCEvents {
   DO_OPEN_PDF = "pdf:open",
   OPEN_FILE = "file:open",
 
+  // Settings API
+  SETTINGS_GET_SETTINGS = "settings:get-settings",
+  SETTINGS_UPDATE_SETTINGS = "settings:update-settings",
+  SETTINGS_SETTINGS_CHANGED = "settings:settings-changed",
+
   // Editor actions
   SET_SCREEN_ELEMENTS = "script:set-elements",
   CLEAR_SCREEN_ELEMENTS = "script:clear-elements",

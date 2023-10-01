@@ -16,6 +16,7 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
       },
       "/Users/jrundquist/Downloads/sample-06_scene.pdf"
     );
+    ipcMain.emit(IPCEvents.SETTINGS_OPEN);
     // eventBus.emit("open", "/Users/jrundquist/Desktop/simple.wai");
     // eventBus.emit("open", "/Users/jrundquist/Desktop/HauntedMemories.wai");
     // ipcMain.emit("import:pdf", {}, "/Users/jrundquist/Downloads/HauntedMemories.pdf");

@@ -1,9 +1,18 @@
 import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
+import { useCurrentSettings } from "./Settings";
 
 export const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+  const currentSettings = useCurrentSettings();
   const systemPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
+  const mode = React.useMemo(() => {
+    if (currentSettings.colorTheme === "system") {
+      return systemPrefersDark ? "dark" : "light";
+    }
+    return currentSettings.colorTheme;
+  }, [currentSettings, systemPrefersDark]);
+
   const theme = React.useMemo(
     () =>
       createTheme({
@@ -26,7 +35,7 @@ export const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }
           },
         },
         palette: {
-          mode: systemPrefersDark ? "dark" : "light",
+          mode,
           primary: {
             main: "#00c8ff",
           },
@@ -35,7 +44,7 @@ export const ThemeWrapper: React.FC<React.PropsWithChildren<{}>> = ({ children }
           },
         },
       }),
-    [systemPrefersDark]
+    [mode]
   );
 
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;

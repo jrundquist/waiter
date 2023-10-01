@@ -1,9 +1,12 @@
 import { ScriptElement } from "../state/elements/elements";
 import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 import { IPCEvents } from "../ipc/events";
+import { log } from "./log";
+import { api as settingsApi, exposedAs as settingsExposedAs } from "./settingsApi";
 
 // Custom APIs for renderer
 export const api = {
+  log,
   importPdf: (path: string): void => {
     ipcRenderer.send(IPCEvents.DO_OPEN_PDF, path);
   },
@@ -46,40 +49,6 @@ export const api = {
   getCurrentTitle: () => {
     return ipcRenderer.invoke(IPCEvents.APP_GET_WINDOW_TITLE);
   },
-  log: {
-    debug: (message: string, ...args: any[]) => {
-      console.debug(message, ...args);
-      try {
-        ipcRenderer.send(IPCEvents.LOG_DEBUG, message, ...args);
-      } catch (e) {
-        console.warn("failed to send log", e);
-      }
-    },
-    error: (message: string, ...args: any[]) => {
-      console.error(message, ...args);
-      try {
-        ipcRenderer.send(IPCEvents.LOG_ERROR, message, ...args);
-      } catch (e) {
-        console.warn("failed to send log", e);
-      }
-    },
-    info: (message: string, ...args: any[]) => {
-      console.info(message, ...args);
-      try {
-        ipcRenderer.send(IPCEvents.LOG_INFO, message, ...args);
-      } catch (e) {
-        console.warn("failed to send log", e);
-      }
-    },
-    warn: (message: string, ...args: any[]) => {
-      console.warn(message, ...args);
-      try {
-        ipcRenderer.send(IPCEvents.LOG_WARN, message, ...args);
-      } catch (e) {
-        console.warn("failed to send log", e);
-      }
-    },
-  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -89,6 +58,7 @@ if (process.contextIsolated) {
   try {
     // contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("api", api);
+    contextBridge.exposeInMainWorld(settingsExposedAs, settingsApi);
   } catch (error) {
     console.error(error);
   }

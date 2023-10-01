@@ -34,6 +34,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(join(__dirname, "preload/index.ts")),
+          settings: resolve(join(__dirname, "preload/settings.ts")),
         },
       },
     },

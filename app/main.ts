@@ -14,6 +14,7 @@ import { State, initialState, reducer } from "./state";
 import { autoUpdater } from "electron-updater";
 import { isEqual } from "lodash";
 import { IPCEvents } from "@/ipc/events";
+import Prefs from "@/state/prefs";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -265,6 +266,10 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     isProduction: menuOptions.isProduction,
     platform: menuOptions.platform,
   });
+
+  Prefs.prefs$.subscribe((prefs) => {
+    mainWindow?.webContents.send(IPCEvents.SETTINGS_SETTINGS_CHANGED, prefs);
+  });
 }
 
 let openQueue: string[] = [];
@@ -370,7 +375,6 @@ ipcMain.on(IPCEvents.SETTINGS_OPEN, () => {
   if (!settingsWindowCreated) {
     openSettings();
   } else {
-    console.log({ settingsWindow });
     settingsWindow?.show();
   }
 });
@@ -422,7 +426,7 @@ function openSettings() {
     titleBarStyle: "default",
     webPreferences: {
       ...defaultWebPrefs,
-      preload: join(__dirname, "../preload/index.js"),
+      preload: join(__dirname, "../preload/settings.js"),
     },
   });
 
@@ -439,6 +443,10 @@ function openSettings() {
   });
   settingsWindow.on("show", () => {
     settingsWindow?.focus();
+  });
+
+  Prefs.prefs$.subscribe((prefs) => {
+    settingsWindow?.webContents.send(IPCEvents.SETTINGS_SETTINGS_CHANGED, prefs);
   });
   settingsWindowCreated = true;
 }
