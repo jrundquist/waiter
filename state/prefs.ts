@@ -32,12 +32,8 @@ class PrefsService {
     log.info(`[PrefsService] Init [Settings File: ${PrefsService.settingsFile}`);
     if (fs.existsSync(PrefsService.settingsFile)) {
       log.info("[PrefsService] Settings file Found");
-      fs.readFile(PrefsService.settingsFile, "utf-8", (err, data) => {
-        if (err) {
-          console.error(err);
-        }
-        this.prefsBehaviorSubject$.next(JSON.parse(data));
-      });
+      const data = fs.readFileSync(PrefsService.settingsFile, "utf-8");
+      this.prefsBehaviorSubject$.next(JSON.parse(data));
     }
 
     this.prefs$.subscribe((settings: Partial<Settings>) => {
@@ -61,11 +57,8 @@ ipcMain.on(IPCEvents.SETTINGS_GET_SETTINGS, (event: IpcMainEvent) => {
   event.returnValue = instance.currentSettings;
 });
 
-ipcMain.on(
-  IPCEvents.SETTINGS_UPDATE_SETTINGS,
-  (event: IpcMainEvent, settings: Partial<Settings>) => {
-    instance.updateSettings(settings);
-  }
-);
+ipcMain.on(IPCEvents.SETTINGS_UPDATE_SETTINGS, (_: IpcMainEvent, settings: Partial<Settings>) => {
+  instance.updateSettings(settings);
+});
 
 export default instance;

@@ -15,6 +15,7 @@ import { autoUpdater } from "electron-updater";
 import { isEqual } from "lodash";
 import { IPCEvents } from "@/ipc/events";
 import Prefs from "@/state/prefs";
+import { determineBackgroundColor } from "@/utils/determineBackgroundColor";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -35,7 +36,7 @@ const defaultWebPrefs = {
   sandbox: false,
 };
 
-function createWindow(): void {
+async function createWindow(): Promise<void> {
   // Create the browser window.
   log.info("Creating main window");
   browserLog.info("Creating main window");
@@ -44,7 +45,8 @@ function createWindow(): void {
     height: 780,
     minWidth: 840,
     minHeight: 580,
-    show: true,
+    show: false,
+    backgroundColor: await determineBackgroundColor(),
     // titleBarStyle: "default",
     titleBarStyle: "hidden",
     titleBarOverlay: {
@@ -418,12 +420,13 @@ eventBus.on("find", () => {
   mainWindow?.webContents.send(IPCEvents.FIND);
 });
 
-function openSettings() {
+async function openSettings() {
   settingsWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    show: true,
+    show: false,
     titleBarStyle: "default",
+    backgroundColor: await determineBackgroundColor(),
     webPreferences: {
       ...defaultWebPrefs,
       preload: join(__dirname, "../preload/settings.js"),

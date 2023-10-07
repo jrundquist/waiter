@@ -3,7 +3,8 @@
   "include": [
     "electron.vite.config.ts",
     "app/*",
-    "preload/*"
+    "preload/*",
+    "utils/determineBackgroundColor.ts"
   ],
   "compilerOptions": {
     "outDir": "./out",
