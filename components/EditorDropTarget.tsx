@@ -2,6 +2,7 @@
 import * as React from "react";
 import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
+import { darken, lighten } from "@mui/system";
 
 import {
   RESET_WITH_FINALDRAFT_FILE,
@@ -9,24 +10,41 @@ import {
 } from "../screenFormatPlugin/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  editorContainer: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "row",
-    backgroundColor:
-      theme.palette.mode === "dark" ? theme.palette.background.default : theme.palette.grey[300],
-    caretColor: theme.palette.primary.main,
-    caretShape: "block",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    overflow: "scroll",
-  },
-  dragging: {
-    filter: "blur(4px) hue-rotate(180deg)",
-  },
-}));
+const useStyles = makeStyles()((theme: Theme) => {
+  const lightGradient = `linear-gradient(170deg, ${lighten(
+    theme.palette.primary.main,
+    0.5
+  )} 0%, ${lighten(theme.palette.primary.main, 0.8)} 54%, ${lighten(
+    theme.palette.secondary.main,
+    0.8
+  )} 100%);`;
+  const darkGradient = `linear-gradient(155deg, ${darken(
+    theme.palette.primary.main,
+    0.7
+  )} 0%, ${darken(theme.palette.primary.main, 0.9)} 37%, ${darken(
+    theme.palette.secondary.main,
+    0.8
+  )} 100%);`;
+  return {
+    editorContainer: {
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "row",
+      backgroundColor:
+        theme.palette.mode === "dark" ? theme.palette.background.default : theme.palette.grey[200],
+      background: theme.palette.mode === "dark" ? darkGradient : lightGradient,
+      caretColor: theme.palette.primary.main,
+      caretShape: "block",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      overflow: "scroll",
+    },
+    dragging: {
+      filter: "blur(4px) hue-rotate(180deg)",
+    },
+  };
+});
 
 interface Props {}
 

@@ -35,9 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: "1056px", // 11in
     fontSize: "14px",
     backgroundColor:
-      theme.palette.mode === "dark"
-        ? theme.palette.action.disabledBackground
-        : theme.palette.common.white,
+      theme.palette.mode === "dark" ? theme.palette.grey[800] : theme.palette.common.white,
     position: "relative",
   },
 
