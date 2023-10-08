@@ -21,6 +21,7 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { Theme } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
+import { alpha } from "@mui/system";
 import { SharedAutocompleteContext } from "@screenFormatPlugin/AutoComplete/AutoCompleteContext";
 import { AutocompleteNode } from "@screenFormatPlugin/AutoComplete/AutoCompleteNode";
 import AutocompletePlugin from "@screenFormatPlugin/AutoComplete/AutoCompletePlugin";
@@ -37,6 +38,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor:
       theme.palette.mode === "dark" ? theme.palette.grey[800] : theme.palette.common.white,
     position: "relative",
+    border:
+      theme.palette.mode === "dark"
+        ? `3px solid ${theme.palette.divider}`
+        : `3px solid ${theme.palette.divider}`,
+    borderTop: "none",
+    borderBottom: "none",
+    boxShadow: theme.palette.mode === "dark" ? "none" : `none`,
   },
 
   editorContent: {

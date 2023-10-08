@@ -2,13 +2,28 @@
 import * as React from "react";
 import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
-import { darken, lighten } from "@mui/system";
+import { darken, lighten, alpha } from "@mui/system";
 
 import {
   RESET_WITH_FINALDRAFT_FILE,
   RESET_WITH_FOUNTAIN_FILE,
 } from "../screenFormatPlugin/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+
+// Register custom CSS properties for scrollbar color.
+// Expirements showed doing this using @property in an included CSS file didn't work.
+window.CSS.registerProperty({
+  name: "--scrollbar-color",
+  syntax: "<color>",
+  inherits: true,
+  initialValue: "white",
+});
+window.CSS.registerProperty({
+  name: "--scrollbar-track-color",
+  syntax: "<color>",
+  inherits: true,
+  initialValue: "rgba(255,255,255,0.1)",
+});
 
 const useStyles = makeStyles()((theme: Theme) => {
   const lightGradient = `linear-gradient(170deg, ${lighten(
@@ -25,6 +40,9 @@ const useStyles = makeStyles()((theme: Theme) => {
     theme.palette.secondary.main,
     0.8
   )} 100%);`;
+
+  const scrollBarHandleGrey = theme.palette.mode === "dark" ? 200 : 800;
+
   return {
     editorContainer: {
       width: "100%",
@@ -38,7 +56,31 @@ const useStyles = makeStyles()((theme: Theme) => {
       caretShape: "block",
       alignItems: "flex-start",
       justifyContent: "center",
-      overflow: "scroll",
+      overflowY: "scroll",
+      overflowX: "auto",
+
+      "--scrollbar-color": alpha(theme.palette.grey[scrollBarHandleGrey], 0.1),
+      "--scrollbar-track-color": alpha(theme.palette.grey[scrollBarHandleGrey], 0.05),
+      transition: "--scrollbar-color 0.3s ease, --scrollbar-track-color 0.2s ease",
+
+      "&:focus-within": {
+        "--scrollbar-color": alpha(theme.palette.grey[scrollBarHandleGrey], 0.2),
+        "--scrollbar-track-color": alpha(theme.palette.grey[scrollBarHandleGrey], 0.1),
+      },
+
+      "&::-webkit-scrollbar": {
+        width: 15,
+        cursor: "pointer",
+      },
+
+      "&::-webkit-scrollbar-track": {
+        backgroundColor: "var(--scrollbar-track-color)",
+        borderLeft: "1px solid transparent",
+      },
+
+      "&::-webkit-scrollbar-thumb": {
+        background: "var(--scrollbar-color)",
+      },
     },
     dragging: {
       filter: "blur(4px) hue-rotate(180deg)",
