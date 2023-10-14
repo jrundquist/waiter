@@ -72,7 +72,7 @@ export const SettingsApp: React.FC<{}> = ({}) => {
               alignItems: "center",
             }}
           >
-            <img src="../assets/logo/128x128.png" alt="logo" width={50} height={50} />
+            <img src="../../assets/logo/128x128.png" alt="logo" width={50} height={50} />
             <Typography variant="h6" noWrap component="div">
               wAIter
             </Typography>
