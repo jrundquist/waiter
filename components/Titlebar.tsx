@@ -1,6 +1,8 @@
 import { makeStyles } from "tss-react/mui";
 
 import { Theme } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
+
 import React from "react";
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -81,7 +83,7 @@ export function TitleBar() {
         <div className={classes.centeredTitle}>{title}</div>
         <div className={classes.sideBlock}>
           <div onClick={openSettings} className={classes.settingsButton}>
-            ⚙️
+            <SettingsIcon />
           </div>
         </div>
       </div>
