@@ -26,7 +26,8 @@
     "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
   ],
   "extraResources": [
-    "fonts/**"
+    "fonts/**",
+    "logo/**"
   ],
   "asarUnpack": [
     "fonts/**"
