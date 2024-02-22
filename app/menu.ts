@@ -15,6 +15,7 @@ export type MenuOptionsType = Readonly<{
 export type MenuActionsType = Readonly<{
   showAbout: () => unknown;
   showDebugLog: () => unknown;
+  showScriptDebugWindow: () => unknown;
   showKeyboardShortcuts: () => unknown;
   showSettings: () => unknown;
   showWindow: () => unknown;
@@ -220,6 +221,10 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         {
           label: "Debug Log",
           click: showDebugLog,
+        },
+        {
+          label: "Show Script Debug Window",
+          click: options.showScriptDebugWindow,
         },
         {
           label: "Refresh",

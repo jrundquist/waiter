@@ -1,4 +1,5 @@
-import { ScriptElement } from "../state/elements/elements";
+import { ElementType, ScriptElement } from "../state/elements/elements";
+import { ScriptMetadata } from "../state/scriptMetadata";
 import path from "node:path";
 
 export interface State {
@@ -8,6 +9,7 @@ export interface State {
   lastSaved: Date | null;
   scriptFile: string | null;
   isDirty: boolean;
+  scriptMetadata?: ScriptMetadata;
 }
 
 export type New = {
@@ -49,6 +51,7 @@ export const reducer = (state: State, action: StateAction): State => {
         ...state,
         scriptElements: action.payload,
         isDirty: true,
+        scriptMetadata: computeMetadata(action.payload),
       };
     case "state:saved":
       const scriptName =
@@ -65,3 +68,23 @@ export const reducer = (state: State, action: StateAction): State => {
       return state;
   }
 };
+
+function computeMetadata(elements: ScriptElement[]): ScriptMetadata {
+  const characters = new Set<string>();
+  const locations = new Set<string>();
+  elements.forEach((element) => {
+    if (element.type === ElementType.Character) {
+      characters.add(element.content.trim());
+    } else if (element.type == ElementType.SceneHeading) {
+      locations.add(element.content);
+    }
+  });
+  console.log({
+    characters: Array.from(characters),
+    locations: Array.from(locations),
+  });
+  return {
+    characters: Array.from(characters),
+    locations: Array.from(locations),
+  };
+}

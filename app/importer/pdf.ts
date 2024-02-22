@@ -1,4 +1,8 @@
-import { CHARACTER_PATTERN, SCENE_HEADER_PATTERN } from "../../screenFormatPlugin/FountainRegex";
+import {
+  CHARACTER_PATTERN,
+  SCENE_HEADER_PATTERN,
+  TRANSITION_PATTERN,
+} from "../../screenFormatPlugin/FountainRegex";
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";
@@ -210,7 +214,11 @@ function estimatePositions(pages: PageContents[]): PositionInfo {
     const x = sortedEndBuckets[i];
     if (x > pages[0]!.width * 0.5) {
       const looksLikeTransition = most(endPosBuckets.get(x)!, (line) => {
-        return line.match(/TO/) !== null;
+        return (
+          line.match(/TO/) !== null ||
+          line.match(/^FADE\s/) !== null ||
+          line.match(/^CUT\s/) !== null
+        );
       });
       if (looksLikeTransition) {
         transitionEndPos = x;
@@ -314,103 +322,102 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         continue;
       }
       const [x, y] = [item.transform[4], item.transform[5]];
-      if (isTextItem(item)) {
-        let type: TokenType = hintAtTypeFromPos(item);
+      let type: TokenType = hintAtTypeFromPos(item);
 
-        let canMergeUp = true;
+      let canMergeUp = true;
 
-        // Switch Actions to Scene Headers
-        if (
-          (type === TokenType.Action && item.str.match(SCENE_HEADER_PATTERN)) ||
-          prevType == TokenType.SceneNumber
-        ) {
-          type = TokenType.SceneHeading as TokenType;
-        }
-
-        // Dual Dialogue
-        if (
-          type === TokenType.UNKNOWN &&
-          x > posInfo.leftEdgePos &&
-          isInDualDialogue &&
-          roughlyEqual(y, dualDialogueLineY, 2)
-        ) {
-          type = TokenType.DualDialogueSecondChar;
-        } else if (
-          type === TokenType.UNKNOWN &&
-          x > posInfo.leftEdgePos &&
-          x < (posInfo.characterStartPos ?? page.width * 0.5) &&
-          item.str.match(CHARACTER_PATTERN)
-        ) {
-          isInDualDialogue = true;
-          dualDialogueLineY = y;
-          type = TokenType.DualDialogueFirstChar;
-        } else if (
-          (type === TokenType.Action || item.str.match(/^\(/)) &&
-          isInDualDialogue &&
-          (!hasSeenFirstDialogue || prevType == TokenType.DualDialogueFirstDialogue)
-        ) {
-          type = TokenType.DualDialogueFirstDialogue;
-          hasSeenFirstDialogue = true;
-        } else if (
-          type === TokenType.UNKNOWN &&
-          isInDualDialogue &&
-          hasSeenFirstDialogue &&
-          x > (posInfo.characterStartPos ?? page.width * 0.5)
-        ) {
-          type = TokenType.DualDialogueSecondDialogue;
-        } else if (type !== TokenType.UNKNOWN && isInDualDialogue) {
-          isInDualDialogue = false;
-          hasSeenFirstDialogue = false;
-          dualDialogueLineY = 0;
-        }
-
-        // Same line, probably the same type - just a continuation of the
-        // text being split by the parser.
-        if (type === TokenType.UNKNOWN && roughlyEqual(y, prevPositionY, 2)) {
-          type = prevType;
-        }
-
-        if (type === TokenType.Parenthetical && item.str.match(/^\(/) && !item.str.match(/\)$/)) {
-          isParentheticalOpen = true;
-        }
-
-        if (
-          type === TokenType.UNKNOWN &&
-          prevType === TokenType.Parenthetical &&
-          isParentheticalOpen
-        ) {
-          type = TokenType.Parenthetical;
-          if (item.str.match(/\)$/)) {
-            isParentheticalOpen = false;
-          }
-        }
-        if (type === TokenType.UNKNOWN) {
-          // If we still don't know what this is, it's probably an action.
-          type = TokenType.Action;
-        }
-
-        if (
-          type === TokenType.Action &&
-          prevType === TokenType.Action &&
-          y <= prevPositionY - item.height * 1.5 // TODO: 1.5 is a good way to determine if we're on a new line, but it's not perfect.
-        ) {
-          // If we're on a new line, and the previous line was an action,
-          // and there was a larger gap, then don't let this action merge,
-          // we want it to be its own element.
-          canMergeUp = false;
-        }
-
-        elements.push({
-          type,
-          content: item.str,
-          items: [item],
-          canMergeUp,
-        });
-
-        // Keep the previous type and position for the next iteration.
-        prevType = type;
-        prevPositionY = y;
+      if (type === TokenType.Action && item.str.match(TRANSITION_PATTERN)) {
+        type = TokenType.Transition;
       }
+
+      // Switch Actions to Scene Headers
+      if (item.str.match(SCENE_HEADER_PATTERN) || prevType == TokenType.SceneNumber) {
+        type = TokenType.SceneHeading as TokenType;
+      }
+
+      // Dual Dialogue
+      if (
+        type === TokenType.UNKNOWN &&
+        x > posInfo.leftEdgePos &&
+        isInDualDialogue &&
+        roughlyEqual(y, dualDialogueLineY, 2)
+      ) {
+        type = TokenType.DualDialogueSecondChar;
+      } else if (
+        type === TokenType.UNKNOWN &&
+        x > posInfo.leftEdgePos &&
+        x < (posInfo.characterStartPos ?? page.width * 0.5) &&
+        item.str.match(CHARACTER_PATTERN)
+      ) {
+        isInDualDialogue = true;
+        dualDialogueLineY = y;
+        type = TokenType.DualDialogueFirstChar;
+      } else if (
+        (type === TokenType.Action || item.str.match(/^\(/)) &&
+        isInDualDialogue &&
+        (!hasSeenFirstDialogue || prevType == TokenType.DualDialogueFirstDialogue)
+      ) {
+        type = TokenType.DualDialogueFirstDialogue;
+        hasSeenFirstDialogue = true;
+      } else if (
+        type === TokenType.UNKNOWN &&
+        isInDualDialogue &&
+        hasSeenFirstDialogue &&
+        x > (posInfo.characterStartPos ?? page.width * 0.5)
+      ) {
+        type = TokenType.DualDialogueSecondDialogue;
+      } else if (type !== TokenType.UNKNOWN && isInDualDialogue) {
+        isInDualDialogue = false;
+        hasSeenFirstDialogue = false;
+        dualDialogueLineY = 0;
+      }
+
+      // Same line, probably the same type - just a continuation of the
+      // text being split by the parser.
+      if (type === TokenType.UNKNOWN && roughlyEqual(y, prevPositionY, 2)) {
+        type = prevType;
+      }
+
+      if (type === TokenType.Parenthetical && item.str.match(/^\(/) && !item.str.match(/\)$/)) {
+        isParentheticalOpen = true;
+      }
+
+      if (
+        type === TokenType.UNKNOWN &&
+        prevType === TokenType.Parenthetical &&
+        isParentheticalOpen
+      ) {
+        type = TokenType.Parenthetical;
+        if (item.str.match(/\)$/)) {
+          isParentheticalOpen = false;
+        }
+      }
+      if (type === TokenType.UNKNOWN) {
+        // If we still don't know what this is, it's probably an action.
+        type = TokenType.Action;
+      }
+
+      if (
+        type === TokenType.Action &&
+        prevType === TokenType.Action &&
+        y <= prevPositionY - item.height * 1.5 // TODO: 1.5 is a good way to determine if we're on a new line, but it's not perfect.
+      ) {
+        // If we're on a new line, and the previous line was an action,
+        // and there was a larger gap, then don't let this action merge,
+        // we want it to be its own element.
+        canMergeUp = false;
+      }
+
+      elements.push({
+        type,
+        content: item.str,
+        items: [item],
+        canMergeUp,
+      });
+
+      // Keep the previous type and position for the next iteration.
+      prevType = type;
+      prevPositionY = y;
     }
   }
 

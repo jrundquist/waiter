@@ -5,6 +5,9 @@ export enum IPCEvents {
   LOG_INFO = "browserLog:info",
   LOG_DEBUG = "browserLog:debug",
 
+  // DEBUG
+  SHOW_SCRIPT_DEBUG_WINDOW = "debug:show-script-debug-window",
+
   // App Actions
   APP_GET_WINDOW_TITLE = "app:get-window-title",
   APP_WINDOW_TITLE_CHANGED = "app:window-title-changed",

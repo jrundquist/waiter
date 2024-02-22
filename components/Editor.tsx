@@ -21,7 +21,6 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { Theme } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
-import { alpha } from "@mui/system";
 import { SharedAutocompleteContext } from "@screenFormatPlugin/AutoComplete/AutoCompleteContext";
 import { AutocompleteNode } from "@screenFormatPlugin/AutoComplete/AutoCompleteNode";
 import AutocompletePlugin from "@screenFormatPlugin/AutoComplete/AutoCompletePlugin";

@@ -1,7 +1,9 @@
 import { ElementType, ScriptElement } from "../../state/elements/elements";
+import { State } from "@/app/state";
 import * as builder from "xmlbuilder";
 
-export function exportToFinalDraft(script: ScriptElement[]): string {
+export function exportToFinalDraft(state: State): string {
+  const script: ScriptElement[] = state.scriptElements;
   const root = builder
     .create("FinalDraft", { version: "1.0", encoding: "UTF-8", standalone: false })
     .att("DocumentType", "Script")

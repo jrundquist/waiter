@@ -22,6 +22,8 @@ import { determineBackgroundColor } from "@/utils/determineBackgroundColor";
 let mainWindow: BrowserWindow | undefined;
 let settingsWindow: BrowserWindow | undefined;
 let settingsWindowCreated = false;
+let scriptDebugWindow: BrowserWindow | undefined;
+let scriptDebugWindowCreated = false;
 let menuOptions: CreateTemplateOptionsType | undefined;
 
 let appState: State = initialState;
@@ -191,6 +193,9 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     showDebugLog: () => {
       eventBus.emit("show-logs");
     },
+    showScriptDebugWindow: () => {
+      ipcMain.emit(IPCEvents.SHOW_SCRIPT_DEBUG_WINDOW);
+    },
     showSettings: () => {
       ipcMain.emit(IPCEvents.SETTINGS_OPEN);
     },
@@ -223,7 +228,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
         pathName = `${pathName}.fdx`;
       }
 
-      const content = exportToFinalDraft(appState.scriptElements);
+      const content = exportToFinalDraft(appState);
       fs.writeFileSync(pathName, content);
     },
     showWindow,
@@ -335,11 +340,11 @@ app.whenReady().then(() => {
 
   initImporter();
 
-  createWindow();
-
-  if (is.dev) {
-    runDevTask(mainWindow);
-  }
+  createWindow().finally(() => {
+    if (is.dev) {
+      runDevTask(mainWindow);
+    }
+  });
 
   autoUpdater.checkForUpdatesAndNotify();
 });
@@ -378,6 +383,15 @@ ipcMain.on(IPCEvents.SETTINGS_OPEN, () => {
     openSettings();
   } else {
     settingsWindow?.show();
+  }
+});
+
+ipcMain.on(IPCEvents.SHOW_SCRIPT_DEBUG_WINDOW, () => {
+  log.debug(IPCEvents.SHOW_SCRIPT_DEBUG_WINDOW);
+  if (!scriptDebugWindowCreated) {
+    openScriptDebugWindow();
+  } else {
+    scriptDebugWindow?.show();
   }
 });
 
@@ -452,6 +466,36 @@ async function openSettings() {
     settingsWindow?.webContents.send(IPCEvents.SETTINGS_SETTINGS_CHANGED, prefs);
   });
   settingsWindowCreated = true;
+}
+
+async function openScriptDebugWindow() {
+  scriptDebugWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    show: false,
+    titleBarStyle: "default",
+    backgroundColor: await determineBackgroundColor(),
+    webPreferences: {
+      ...defaultWebPrefs,
+      preload: join(__dirname, "../preload/settings.js"),
+    },
+  });
+
+  if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+    scriptDebugWindow.loadURL(process.env["ELECTRON_RENDERER_URL"] + "/script-debug.html");
+  } else {
+    scriptDebugWindow.loadFile(join(__dirname, "../renderer/script-debug.html"));
+  }
+  scriptDebugWindow.on("ready-to-show", () => {
+    scriptDebugWindow?.show();
+  });
+  scriptDebugWindow.on("closed", () => {
+    scriptDebugWindowCreated = false;
+  });
+  scriptDebugWindow.on("show", () => {
+    scriptDebugWindow?.focus();
+  });
+  scriptDebugWindowCreated = true;
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
