@@ -311,6 +311,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
   let dualDialogueLineY = 0;
   let hasSeenFirstDialogue = false;
   let prevPositionY = 0;
+  let prevItem: TextItem | TextMarkedContent;
   let isParentheticalOpen = false;
 
   const elements: ParsedElement[] = [];
@@ -327,21 +328,44 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
       if (item.height === 0) {
         continue;
       }
-      const [x, y] = [item.transform[4], item.transform[5]];
       let type: TokenType = hintAtTypeFromPos(item);
-
       let canMergeUp = true;
 
-      if (type === TokenType.Action && item.str.match(TRANSITION_PATTERN)) {
+      const [x, y] = [item.transform[4], item.transform[5]];
+      const isSameLineAsPreviousEl = roughlyEqual(y, prevPositionY, 2);
+
+      if (
+        item.str.match(TRANSITION_PATTERN) &&
+        [TokenType.Action, TokenType.UNKNOWN].includes(type)
+      ) {
         type = TokenType.Transition;
+      }
+
+      // If we just encountered a scene number, and the previous item was an
+      // Action, look back and see if the action is close enough (couple pixels)
+      // of the scene number, if so, it was probably just a PDF rendering issue,
+      // and was probably actually the scene name.
+      if (type === TokenType.SceneNumber) {
+        if (elements.length > 0 && prevType === TokenType.Action && isSameLineAsPreviousEl) {
+          elements[elements.length - 1].meta = { sceneNumber: item.str };
+          elements[elements.length - 1].type = TokenType.SceneHeading;
+          continue;
+        }
+      }
+
+      // Scene Numbers often have a couple of blank elements between them and
+      // the scene description, simply skip these.
+      if (prevType === TokenType.SceneNumber && item.str == "") {
+        continue;
       }
 
       // Switch Actions to Scene Headers
       if (item.str.match(SCENE_HEADER_PATTERN) || prevType == TokenType.SceneNumber) {
         type = TokenType.SceneHeading as TokenType;
+
+        // If the scene heading is just a number, then it's probably a
+        // trailing scene number, but as a trailing one, lets just ignore it.
         if (item.str.match(SCENE_NUMBER_PATTERN)) {
-          // If the scene heading is just a number, then it's probably a scene
-          // number, but as a trailing one, lets just ignore it.
           item.str = "";
           canMergeUp = true;
         }
@@ -351,11 +375,10 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         if (roughlyEqual(x + item.width, posInfo.pageNumberEndPos ?? 0, 20)) {
           // Technically some marker from a script program, but it's meaninfless
           // for us. Just ignore it.
+          console.log("Ignoring marker", item.str);
           type = TokenType.PageNumber;
         }
       }
-
-      const isSameLineAsPreviousEl = roughlyEqual(y, prevPositionY, 2);
 
       // Dual Dialogue
       if (
@@ -416,11 +439,31 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         }
       }
 
+      // If the item looks like a transition, assume it is.
+      if (type === TokenType.UNKNOWN && item.str.match(TRANSITION_PATTERN)) {
+        type = TokenType.Transition;
+      }
+
+      // If we still don't know what this is, it's probably an action.
       if (type === TokenType.UNKNOWN) {
-        // If we still don't know what this is, it's probably an action.
         type = TokenType.Action;
       }
 
+      // Dialogue and Character names cannot start on a line that already has text.
+      if (
+        [
+          TokenType.Dialogue,
+          TokenType.Character,
+          TokenType.DualDialogueFirstChar,
+          TokenType.DualDialogueSecondChar,
+        ].includes(type) &&
+        prevType === TokenType.Action &&
+        roughlyEqual(y, prevPositionY + prevHeight, 2)
+      ) {
+        type = TokenType.Action;
+      }
+
+      // If in an action block, allow merging up if we're on a new line.
       if (
         type === TokenType.Action &&
         prevType === TokenType.Action &&
@@ -432,26 +475,16 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         canMergeUp = false;
       }
 
-      if (
-        (type === TokenType.Dialogue || type === TokenType.Character) &&
-        prevType === TokenType.Action &&
-        roughlyEqual(y, prevPositionY + prevHeight, 2)
-      ) {
-        type = TokenType.Action;
-      }
-
-      if (item.str.match(/\s*CLICK\./)) {
-        console.log({ item, prevHeight, prevPositionY, prevType, x, y, type });
-      }
-
+      // Add the element to the list of elements.
       elements.push({
         type,
-        content: item.str ?? "",
+        content: item.str,
         items: [item],
         canMergeUp,
       });
 
       // Keep the previous type and position for the next iteration.
+      prevItem = item;
       prevType = type;
       prevHeight = item.height;
       prevPositionY = y;

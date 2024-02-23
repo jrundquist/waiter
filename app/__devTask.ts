@@ -27,6 +27,7 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
         reply: () => {},
       },
       "/Users/jrundquist/Desktop/CTScript03.31.2014.pdf"
+      // "/Users/jrundquist/Desktop/test.pdf"
     );
     // mainWindow?.minimize();
   });
