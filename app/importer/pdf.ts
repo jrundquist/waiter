@@ -1,13 +1,14 @@
 import {
   CHARACTER_PATTERN,
   SCENE_HEADER_PATTERN,
+  SCENE_NUMBER_PATTERN,
   TRANSITION_PATTERN,
 } from "../../screenFormatPlugin/FountainRegex";
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";
 import { getDocument, PDFDocumentProxy } from "pdfjs-dist";
-import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
+import { TextContent, TextItem, TextMarkedContent } from "pdfjs-dist/types/src/display/api";
 import { ElementType, type ScriptElement } from "../../state/elements/elements";
 import { log } from "../logger";
 // import eventBus from "../eventBus";
@@ -304,7 +305,8 @@ export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
 function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): ParsedElement[] {
   const hintAtTypeFromPos = createHinter(posInfo);
 
-  let prevType = TokenType.UNKNOWN;
+  let prevType: TokenType = TokenType.UNKNOWN;
+  let prevHeight: number = 0;
   let isInDualDialogue = false;
   let dualDialogueLineY = 0;
   let hasSeenFirstDialogue = false;
@@ -321,6 +323,10 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
       if (!isTextItem(item)) {
         continue;
       }
+      // Skip items that have no height, they're probably just whitespace.
+      if (item.height === 0) {
+        continue;
+      }
       const [x, y] = [item.transform[4], item.transform[5]];
       let type: TokenType = hintAtTypeFromPos(item);
 
@@ -333,7 +339,15 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
       // Switch Actions to Scene Headers
       if (item.str.match(SCENE_HEADER_PATTERN) || prevType == TokenType.SceneNumber) {
         type = TokenType.SceneHeading as TokenType;
+        if (item.str.match(SCENE_NUMBER_PATTERN)) {
+          // If the scene heading is just a number, then it's probably a scene
+          // number, but as a trailing one, lets just ignore it.
+          item.str = "";
+          canMergeUp = true;
+        }
       }
+
+      const isSameLineAsPreviousEl = roughlyEqual(y, prevPositionY, 2);
 
       // Dual Dialogue
       if (
@@ -347,7 +361,8 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         type === TokenType.UNKNOWN &&
         x > posInfo.leftEdgePos &&
         x < (posInfo.characterStartPos ?? page.width * 0.5) &&
-        item.str.match(CHARACTER_PATTERN)
+        item.str.match(CHARACTER_PATTERN) &&
+        !isSameLineAsPreviousEl
       ) {
         isInDualDialogue = true;
         dualDialogueLineY = y;
@@ -374,7 +389,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
 
       // Same line, probably the same type - just a continuation of the
       // text being split by the parser.
-      if (type === TokenType.UNKNOWN && roughlyEqual(y, prevPositionY, 2)) {
+      if (type === TokenType.UNKNOWN && isSameLineAsPreviousEl) {
         type = prevType;
       }
 
@@ -392,6 +407,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
           isParentheticalOpen = false;
         }
       }
+
       if (type === TokenType.UNKNOWN) {
         // If we still don't know what this is, it's probably an action.
         type = TokenType.Action;
@@ -408,15 +424,28 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         canMergeUp = false;
       }
 
+      if (
+        (type === TokenType.Dialogue || type === TokenType.Character) &&
+        prevType === TokenType.Action &&
+        roughlyEqual(y, prevPositionY + prevHeight, 2)
+      ) {
+        type = TokenType.Action;
+      }
+
+      if (item.str.match(/\s*CLICK\./)) {
+        console.log({ item, prevHeight, prevPositionY, prevType, x, y, type });
+      }
+
       elements.push({
         type,
-        content: item.str,
+        content: item.str ?? "",
         items: [item],
         canMergeUp,
       });
 
       // Keep the previous type and position for the next iteration.
       prevType = type;
+      prevHeight = item.height;
       prevPositionY = y;
     }
   }
@@ -430,6 +459,7 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
   const newElements: ParsedElement[] = [prevElement];
   for (let i = 1; i < elements.length; i++) {
     const element = elements[i];
+    const afterEls: ParsedElement[] = [];
 
     if (prevElement.type === TokenType.SceneHeading && element.type === TokenType.SceneNumber) {
       prevElement.meta = { sceneNumber: element.content };
@@ -461,8 +491,39 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
       element.type === TokenType.DualDialogueFirstChar ||
       element.type === TokenType.DualDialogueSecondChar
     ) {
+      const CONTD_PATTERN = /\(\s*cont[^\w]?d\s*?\)\s*/i;
+      const PARENTHETICAL_PATTERN = /\s*\(.*\)\s*/;
+      const UNESCAPED_VOICEOVER_PATTERN = /\s*(V\.O\.)\s*$/i;
       // Strip (cont'd) from character names
-      element.content = element.content.replace(/\(\s?CONT[’']?D\s?\)\s*/i, "").trim();
+      for (const pattern of [CONTD_PATTERN]) {
+        element.content = element.content.replace(pattern, "").trim();
+      }
+
+      if (element.content.match(PARENTHETICAL_PATTERN)) {
+        const match = element.content.match(PARENTHETICAL_PATTERN);
+        if (match) {
+          element.content = element.content.replace(match[0], "").trim();
+          const parenElement = {
+            type: TokenType.Parenthetical,
+            content: match[0],
+            items: element.items,
+            canMergeUp: false,
+          };
+          afterEls.push(parenElement);
+        }
+      }
+
+      if (element.content.match(UNESCAPED_VOICEOVER_PATTERN)) {
+        const match = element.content.match(UNESCAPED_VOICEOVER_PATTERN)!;
+        element.content = element.content.replace(match[0], "").trim();
+        const parenElement = {
+          type: TokenType.Parenthetical,
+          content: `(${match[0].trim()})`,
+          items: element.items,
+          canMergeUp: false,
+        };
+        afterEls.push(parenElement);
+      }
     }
 
     if (element.type === prevElement.type && element.canMergeUp) {
@@ -488,7 +549,10 @@ function cleanupParsedElements(elements: ParsedElement[]): ParsedElement[] {
     }
 
     newElements.push(element);
-    prevElement = element;
+    for (const afterEl of afterEls) {
+      newElements.push(afterEl);
+    }
+    prevElement = newElements[newElements.length - 1];
   }
 
   return newElements;
