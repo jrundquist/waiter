@@ -347,6 +347,14 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         }
       }
 
+      if (type === TokenType.UNKNOWN && item.str.match(/[\*\^\@]\s*$/)) {
+        if (roughlyEqual(x + item.width, posInfo.pageNumberEndPos ?? 0, 20)) {
+          // Technically some marker from a script program, but it's meaninfless
+          // for us. Just ignore it.
+          type = TokenType.PageNumber;
+        }
+      }
+
       const isSameLineAsPreviousEl = roughlyEqual(y, prevPositionY, 2);
 
       // Dual Dialogue
