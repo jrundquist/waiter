@@ -11,7 +11,7 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import LexicalHorizontalRuleNode from "@lexical/react/LexicalHorizontalRuleNode";
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import {
   MarkdownShortcutPlugin,
   DEFAULT_TRANSFORMERS as TRANSFORMERS,
@@ -81,7 +81,7 @@ export function Editor(): React.FunctionComponentElement<{}> {
       AutoLinkNode,
       LinkNode,
       AutocompleteNode,
-      LexicalHorizontalRuleNode.HorizontalRuleNode,
+      HorizontalRuleNode,
       ...SCRIPT_NODES,
     ],
   };
