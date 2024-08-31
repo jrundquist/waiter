@@ -4,10 +4,7 @@ import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
 import { darken, lighten, alpha } from "@mui/system";
 
-import {
-  RESET_WITH_FINALDRAFT_FILE,
-  RESET_WITH_FOUNTAIN_FILE,
-} from "../screenFormatPlugin/ScriptFormatPlugin";
+import { RESET_WITH_FOUNTAIN_FILE } from "../screenFormatPlugin/ScriptFormatPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 // Register custom CSS properties for scrollbar color.
@@ -110,9 +107,10 @@ export const EditorDropTarget: React.FC<React.PropsWithChildren<Props>> = ({ chi
         if (file.name.toLocaleLowerCase().endsWith(".fountain")) {
           editor.dispatchCommand(RESET_WITH_FOUNTAIN_FILE, file);
         } else if (file.name.toLocaleLowerCase().endsWith(".fdx")) {
-          editor.dispatchCommand(RESET_WITH_FINALDRAFT_FILE, file);
+          console.log("importing fxd: ", file.path);
+          window.api.importFinalDraft(file.path);
         } else if (file.name.toLocaleLowerCase().endsWith(".pdf")) {
-          console.log("importing pdf", file.path);
+          console.log("importing pdf: ", file.path);
           window.api.importPdf(file.path);
         } else if (file.name.toLocaleLowerCase().endsWith(".wai")) {
           window.api.openFile(file.path);

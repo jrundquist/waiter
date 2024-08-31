@@ -22,12 +22,12 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     // eventBus.emit("open", "/Users/jrundquist/Desktop/simple.wai");
     // eventBus.emit("open", "/Users/jrundquist/Desktop/HauntedMemories.wai");
     ipcMain.emit(
-      IPCEvents.DO_OPEN_PDF,
+      IPCEvents.OPEN_FILE,
       {
         reply: () => {},
       },
-      "/Users/jrundquist/Desktop/CTScript03.31.2014.pdf"
-      // "/Users/jrundquist/Desktop/test.pdf"
+      // "/Users/jrundquist/Desktop/bears_vs_zombies.fdx"
+      "/Users/jrundquist/Desktop/bears_vs_zombies.wai"
     );
     // mainWindow?.minimize();
   });

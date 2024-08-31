@@ -5,4 +5,6 @@ out/
 output/
 dist/
 
+.yarn
+
 .DS_Store

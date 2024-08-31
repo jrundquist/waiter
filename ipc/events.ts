@@ -18,6 +18,7 @@ export enum IPCEvents {
   FILE_OPEN_DIALOG = "file:open_dialog",
 
   DO_OPEN_PDF = "pdf:open",
+  DO_OPEN_FDX = "fdx:open",
   OPEN_FILE = "file:open",
 
   // Settings API

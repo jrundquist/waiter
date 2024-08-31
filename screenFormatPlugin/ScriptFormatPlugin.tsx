@@ -42,10 +42,6 @@ export const RESET_WITH_FOUNTAIN_FILE: LexicalCommand<File> = createCommand(
   "RESET_WITH_FOUNTAIN_FILE"
 );
 
-export const RESET_WITH_FINALDRAFT_FILE: LexicalCommand<File> = createCommand(
-  "RESET_WITH_FINALDRAFT_FILE"
-);
-
 type NodeList = (
   | Klass<LexicalNode>
   | {
@@ -160,36 +156,6 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
         };
         reader.readAsText(fountainFile);
         return false;
-      },
-      COMMAND_PRIORITY_HIGH
-    );
-
-    editor.registerCommand(
-      RESET_WITH_FINALDRAFT_FILE,
-      (draft: File) => {
-        const reader = new FileReader();
-        reader.onload = function (f) {
-          const scriptText = f.target?.result as string | null;
-          if (scriptText !== null) {
-            editor.update(() => {
-              parseFinalDraft(scriptText);
-            });
-
-            // HACK to get around the fact these elements haven't been added to
-            // the DOM yet.
-            setTimeout(() => {
-              editor.update(() => {
-                updateLineNodes(lineNodeToEl, editor);
-              });
-              updatePages(editor, lineNodeToEl);
-              editor.update(() => {
-                scriptDetails?.buildScript(editor.getEditorState(), $getRoot(), lineNodeToEl);
-              });
-            }, 0);
-          }
-        };
-        reader.readAsText(draft);
-        return true;
       },
       COMMAND_PRIORITY_HIGH
     );

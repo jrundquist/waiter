@@ -20,6 +20,7 @@ export type MenuActionsType = Readonly<{
   showSettings: () => unknown;
   showWindow: () => unknown;
   importPdfAction: () => void;
+  importFinalDraft: () => void;
   newAction: () => void;
   openAction: () => void;
   saveAction: (saveAs?: boolean) => void;
@@ -45,6 +46,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     showKeyboardShortcuts,
     showSettings,
     importPdfAction,
+    importFinalDraft,
     newAction,
     openAction,
     saveAction,
@@ -109,8 +111,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
             },
             {
               label: "Import from Final Draft",
-              enabled: false,
-              click: () => {},
+              click: importFinalDraft,
             },
           ],
         },

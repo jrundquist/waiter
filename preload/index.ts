@@ -7,6 +7,9 @@ import { api as settingsApi, exposedAs as settingsExposedAs } from "./settingsAp
 // Custom APIs for renderer
 export const api = {
   log,
+  importFinalDraft: (path: string): void => {
+    ipcRenderer.send(IPCEvents.DO_OPEN_FDX, path);
+  },
   importPdf: (path: string): void => {
     ipcRenderer.send(IPCEvents.DO_OPEN_PDF, path);
   },

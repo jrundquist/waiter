@@ -216,6 +216,23 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
           );
         });
     },
+    importFinalDraft: () => {
+      dialog
+        .showOpenDialog({
+          properties: ["openFile"],
+          filters: [{ name: "Final Draft", extensions: ["fdx"] }],
+        })
+        .then((result) => {
+          ipcMain.emit(
+            IPCEvents.DO_OPEN_FDX,
+            {
+              reply: (channel: string, ...args: any[]) =>
+                mainWindow?.webContents.send(channel, ...args),
+            },
+            result.filePaths[0]
+          );
+        });
+    },
     exportFinalDraft: () => {
       let pathName = dialog.showSaveDialogSync({
         title: "Export to Final Draft",
