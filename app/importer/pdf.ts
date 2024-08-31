@@ -7,7 +7,7 @@ import {
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";
-import { getDocument, PDFDocumentProxy } from "pdfjs-dist";
+import type { getDocument as GetDocumentType, PDFDocumentProxy } from "pdfjs-dist";
 import { TextContent, TextItem, TextMarkedContent } from "pdfjs-dist/types/src/display/api";
 import { ElementType, type ScriptElement } from "../../state/elements/elements";
 import { log } from "../logger";
@@ -254,6 +254,12 @@ function estimatePositions(pages: PageContents[]): PositionInfo {
   };
 }
 
+// dynamic import
+async function importPdfLib() {
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  return pdfjsLib;
+}
+
 function loadPage(doc: PDFDocumentProxy, pageNumber: number): Promise<PageContents> {
   return doc.getPage(pageNumber).then(async (page) => {
     const vp = page.getViewport({ scale: 1.0 });
@@ -271,10 +277,13 @@ function loadPage(doc: PDFDocumentProxy, pageNumber: number): Promise<PageConten
   });
 }
 
-export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
+export async function importPdf(pdfFile: string): Promise<ScriptElement[]> {
   log.debug("Importing PDF: " + pdfFile);
+
+  const { getDocument } = await importPdfLib();
+
   return getDocument(pdfFile)
-    .promise.then((doc: PDFDocumentProxy) => {
+    .promise.then(async (doc: PDFDocumentProxy) => {
       const numPages = doc.numPages;
       log.info("# Document Loaded");
       log.info("Number of Pages: " + numPages);
@@ -283,10 +292,12 @@ export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
       for (let i = 1; i <= numPages; i++) {
         pageLoaders.push(loadPage(doc, i));
       }
-      return Promise.all(pageLoaders).catch((err) => {
-        log.error("Failed to Parse PDF. " + err.message);
-        dialog.showErrorBox("Failed to Parse PDF", err.message);
-      });
+      try {
+        return await Promise.all(pageLoaders);
+      } catch (err: unknown) {
+        log.error("Failed to Parse PDF. " + (err as Error).message);
+        dialog.showErrorBox("Failed to Parse PDF", (err as Error).message);
+      }
     })
     .catch((err: Error) => {
       log.error("Failed to Import PDF. " + err.message);
@@ -300,8 +311,13 @@ export function importPdf(pdfFile: string): Promise<ScriptElement[]> {
     })
     .then(pagesToElementsList)
     .then(cleanupParsedElements)
-    .then(mapToScriptElements);
+    .then(mapToScriptElements)
+    .then((elements) => {
+      log.info("Imported " + elements.length + " elements");
+      return elements;
+    });
 }
+
 function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): ParsedElement[] {
   const hintAtTypeFromPos = createHinter(posInfo);
 
@@ -319,11 +335,49 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
   // Walk the pages, creating json that represents the page contents.
   for (let p = 0; p < pages.length; p++) {
     const page = pages[p];
-    for (let i = 0; i < page.content.items.length; i++) {
-      const item = page.content.items[i];
-      if (!isTextItem(item)) {
-        continue;
-      }
+
+    const { items } = page.content.items.reduce<{
+      items: TextItem[];
+      prevSkipped: boolean;
+    }>(
+      (acc, item) => {
+        // Skip non-text items
+        if (!isTextItem(item)) {
+          return { ...acc, prevSkipped: true };
+        }
+
+        // Skip items that have no height, they're probably just whitespace.
+        if (item.height === 0) {
+          return { ...acc, prevSkipped: true };
+        }
+
+        const prevItem = acc.items[acc.items.length - 1] ?? null;
+        const prevXEndPos = prevItem ? prevItem.transform[4] + prevItem.width : 0;
+        const prevPositionY = prevItem ? prevItem.transform[5] : 0;
+        const [x, y] = [item.transform[4], item.transform[5]];
+        const width = item.width;
+        const isSameLineAsPreviousEl = roughlyEqual(y, prevPositionY, 2);
+        const isCloseToPrevEl = roughlyEqual(prevXEndPos, x, width / 2);
+
+        if (isSameLineAsPreviousEl && isCloseToPrevEl && !acc.prevSkipped) {
+          prevItem.str += item.str;
+          prevItem.width += width;
+          return {
+            ...acc,
+            prevSkipped: false,
+          };
+        }
+
+        return {
+          items: [...acc.items, item],
+          prevSkipped: false,
+        };
+      },
+      { prevSkipped: false, items: [] }
+    );
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       // Skip items that have no height, they're probably just whitespace.
       if (item.height === 0) {
         continue;
@@ -375,7 +429,7 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
         if (roughlyEqual(x + item.width, posInfo.pageNumberEndPos ?? 0, 20)) {
           // Technically some marker from a script program, but it's meaninfless
           // for us. Just ignore it.
-          console.log("Ignoring marker", item.str);
+          log.warn("Ignoring marker", item.str);
           type = TokenType.PageNumber;
         }
       }

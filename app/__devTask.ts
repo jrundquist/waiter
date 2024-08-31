@@ -21,6 +21,7 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     // ipcMain.emit(IPCEvents.SETTINGS_OPEN);
     // eventBus.emit("open", "/Users/jrundquist/Desktop/simple.wai");
     // eventBus.emit("open", "/Users/jrundquist/Desktop/HauntedMemories.wai");
+
     ipcMain.emit(
       IPCEvents.OPEN_FILE,
       {
@@ -29,6 +30,15 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
       // "/Users/jrundquist/Desktop/bears_vs_zombies.fdx"
       "/Users/jrundquist/Desktop/bears_vs_zombies.wai"
     );
+
+    // ipcMain.emit(
+    //   IPCEvents.DO_OPEN_PDF,
+    //   {
+    //     reply: () => {},
+    //   },
+    //   "/Users/jrundquist/Downloads/The Haunting of Mercy Hill.pdf"
+    // );
+
     // mainWindow?.minimize();
   });
 };

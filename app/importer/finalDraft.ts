@@ -22,8 +22,8 @@ export async function importFinalDraft(fdxFile: string): Promise<ScriptElement[]
     document.querySelector("FinalDraft") === null ||
     document
       .querySelector("FinalDraft")
-      .getAttribute("DocumentType")
-      .match(/Script/i) === null
+      ?.getAttribute("DocumentType")
+      ?.match(/Script/i) === null
   ) {
     log.error("Not a Final Draft script file.");
     throw new Error("Not a Final Draft script file.");
