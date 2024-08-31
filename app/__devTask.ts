@@ -23,13 +23,21 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     // eventBus.emit("open", "/Users/jrundquist/Desktop/HauntedMemories.wai");
 
     ipcMain.emit(
-      IPCEvents.OPEN_FILE,
+      IPCEvents.DO_OPEN_FDX,
       {
         reply: () => {},
       },
-      // "/Users/jrundquist/Desktop/bears_vs_zombies.fdx"
-      "/Users/jrundquist/Desktop/bears_vs_zombies.wai"
+      "/Users/jrundquist/Downloads/The Haunting of Mercy Hill.fdx"
     );
+
+    // ipcMain.emit(
+    //   IPCEvents.OPEN_FILE,
+    //   {
+    //     reply: () => {},
+    //   },
+    //   // "/Users/jrundquist/Desktop/bears_vs_zombies.fdx"
+    //   "/Users/jrundquist/Desktop/bears_vs_zombies.wai"
+    // );
 
     // ipcMain.emit(
     //   IPCEvents.DO_OPEN_PDF,

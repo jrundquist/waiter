@@ -5,6 +5,7 @@ import { join } from "path";
 import { runDevTask } from "./__devTask";
 import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
+import { exportToFountain } from "./exporter/fountain";
 import { init as initImporter } from "./importer";
 import { ElementType, ScriptElement } from "../state/elements/elements";
 import { loadFile, saveState } from "./loader";
@@ -246,6 +247,21 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       }
 
       const content = exportToFinalDraft(appState);
+      fs.writeFileSync(pathName, content);
+    },
+    exportFounain: () => {
+      let pathName = dialog.showSaveDialogSync({
+        title: "Export to Fountain",
+        filters: [{ name: "Fountain", extensions: ["fountain"] }],
+      });
+
+      if (pathName === undefined) {
+        return;
+      } else if (!pathName.endsWith(".fountain")) {
+        pathName = `${pathName}.fountain`;
+      }
+
+      const content = exportToFountain(appState);
       fs.writeFileSync(pathName, content);
     },
     showWindow,

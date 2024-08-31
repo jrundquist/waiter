@@ -10,6 +10,14 @@ export interface State {
   scriptFile: string | null;
   isDirty: boolean;
   scriptMetadata?: ScriptMetadata;
+
+  scriptTitle: string | null;
+  scriptCredit: string | null;
+  scriptAuthor: string | null;
+  scriptSource: string | null;
+  scriptDraftDate: string | null;
+  scriptContact: string | null;
+  scriptRights: string | null;
 }
 
 export type New = {
@@ -35,6 +43,14 @@ export const initialState: State = {
   lastSaved: null,
   scriptFile: null,
   isDirty: false,
+
+  scriptTitle: null,
+  scriptCredit: null,
+  scriptAuthor: null,
+  scriptSource: null,
+  scriptDraftDate: null,
+  scriptContact: null,
+  scriptRights: null,
 };
 
 export const reducer = (state: State, action: StateAction): State => {

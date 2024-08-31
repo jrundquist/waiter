@@ -25,6 +25,7 @@ export type MenuActionsType = Readonly<{
   openAction: () => void;
   saveAction: (saveAs?: boolean) => void;
   exportFinalDraft: () => void;
+  exportFounain: () => void;
   reloadWindow: () => void;
   numberScenes: () => void;
   clearSceneNumbers: () => void;
@@ -51,6 +52,7 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     openAction,
     saveAction,
     exportFinalDraft,
+    exportFounain,
     reloadWindow,
   } = options;
 
@@ -118,6 +120,10 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
         {
           label: "Export",
           submenu: [
+            {
+              label: "Export to Fountain",
+              click: exportFounain,
+            },
             {
               label: "Export to Final Draft",
               click: exportFinalDraft,
