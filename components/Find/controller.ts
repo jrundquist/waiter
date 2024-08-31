@@ -208,7 +208,7 @@ export class FindController {
       return this.setCurrentResultIndex(null);
     }
     const i = this.resultIndex;
-    this.resultIndex = (i + 1) % this.resultCount ?? 0;
+    this.resultIndex = (i + 1) % this.resultCount;
     this.setCurrentResultIndex(this.resultIndex);
   };
 
