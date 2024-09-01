@@ -131,13 +131,6 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
             },
           ],
         },
-        {
-          type: "separator",
-        },
-        {
-          role: "quit",
-          label: "&Quit",
-        },
       ],
     },
     {
