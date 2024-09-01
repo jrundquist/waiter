@@ -12,6 +12,7 @@ import { loadFile, saveState } from "./loader";
 import { browserLog, browserLogPath, log, logPath } from "./logger";
 import { CreateTemplateOptionsType, createTemplate } from "./menu";
 import { State, initialState, reducer } from "./state";
+import type { SetScriptTitle } from "@/app/state";
 import { autoUpdater } from "electron-updater";
 import { isEqual } from "lodash";
 import { IPCEvents } from "@/ipc/events";
@@ -456,6 +457,22 @@ eventBus.on("bus:window:set-title", (title: string) => {
 
 ipcMain.handle(IPCEvents.APP_GET_WINDOW_TITLE, () => {
   return mainWindow?.getTitle();
+});
+
+ipcMain.handle(IPCEvents.APP_GET_STATE, () => {
+  console.log("Getting state", appState.scriptTitle);
+  return appState;
+});
+
+ipcMain.on(IPCEvents.OPEN_TITLE_PAGE, () => {
+  log.info("Opening title page");
+  mainWindow?.webContents.send(IPCEvents.OPEN_TITLE_PAGE);
+});
+
+ipcMain.on(IPCEvents.SAVE_TITLE_INFO, (_: IpcMainEvent, info: SetScriptTitle["payload"]) => {
+  console.log("Saving title info", info);
+  appState = reducer(appState, { type: "state:set-script-title", payload: info });
+  console.log("Saved title info", appState.scriptAuthors);
 });
 
 eventBus.on("show-logs", () => {

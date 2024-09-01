@@ -1,6 +1,7 @@
 import { isString } from "lodash";
-import type { MenuItemConstructorOptions } from "electron";
+import { ipcMain, type MenuItemConstructorOptions } from "electron";
 import eventBus from "./eventBus";
+import { IPCEvents } from "@/ipc/events";
 
 export type MenuListType = Array<MenuItemConstructorOptions>;
 
@@ -188,6 +189,15 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
     {
       label: "&Screenplay",
       submenu: [
+        {
+          label: "Edit Title Page",
+          click: () => {
+            ipcMain.emit(IPCEvents.OPEN_TITLE_PAGE);
+          },
+        },
+        {
+          type: "separator",
+        },
         {
           label: "Number Scenes",
           click: options.numberScenes,

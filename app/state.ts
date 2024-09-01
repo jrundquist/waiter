@@ -13,7 +13,7 @@ export interface State {
 
   scriptTitle: string | null;
   scriptCredit: string | null;
-  scriptAuthor: string | null;
+  scriptAuthors: string | null;
   scriptSource: string | null;
   scriptDraftDate: string | null;
   scriptContact: string | null;
@@ -34,7 +34,19 @@ export type Saved = {
   file: string;
 };
 
-export type StateAction = SetElements | Saved | New;
+export type SetScriptTitle = {
+  type: "state:set-script-title";
+  payload: {
+    title: string;
+    credit: string;
+    authors: string;
+    source: string;
+    contact: string;
+    date: string;
+  };
+};
+
+export type StateAction = SetElements | Saved | New | SetScriptTitle;
 
 export const initialState: State = {
   scriptElements: [],
@@ -44,9 +56,9 @@ export const initialState: State = {
   scriptFile: null,
   isDirty: false,
 
-  scriptTitle: null,
+  scriptTitle: "hello",
   scriptCredit: null,
-  scriptAuthor: null,
+  scriptAuthors: null,
   scriptSource: null,
   scriptDraftDate: null,
   scriptContact: null,
@@ -79,6 +91,16 @@ export const reducer = (state: State, action: StateAction): State => {
         lastSaved: new Date(),
         scriptFile: action.file,
         isDirty: false,
+      };
+    case "state:set-script-title":
+      return {
+        ...state,
+        scriptTitle: action.payload.title,
+        scriptCredit: action.payload.credit,
+        scriptAuthors: action.payload.authors,
+        scriptSource: action.payload.source,
+        scriptDraftDate: action.payload.date,
+        scriptContact: action.payload.contact,
       };
     default:
       return state;

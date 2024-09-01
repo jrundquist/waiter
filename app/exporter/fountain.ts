@@ -141,8 +141,8 @@ export function exportToFountain(state: State): string {
   if (state.scriptCredit) {
     document.addLine(`Credit: ${state.scriptCredit}`);
   }
-  if (state.scriptAuthor) {
-    document.addLine(`Author: ${state.scriptAuthor}`);
+  if (state.scriptAuthors) {
+    document.addLine(`Author: ${state.scriptAuthors}`);
   }
   if (state.scriptSource) {
     document.addLine(`Source: ${state.scriptSource}`);

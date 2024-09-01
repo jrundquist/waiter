@@ -1,11 +1,14 @@
 /// <reference types="../preload/index" />
+import { IPCEvents } from "@/ipc/events";
 import { Editor } from "@components/Editor";
 import TitleBar from "@components/Titlebar";
 import { ScriptDetailsProvider } from "@contexts/ScriptDetails";
+import { TitlePageDialog } from "@components/TitlePageDialog";
 import { Theme } from "@mui/material";
 import "@styles/App.css";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { makeStyles } from "tss-react/mui";
+import { State } from "@/app/state";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -31,6 +34,37 @@ export function App() {
     };
   }, []);
 
+  const [stateCopy, setStateCopy] = useState<State | null>(null);
+
+  const [titleDialogOpen, setTitleDialogOpen] = useState(false);
+
+  useEffect(() => {
+    return window.api.subscribeTo(IPCEvents.OPEN_TITLE_PAGE, () => {
+      setTitleDialogOpen(true);
+    });
+  });
+
+  useEffect(() => {
+    if (titleDialogOpen) {
+      window.api.getCurrentState().then((state) => {
+        console.log("state", state);
+        setStateCopy(state);
+      });
+    }
+  }, [titleDialogOpen]);
+
+  const titleInfo = useMemo(() => {
+    console.log("stateCopy", stateCopy);
+    return {
+      title: stateCopy?.scriptTitle ?? "",
+      credit: stateCopy?.scriptCredit ?? "",
+      authors: stateCopy?.scriptAuthors ?? "",
+      source: stateCopy?.scriptSource ?? "",
+      contact: stateCopy?.scriptContact ?? "",
+      date: stateCopy?.scriptDraftDate ?? "",
+    };
+  }, [stateCopy]);
+
   const { classes } = useStyles();
   return (
     <ScriptDetailsProvider>
@@ -39,6 +73,15 @@ export function App() {
         <div className={classes.content}>
           <Editor />
         </div>
+        <TitlePageDialog
+          open={titleDialogOpen}
+          onClose={() => setTitleDialogOpen(false)}
+          currentInfo={titleInfo}
+          onSave={(scriptInfo) => {
+            window.api.saveTitleInfo(scriptInfo);
+            setTitleDialogOpen(false);
+          }}
+        />
       </div>
     </ScriptDetailsProvider>
   );

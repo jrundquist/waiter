@@ -1,6 +1,6 @@
 import { app, dialog } from "electron";
 import fs from "fs";
-import { State } from "./state";
+import { State, initialState } from "./state";
 
 export async function loadFile(fileName: string) {
   try {
@@ -10,6 +10,7 @@ export async function loadFile(fileName: string) {
     app.addRecentDocument(fileName);
 
     return {
+      ...initialState,
       ...state,
       scriptFile: fileName,
     };

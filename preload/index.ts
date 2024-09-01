@@ -3,6 +3,8 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 import { IPCEvents } from "../ipc/events";
 import { log } from "./log";
 import { api as settingsApi, exposedAs as settingsExposedAs } from "./settingsApi";
+import { State } from "@/app/state";
+import type { SetScriptTitle } from "@/app/state";
 
 // Custom APIs for renderer
 export const api = {
@@ -52,6 +54,24 @@ export const api = {
   getCurrentTitle: () => {
     return ipcRenderer.invoke(IPCEvents.APP_GET_WINDOW_TITLE);
   },
+  getCurrentState: (): Promise<State> => {
+    return ipcRenderer.invoke(IPCEvents.APP_GET_STATE);
+  },
+  subscribeTo(
+    event: IPCEvents,
+    callback: (event: IpcRendererEvent, ...args: any[]) => void
+  ): () => void {
+    ipcRenderer.on(event, callback);
+    return () => {
+      ipcRenderer.removeListener(event, callback);
+    };
+  },
+
+  // Title Info
+  saveTitleInfo: (info: SetScriptTitle["payload"]) => {
+    ipcRenderer.send(IPCEvents.SAVE_TITLE_INFO, info);
+  },
+  // End Title Info
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

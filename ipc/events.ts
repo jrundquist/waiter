@@ -9,6 +9,7 @@ export enum IPCEvents {
   SHOW_SCRIPT_DEBUG_WINDOW = "debug:show-script-debug-window",
 
   // App Actions
+  APP_GET_STATE = "app:get-state",
   APP_GET_WINDOW_TITLE = "app:get-window-title",
   APP_WINDOW_TITLE_CHANGED = "app:window-title-changed",
   SET_WINDOW_OPTIONS = "window:set-menu-options",
@@ -20,6 +21,9 @@ export enum IPCEvents {
   DO_OPEN_PDF = "pdf:open",
   DO_OPEN_FDX = "fdx:open",
   OPEN_FILE = "file:open",
+
+  OPEN_TITLE_PAGE = "title-page:open",
+  SAVE_TITLE_INFO = "title-page:save",
 
   // Settings API
   SETTINGS_GET_SETTINGS = "settings:get-settings",
