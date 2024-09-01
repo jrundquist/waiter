@@ -117,10 +117,6 @@ function computeMetadata(elements: ScriptElement[]): ScriptMetadata {
       locations.add(element.content);
     }
   });
-  console.log({
-    characters: Array.from(characters),
-    locations: Array.from(locations),
-  });
   return {
     characters: Array.from(characters),
     locations: Array.from(locations),

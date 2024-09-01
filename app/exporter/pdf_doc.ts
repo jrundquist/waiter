@@ -1,0 +1,183 @@
+import { jsPDF } from "jspdf";
+import { showMargins, printGrid } from "./pdf_debug_utils";
+import fs from "fs";
+
+const FONTS = {
+  normal: "assets/fonts/CourierPrime/CourierPrime-Regular.ttf",
+  bold: "assets/fonts/CourierPrime/CourierPrime-Bold.ttf",
+  italics: "assets/fonts/CourierPrime/CourierPrime-Italic.ttf",
+  bolditalics: "assets/fonts/CourierPrime/CourierPrime-BoldItalic.ttf",
+};
+
+export interface Margins {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  hardMargin: number;
+}
+
+interface Text {
+  text: string;
+  underline?: boolean;
+  bold?: boolean;
+  italics?: boolean;
+  size?: number;
+}
+
+export interface PDFOptions {
+  skipTitlePage: boolean;
+  margins: Margins;
+}
+
+export class Doc {
+  private readonly pdf: jsPDF;
+  readonly options: PDFOptions;
+
+  constructor(options: PDFOptions) {
+    this.options = options;
+    this.pdf = new jsPDF({
+      compress: true,
+      orientation: "portrait",
+      format: "letter",
+      unit: "pt",
+      putOnlyUsedFonts: true,
+    });
+  }
+
+  addPage() {
+    this.pdf.addPage();
+    showMargins(this.pdf, this.options.margins);
+    this.renderPageNumber();
+  }
+
+  renderPageNumber(forced = false) {
+    let page = this.pdf.getCurrentPageInfo().pageNumber;
+    if (!this.options.skipTitlePage) {
+      page--;
+    }
+    if (page > 1 || forced) {
+      this.pdf.setFont("CourierPrime", "normal");
+      this.pdf.setFontSize(12);
+      this.pdf.setDrawColor(40, 40, 40);
+      const dims = this.pdf.getTextDimensions(`${page}.`, { maxWidth: this.pageWidth });
+      this.pdf.text(
+        `${page}.`,
+        this.pageWidth - this.options.margins.hardMargin - dims.w - 2,
+        this.options.margins.hardMargin - 5
+      );
+    }
+  }
+
+  setDocumentProperties({ title, author }: { title: string; author: string }) {
+    this.pdf.setDocumentProperties({
+      title,
+      author,
+    });
+  }
+
+  async addFonts() {
+    for (const [fontType, fileName] of Object.entries(FONTS)) {
+      const myFont = fs.readFileSync(fileName, {
+        encoding: "latin1",
+      });
+
+      // add the font to jsPDF
+      this.pdf.addFileToVFS(fileName, myFont);
+      this.pdf.addFont(fileName, "CourierPrime", fontType);
+      this.pdf.setFont("CourierPrime", "normal");
+    }
+  }
+
+  get pageWidth() {
+    return this.pdf.internal.pageSize.width;
+  }
+
+  get pageHeight() {
+    return this.pdf.internal.pageSize.height;
+  }
+
+  setFontStyle(text: Text) {
+    let format = "";
+    if (text.bold) {
+      format += "bold";
+    }
+    if (text.italics) {
+      format += "italics";
+    }
+    if (format === "") {
+      format = "normal";
+    }
+    this.pdf.setDrawColor(0, 0, 0);
+    this.pdf.setFontSize(text.size ?? 12);
+    this.pdf.setFont("CourierPrime", format);
+  }
+
+  justifyText(
+    text: Text | string,
+    align: "left" | "center" | "right" | "hard-left" | "hard-right",
+    y: number
+  ) {
+    if (typeof text === "string") {
+      text = { text } as Text;
+    }
+
+    this.setFontStyle(text);
+    const textWidth = this.pdf.getTextWidth(text.text);
+
+    let x = 0;
+    switch (align) {
+      case "left":
+        x = this.options.margins.left;
+        break;
+      case "center":
+        x = this.pdf.internal.pageSize.width / 2 - textWidth / 2;
+        break;
+      case "right":
+        x = this.pdf.internal.pageSize.width - textWidth - this.options.margins.right;
+        break;
+      case "hard-left":
+        x = this.options.margins.hardMargin;
+        break;
+      case "hard-right":
+        x = this.pdf.internal.pageSize.width - textWidth - this.options.margins.hardMargin;
+        break;
+    }
+    this.renderText(text, x, y);
+  }
+
+  renderText(text: Text, x: number, y: number) {
+    this.setFontStyle(text);
+    this.pdf.text(text.text, x, y);
+
+    if (text.underline) {
+      const textWidth = this.pdf.getTextWidth(text.text);
+      this.pdf.setLineWidth(0.5);
+      this.pdf.line(x, y + 2, x + textWidth, y + 2);
+    }
+  }
+
+  getTextDimensions(text: string, options: { maxWidth: number }) {
+    return this.pdf.getTextDimensions(text, options);
+  }
+
+  splitTextToSize(text: string, maxWidth: number): string[] {
+    return this.pdf.splitTextToSize(text, maxWidth);
+  }
+
+  getFontSize() {
+    return this.pdf.getFontSize();
+  }
+
+  showMargins() {
+    showMargins(this.pdf, this.options.margins);
+  }
+
+  showGrid() {
+    printGrid(this.pdf);
+  }
+
+  async save(fileName: string) {
+    await this.pdf.save(fileName, { returnPromise: true });
+  }
+}
