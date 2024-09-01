@@ -56,7 +56,7 @@ export const initialState: State = {
   scriptFile: null,
   isDirty: false,
 
-  scriptTitle: "hello",
+  scriptTitle: null,
   scriptCredit: null,
   scriptAuthors: null,
   scriptSource: null,
