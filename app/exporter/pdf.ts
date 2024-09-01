@@ -66,7 +66,7 @@ function createTitlePage(doc: Doc, state: State) {
   const bottomLine = doc.pageHeight - doc.options.margins.bottom;
 
   const titleText = {
-    text: title,
+    text: title.toUpperCase(),
     underline: true,
   };
   doc.setFontStyle(titleText);
@@ -74,6 +74,8 @@ function createTitlePage(doc: Doc, state: State) {
   const titleDims = doc.getTextDimensions(titleText.text, {
     maxWidth: widthSubMargin,
   });
+
+  let y = titlePos;
 
   for (let i = 0; i < titleTextSplit.length; i++) {
     doc.justifyText(
@@ -85,8 +87,6 @@ function createTitlePage(doc: Doc, state: State) {
       titlePos - i * (titleDims.h / titleTextSplit.length)
     );
   }
-
-  let y = titlePos;
 
   doc.justifyText(credit, "center", (y += DEFAULT_FONT_SIZE * 4));
 
