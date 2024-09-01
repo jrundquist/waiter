@@ -7,6 +7,7 @@ export enum IPCEvents {
 
   // DEBUG
   SHOW_SCRIPT_DEBUG_WINDOW = "debug:show-script-debug-window",
+  _DEBUG_DIRECT_PRINT_PDF = "debug:direct-print-pdf",
 
   // App Actions
   APP_GET_STATE = "app:get-state",
@@ -17,6 +18,8 @@ export enum IPCEvents {
   // Menu Actions
   SETTINGS_OPEN = "settings:open",
   FILE_OPEN_DIALOG = "file:open_dialog",
+
+  EXPORT_PDF = "pdf:export",
 
   DO_OPEN_PDF = "pdf:open",
   DO_OPEN_FDX = "fdx:open",

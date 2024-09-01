@@ -106,6 +106,16 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           type: "separator",
         },
         {
+          label: "Export to PDF",
+          click: () => {
+            ipcMain.emit(IPCEvents.EXPORT_PDF);
+          },
+          accelerator: "Shift+CommandOrControl+p",
+        },
+        {
+          type: "separator",
+        },
+        {
           label: "Import",
           submenu: [
             {

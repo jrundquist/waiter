@@ -6,7 +6,6 @@ import { api, exposedAs } from "./settingsApi";
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    console.log("here");
     contextBridge.exposeInMainWorld(exposedAs, api);
   } catch (error) {
     console.error(error);

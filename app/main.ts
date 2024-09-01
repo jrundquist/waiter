@@ -1,11 +1,12 @@
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import { BrowserWindow, IpcMainEvent, Menu, app, dialog, ipcMain, shell } from "electron";
 import fs from "fs";
-import { join } from "path";
+import { join, basename } from "path";
 import { runDevTask } from "./__devTask";
 import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
 import { exportToFountain } from "./exporter/fountain";
+import { exportPDF } from "./exporter/pdf";
 import { init as initImporter } from "./importer";
 import { ElementType, ScriptElement } from "../state/elements/elements";
 import { loadFile, saveState } from "./loader";
@@ -435,7 +436,7 @@ eventBus.on("open", (file: string) => {
     appState.scriptFile = file;
     mainWindow?.webContents.send(IPCEvents.SET_SCREEN_ELEMENTS, appState.scriptElements);
     mainWindow?.show();
-    const title = `Waiter - ${appState.scriptName ?? "Untitled"}`;
+    const title = `Waiter - ${basename(appState.scriptFile) ?? "Untitled"}`;
     eventBus.emit("bus:window:set-title", title);
   });
 });
@@ -517,6 +518,26 @@ async function openSettings() {
   });
   settingsWindowCreated = true;
 }
+
+ipcMain.on(IPCEvents._DEBUG_DIRECT_PRINT_PDF, async () => {
+  const pathName = "/Users/jrundquist/Desktop/debug.pdf";
+  exportPDF(appState, pathName, {});
+});
+
+ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
+  let pathName = dialog.showSaveDialogSync({
+    title: "Export to PDF",
+    filters: [{ name: "PDF", extensions: ["pdf"] }],
+  });
+
+  if (pathName === undefined) {
+    return;
+  } else if (!pathName.endsWith(".pdf")) {
+    pathName = `${pathName}.pdf`;
+  }
+
+  exportPDF(appState, pathName, {});
+});
 
 async function openScriptDebugWindow() {
   scriptDebugWindow = new BrowserWindow({
