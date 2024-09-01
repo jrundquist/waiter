@@ -1,7 +1,7 @@
 {
   "name": "waiter",
   "private": true,
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "./out/app/main.js",
   "author": {
     "name": "James Rundquist",
