@@ -5,11 +5,7 @@ import { EditorState, RootNode } from "lexical";
 import * as React from "react";
 
 const ScriptDetailsContext = React.createContext<null | {
-  buildScript: (
-    editorState: EditorState,
-    rootNode: RootNode,
-    lineNodeToEl: ClearableWeakMap<LineNode, HTMLElement>
-  ) => void;
+  buildScript: (editorState: EditorState, rootNode: RootNode) => void;
   characters: string[];
 }>(null);
 

@@ -121,7 +121,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
             } as EditorUpdateOptions
           );
           editor.update(() => {
-            scriptDetails?.buildScript(editor.getEditorState(), $getRoot(), lineNodeToEl);
+            scriptDetails?.buildScript(editor.getEditorState(), $getRoot());
           });
         }, 1);
 

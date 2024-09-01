@@ -85,24 +85,27 @@ export class LineNode extends ParagraphNode {
   }
 
   static clone(node: LineNode): LineNode {
-    return new LineNode(node.__elementType, node.__forced, node.__page, node.__key);
+    return new LineNode(node.__elementType, node.__forced, node.__page, node.__key, node.__height);
   }
 
   __elementType: LineNodeType = LineNodeType.None;
   __forced: boolean = false;
   __debug: string | null = null;
   __page: number | null = null;
+  __height: number | null = null;
 
   constructor(
     type: LineNodeType = LineNodeType.None,
     forced: boolean = false,
     page: number | null = null,
-    key?: string
+    key?: string,
+    height: number | null = null
   ) {
     super(key);
     this.__elementType = type;
     this.__forced = forced;
     this.__page = page;
+    this.__height = height;
   }
 
   getType() {
@@ -131,6 +134,7 @@ export class LineNode extends ParagraphNode {
         dom.setAttribute("data-debug", `${this.__debug}`);
       }
     }
+    this.setMeasureHeight(dom.offsetHeight);
     return isUpdated;
   }
 
@@ -224,6 +228,16 @@ export class LineNode extends ParagraphNode {
   setForced(forced: boolean) {
     const self = this.getWritable();
     self.__forced = forced;
+  }
+
+  getMeasureHeight() {
+    const self = this.getLatest();
+    return self.__height;
+  }
+
+  private setMeasureHeight(height: number) {
+    const self = this.getWritable();
+    self.__height = height;
   }
 
   getPage() {
