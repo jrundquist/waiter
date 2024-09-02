@@ -2,9 +2,27 @@ import { BrowserWindow, ipcMain } from "electron";
 // import eventBus from "./eventBus";
 import { IPCEvents } from "@/ipc/events";
 import { log } from "./logger";
+import fs from "fs";
+
+import { exportPDF } from "@/app/exporter/pdf";
 
 // Tasks that are only run in development on app startup.
 export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
+  mainWindow?.close();
+
+  const file = fs.readFileSync("/Users/jrundquist/Desktop/The Haunting of Mercy Hill.wai", {
+    encoding: "utf-8",
+  });
+  const loadedState = JSON.parse(file);
+  exportPDF(loadedState.state, "/Users/jrundquist/Desktop/demo.pdf")
+    .then((result) => {
+      result && log.info("PDF Exported");
+      !result && log.error("PDF Export Failed");
+    })
+    .catch((e) => {
+      log.error("PDF Export Failed", e);
+    });
+
   mainWindow?.webContents.on("did-finish-load", () => {
     log.info("did-finish-load");
     // ipcMain.emit("import:pdf", {}, "/Users/jrundquist/Downloads/sample-06.pdf");
@@ -31,21 +49,21 @@ export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {
     //   "/Users/jrundquist/Downloads/The Haunting of Mercy Hill.fdx"
     // );
 
-    ipcMain.emit(
-      IPCEvents.OPEN_FILE,
-      {
-        reply: () => {},
-      },
-      "/Users/jrundquist/Desktop/The Haunting of Mercy Hill.wai"
-    );
+    // ipcMain.emit(
+    //   IPCEvents.OPEN_FILE,
+    //   {
+    //     reply: () => {},
+    //   },
+    //   "/Users/jrundquist/Desktop/The Haunting of Mercy Hill.wai"
+    // );
 
-    setTimeout(() => {
-      ipcMain.emit(IPCEvents._DEBUG_DIRECT_PRINT_PDF, {
-        reply: () => {
-          log.info("PDF printed");
-        },
-      });
-    }, 1000);
+    // setTimeout(() => {
+    //   ipcMain.emit(IPCEvents._DEBUG_DIRECT_PRINT_PDF, {
+    //     reply: () => {
+    //       log.info("PDF printed");
+    //     },
+    //   });
+    // }, 1000);
 
     // ipcMain.emit(
     //   IPCEvents.DO_OPEN_PDF,

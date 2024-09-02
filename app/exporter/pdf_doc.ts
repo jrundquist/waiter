@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
-import { showMargins, printGrid } from "./pdf_debug_utils";
 import fs from "fs";
+
+export const PTS_PER_INCH = 72;
 
 const FONTS = {
   normal: "assets/fonts/CourierPrime/CourierPrime-Regular.ttf",
@@ -38,16 +39,16 @@ export class Doc {
     this.options = options;
     this.pdf = new jsPDF({
       compress: true,
-      orientation: "portrait",
+      orientation: "p",
       format: "letter",
       unit: "pt",
       putOnlyUsedFonts: true,
     });
+    this.pdf.setLineHeightFactor(1);
   }
 
   addPage() {
     this.pdf.addPage();
-    showMargins(this.pdf, this.options.margins);
     this.renderPageNumber();
   }
 
@@ -97,6 +98,10 @@ export class Doc {
     return this.pdf.internal.pageSize.height;
   }
 
+  get lineHeight() {
+    return this.pdf.getLineHeight();
+  }
+
   setFontStyle(text: Text) {
     let format = "";
     if (text.bold) {
@@ -115,7 +120,7 @@ export class Doc {
 
   justifyText(
     text: Text | string,
-    align: "left" | "center" | "right" | "hard-left" | "hard-right",
+    align: "left" | "center" | "right" | "hard-left" | "hard-right" | "character",
     y: number
   ) {
     if (typeof text === "string") {
@@ -142,6 +147,8 @@ export class Doc {
       case "hard-right":
         x = this.pdf.internal.pageSize.width - textWidth - this.options.margins.hardMargin;
         break;
+      default:
+        x = 0;
     }
     this.renderText(text, x, y);
   }
@@ -169,12 +176,91 @@ export class Doc {
     return this.pdf.getFontSize();
   }
 
+  getPageCount() {
+    return this.pdf.getNumberOfPages();
+  }
+
   showMargins() {
-    showMargins(this.pdf, this.options.margins);
+    const doc = this.pdf;
+    const pageMargins = this.options.margins;
+    doc.setLineWidth(0.2);
+    const drawColor = doc.getDrawColor();
+    doc.setDrawColor(0, 255, 0);
+    // Draw lines for each margin
+    doc.line(pageMargins.left, 0, pageMargins.left, doc.internal.pageSize.height);
+    doc.line(
+      doc.internal.pageSize.width - pageMargins.right,
+      0,
+      doc.internal.pageSize.width - pageMargins.right,
+      doc.internal.pageSize.height
+    );
+    doc.line(0, pageMargins.top, doc.internal.pageSize.width, pageMargins.top);
+    doc.line(
+      0,
+      doc.internal.pageSize.height - pageMargins.bottom,
+      doc.internal.pageSize.width,
+      doc.internal.pageSize.height - pageMargins.bottom
+    );
+    doc.setDrawColor(255, 0, 0);
+    doc.setLineWidth(0.1);
+    // Draw lines for the hard margins
+    doc.line(pageMargins.hardMargin, 0, pageMargins.hardMargin, doc.internal.pageSize.height);
+    doc.line(
+      doc.internal.pageSize.width - pageMargins.hardMargin,
+      0,
+      doc.internal.pageSize.width - pageMargins.hardMargin,
+      doc.internal.pageSize.height
+    );
+
+    doc.line(0, pageMargins.hardMargin, doc.internal.pageSize.width, pageMargins.hardMargin);
+    doc.line(
+      0,
+      doc.internal.pageSize.height - pageMargins.hardMargin,
+      doc.internal.pageSize.width,
+      doc.internal.pageSize.height - pageMargins.hardMargin
+    );
+
+    doc.setDrawColor(drawColor);
   }
 
   showGrid() {
-    printGrid(this.pdf);
+    const doc = this.pdf;
+    for (let x = 0; x < doc.internal.pageSize.width; x += 10) {
+      if (x % 100 == 0) {
+        doc.setLineWidth(0.5);
+      } else {
+        doc.setLineWidth(0.1);
+      }
+      doc.line(x, 0, x, doc.internal.pageSize.height);
+    }
+    for (let y = 0; y < doc.internal.pageSize.height; y += 10) {
+      if (y % 100 == 0) {
+        doc.setLineWidth(0.5);
+      } else {
+        doc.setLineWidth(0.1);
+      }
+      doc.line(0, y, doc.internal.pageSize.width, y);
+    }
+  }
+
+  drawXAt(x: number, y: number, size: number = 5, color: [number, number, number] = [255, 0, 0]) {
+    this.pdf.setDrawColor(...color);
+    this.pdf.setLineWidth(0.3);
+    this.pdf.line(x - size, y - size, x + size, y + size);
+    this.pdf.line(x - size, y + size, x + size, y - size);
+  }
+
+  showLineHeight() {
+    this.pdf.setDrawColor(0, 0, 0);
+    this.pdf.setLineWidth(0.1);
+    for (
+      let y = this.options.margins.top;
+      y < this.pageHeight - this.options.margins.bottom;
+      y += this.lineHeight
+    ) {
+      this.pdf.text(`${y.toFixed(2)}`, 2, y);
+      this.pdf.line(0, y, this.pageWidth, y);
+    }
   }
 
   async save(fileName: string) {
