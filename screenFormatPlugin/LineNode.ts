@@ -85,27 +85,33 @@ export class LineNode extends ParagraphNode {
   }
 
   static clone(node: LineNode): LineNode {
-    return new LineNode(node.__elementType, node.__forced, node.__page, node.__key, node.__height);
+    return new LineNode(
+      node.__elementType,
+      node.__forced,
+      node.__page,
+      node.__key,
+      node.__domHeight
+    );
   }
 
   __elementType: LineNodeType = LineNodeType.None;
   __forced: boolean = false;
   __debug: string | null = null;
   __page: number | null = null;
-  __height: number | null = null;
+  __domHeight: number | null = null;
 
   constructor(
     type: LineNodeType = LineNodeType.None,
     forced: boolean = false,
     page: number | null = null,
     key?: string,
-    height: number | null = null
+    domHeight: number | null = null
   ) {
     super(key);
     this.__elementType = type;
     this.__forced = forced;
     this.__page = page;
-    this.__height = height;
+    this.__domHeight = domHeight;
   }
 
   getType() {
@@ -232,12 +238,12 @@ export class LineNode extends ParagraphNode {
 
   getMeasureHeight() {
     const self = this.getLatest();
-    return self.__height;
+    return self.__domHeight;
   }
 
   private setMeasureHeight(height: number) {
     const self = this.getWritable();
-    self.__height = height;
+    self.__domHeight = height;
   }
 
   getPage() {
@@ -366,7 +372,7 @@ export class LineNode extends ParagraphNode {
     }
 
     // Transitions should only be initiated from a character line.
-    if (currentType === LineNodeType.None && currentText.match(TRANSITION_PATTERN)) {
+    if (currentType === LineNodeType.Character && currentText.match(TRANSITION_PATTERN)) {
       return this.changeTo(LineNodeType.Transition);
     }
 

@@ -18,8 +18,12 @@ export function fromLexical(rootChildren: LexicalNode[]): ScriptElement[] {
     const lineType = line.getElementType();
     switch (lineType) {
       case LineNodeType.Scene: {
-        const sceneNode = line.getChildren().find($isSceneNode) as SceneNode;
-        const sceneNumber = `${sceneNode?.getSceneNumber() ?? ""}`.trim();
+        const sceneNode = line.getChildren().find($isSceneNode);
+        if (!sceneNode) {
+          console.error("Scene node not found in scene line.");
+          break;
+        }
+        const sceneNumber = `${sceneNode.getSceneNumber() ?? ""}`.trim();
         const content = sceneNode
           .getChildren()
           .filter((n) => !$isForcedTypeNode(n))
@@ -35,6 +39,10 @@ export function fromLexical(rootChildren: LexicalNode[]): ScriptElement[] {
 
       case LineNodeType.Action: {
         const node = line.getChildren().find($isActionNode) as ActionNode;
+        if (!node) {
+          console.error("Action node not found in action line.");
+          break;
+        }
         const content = node
           .getChildren()
           .filter((n) => !$isForcedTypeNode(n))
@@ -49,6 +57,10 @@ export function fromLexical(rootChildren: LexicalNode[]): ScriptElement[] {
 
       case LineNodeType.Character: {
         const node = line.getChildren().find($isCharacterNode) as CharacterNode;
+        if (!node) {
+          console.error("Character node not found in character line.");
+          break;
+        }
         const content = node
           .getChildren()
           .filter((n) => !$isForcedTypeNode(n))

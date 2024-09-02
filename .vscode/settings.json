@@ -2,7 +2,8 @@
   "files.insertFinalNewline": true,
   "files.exclude": {
     "node_modules/": true,
-    "out/": false,
-    "dist/": false,
+    "out/": true,
+    "dist/": true,
+    ".yarn/": true,
   }
 }
