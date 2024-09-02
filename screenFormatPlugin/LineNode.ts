@@ -267,7 +267,7 @@ export class LineNode extends ParagraphNode {
     // For each FORCE_CONFIGS
     for (const config of FORCE_CONFIGS) {
       if (
-        (anchorText.startsWith(`${config.character} `) || anchorText === config.character) &&
+        (anchorText.startsWith(`${config.character}`) || anchorText === config.character) &&
         (currentType !== config.type || !this.isForced())
       ) {
         if (currentType === LineNodeType.None) {
