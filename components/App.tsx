@@ -10,6 +10,7 @@ import "@styles/App.css";
 import { useEffect, useState, useMemo } from "react";
 import { makeStyles } from "tss-react/mui";
 import { State } from "@/app/state";
+import { PrintDialog } from "@components/PrintDialog";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -39,10 +40,17 @@ export function App() {
   const [stateCopy, setStateCopy] = useState<State | null>(null);
 
   const [titleDialogOpen, setTitleDialogOpen] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   useEffect(() => {
     return window.api.subscribeTo(IPCEvents.OPEN_TITLE_PAGE, () => {
       setTitleDialogOpen(true);
+    });
+  });
+
+  useEffect(() => {
+    return window.api.subscribeTo(IPCEvents.OPEN_PRINT_DIALOG, () => {
+      setPrintDialogOpen(true);
     });
   });
 
@@ -84,6 +92,7 @@ export function App() {
             setTitleDialogOpen(false);
           }}
         />
+        <PrintDialog open={printDialogOpen} onClose={() => setPrintDialogOpen(false)} />
         <BottomBar />
       </div>
     </ScriptDetailsProvider>

@@ -17,6 +17,11 @@ const DRAW_DEBUG = false;
 const DEFAULT_FONT_SIZE = 12;
 const defaultOptions: PDFOptions = {
   skipTitlePage: false,
+  includeSceneNumbers: true,
+  pageHeader: "",
+  watermark: "",
+  watermarkSize: 100,
+  watermarkOrientation: "horizontal",
   margins: {
     top: 1 * PTS_PER_INCH,
     bottom: 1 * PTS_PER_INCH,
@@ -116,16 +121,18 @@ function createTitlePage(doc: Doc, state: State) {
 
 function printScene(doc: Doc, posY: number, el: SceneHeading) {
   return () => {
-    doc.justifyText(
-      {
-        text: `${el.sceneNumber}`,
-        bold: true,
-      },
-      "hard-left",
-      posY
-    );
+    doc.options.includeSceneNumbers &&
+      doc.justifyText(
+        {
+          text: `${el.sceneNumber}`,
+          bold: true,
+        },
+        "hard-left",
+        posY
+      );
     doc.justifyText({ text: el.content, bold: true }, "left", posY);
-    doc.justifyText({ text: `${el.sceneNumber}`, bold: true }, "hard-right", posY);
+    doc.options.includeSceneNumbers &&
+      doc.justifyText({ text: `${el.sceneNumber}`, bold: true }, "hard-right", posY);
   };
 }
 
@@ -184,12 +191,20 @@ function printTransitionAt(doc: Doc, el: Transition, posY: number) {
   };
 }
 
-// Create content pages
-function createContentPages(doc: Doc, state: State) {
+function setupContentPage(doc: Doc) {
   DRAW_DEBUG && doc.showMargins();
   DRAW_DEBUG && doc.showLineHeight();
-
   doc.setFontStyle({ text: "", size: DEFAULT_FONT_SIZE });
+
+  if (doc.options.pageHeader) {
+    doc.justifyText({ text: doc.options.pageHeader }, "center", doc.options.margins.hardMargin - 5);
+  }
+  doc.renderWatermark();
+}
+
+// Create content pages
+function createContentPages(doc: Doc, state: State) {
+  setupContentPage(doc);
   const elements = state.scriptElements;
 
   const LINE_HEIGHT = doc.lineHeight;
@@ -411,9 +426,7 @@ function createContentPages(doc: Doc, state: State) {
       } while (pageInstructions.length != 0);
 
       doc.addPage();
-
-      DRAW_DEBUG && doc.showMargins();
-      DRAW_DEBUG && doc.showLineHeight();
+      setupContentPage(doc);
 
       posY = DOC_TOP;
     }

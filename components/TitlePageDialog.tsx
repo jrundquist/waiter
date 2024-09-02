@@ -3,6 +3,16 @@ import { Theme } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  underlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    zIndex: 99,
+  },
+
   dialog: {
     position: "fixed",
     top: "10%",
@@ -133,98 +143,100 @@ export const TitlePageDialog: React.FC<TitlePageDialogProps> = ({
 
   if (!open) return null;
   return (
-    <div className={classes.dialog}>
-      <div className={classes.content}>
-        <h2>Title Page</h2>
+    <div className={classes.underlay}>
+      <div className={classes.dialog}>
+        <div className={classes.content}>
+          <h2>Title Page</h2>
+          <div className={classes.row}>
+            <label className={classes.label} htmlFor="title">
+              Title:
+            </label>
+            <input
+              className={classes.input}
+              type="text"
+              id="title"
+              value={title}
+              placeholder="Script Title"
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className={classes.row}>
+            <label className={classes.label} htmlFor="credit">
+              Credit:
+            </label>
+            <input
+              className={classes.input}
+              type="text"
+              id="credit"
+              value={credit}
+              placeholder="Written by"
+              onChange={(e) => setCredit(e.target.value)}
+            />
+          </div>
+        </div>
+
         <div className={classes.row}>
-          <label className={classes.label} htmlFor="title">
-            Title:
+          <label className={classes.label} htmlFor="authors">
+            Author(s):
           </label>
           <input
             className={classes.input}
             type="text"
-            id="title"
-            value={title}
-            placeholder="Script Title"
-            onChange={(e) => setTitle(e.target.value)}
+            id="authors"
+            placeholder="First Author, Second Author"
+            value={authors}
+            onChange={(e) => setAuthors(e.target.value)}
           />
         </div>
 
         <div className={classes.row}>
-          <label className={classes.label} htmlFor="credit">
-            Credit:
+          <label className={classes.label} htmlFor="source">
+            Source:
           </label>
           <input
             className={classes.input}
             type="text"
-            id="credit"
-            value={credit}
-            placeholder="Written by"
-            onChange={(e) => setCredit(e.target.value)}
+            id="source"
+            placeholder="Based on ..."
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
           />
         </div>
-      </div>
 
-      <div className={classes.row}>
-        <label className={classes.label} htmlFor="authors">
-          Author(s):
-        </label>
-        <input
-          className={classes.input}
-          type="text"
-          id="authors"
-          placeholder="First Author, Second Author"
-          value={authors}
-          onChange={(e) => setAuthors(e.target.value)}
-        />
-      </div>
+        <div className={classes.row}>
+          <label className={classes.label} htmlFor="date">
+            Date:
+          </label>
+          <input
+            className={classes.input}
+            type="date"
+            id="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
 
-      <div className={classes.row}>
-        <label className={classes.label} htmlFor="source">
-          Source:
-        </label>
-        <input
-          className={classes.input}
-          type="text"
-          id="source"
-          placeholder="Based on ..."
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-        />
-      </div>
+        <div className={classes.row}>
+          <label className={classes.label} htmlFor="contact">
+            Contact:
+          </label>
+          <textarea
+            className={classes.input}
+            id="contact"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+          />
+        </div>
 
-      <div className={classes.row}>
-        <label className={classes.label} htmlFor="date">
-          Date:
-        </label>
-        <input
-          className={classes.input}
-          type="date"
-          id="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-      </div>
-
-      <div className={classes.row}>
-        <label className={classes.label} htmlFor="contact">
-          Contact:
-        </label>
-        <textarea
-          className={classes.input}
-          id="contact"
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-        />
-      </div>
-
-      <div className={classes.dialogButtons}>
-        <button className={`${classes.cancelButton}`} onClick={onClose}>
-          Cancel
-        </button>
-        <button className={classes.actionButton} onClick={handleSave}>
-          Save
-        </button>
+        <div className={classes.dialogButtons}>
+          <button className={`${classes.cancelButton}`} onClick={onClose}>
+            Cancel
+          </button>
+          <button className={classes.actionButton} onClick={handleSave}>
+            Save
+          </button>
+        </div>
       </div>
     </div>
   );

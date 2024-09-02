@@ -491,6 +491,11 @@ ipcMain.on(IPCEvents.OPEN_TITLE_PAGE, () => {
   mainWindow?.webContents.send(IPCEvents.OPEN_TITLE_PAGE);
 });
 
+ipcMain.on(IPCEvents.OPEN_PRINT_DIALOG, () => {
+  log.info("Opening print dialog");
+  mainWindow?.webContents.send(IPCEvents.OPEN_PRINT_DIALOG);
+});
+
 ipcMain.on(IPCEvents.SAVE_TITLE_INFO, (_: IpcMainEvent, info: SetScriptTitle["payload"]) => {
   console.log("Saving title info", info);
   appState = reducer(appState, { type: "state:set-script-title", payload: info });

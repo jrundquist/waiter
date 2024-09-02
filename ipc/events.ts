@@ -19,6 +19,7 @@ export enum IPCEvents {
   // Menu Actions
   SETTINGS_OPEN = "settings:open",
   FILE_OPEN_DIALOG = "file:open_dialog",
+  OPEN_PRINT_DIALOG = "print:open-dialog",
 
   EXPORT_PDF = "pdf:export",
 

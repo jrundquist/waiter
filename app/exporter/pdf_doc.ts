@@ -2,12 +2,10 @@ import { jsPDF } from "jspdf";
 import fs from "fs";
 import path from "path";
 import { app } from "electron";
-import { log } from "@/app/logger";
 
 // Function to get the correct path based on the environment
 function getAssetPath(...paths: string[]): string {
   const p = path.join(app.isPackaged ? process.resourcesPath : "", ...paths);
-  log.info("getAssetPath: " + p);
   return p;
 }
 
@@ -39,6 +37,11 @@ interface Text {
 export interface PDFOptions {
   skipTitlePage: boolean;
   margins: Margins;
+  includeSceneNumbers: boolean;
+  pageHeader: string;
+  watermark: string;
+  watermarkSize: number;
+  watermarkOrientation: "horizontal" | "45" | "vertical";
 }
 
 export class Doc {
@@ -78,6 +81,43 @@ export class Doc {
         this.options.margins.hardMargin - 5
       );
     }
+  }
+
+  renderWatermark() {
+    const doc = this.pdf;
+    doc.saveGraphicsState();
+    doc.setGState(doc.GState({ opacity: 0.1 }));
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(this.options.watermarkSize);
+
+    const dims = doc.getTextDimensions(this.options.watermark, {
+      fontSize: this.options.watermarkSize,
+      maxWidth: 1e5,
+    });
+    const angle =
+      this.options.watermarkOrientation === "vertical"
+        ? 90
+        : this.options.watermarkOrientation === "45"
+          ? 45
+          : 0;
+
+    const rad = (angle * Math.PI) / 180; // Convert angle to radians
+
+    // Calculate rotated bounding box dimensions
+    const rotatedWidth = dims.w * Math.abs(Math.cos(rad)) + dims.h * Math.abs(Math.sin(rad));
+    const rotatedHeight = dims.w * Math.abs(Math.sin(rad)) + dims.h * Math.abs(Math.cos(rad));
+
+    doc.text(
+      this.options.watermark,
+      (this.pageWidth - (rotatedWidth - dims.w)) / 2,
+      (this.pageHeight + rotatedHeight) / 2,
+      {
+        align: "center",
+        baseline: "bottom",
+        angle,
+      }
+    );
+    doc.restoreGraphicsState();
   }
 
   setDocumentProperties({ title, author }: { title: string; author: string }) {

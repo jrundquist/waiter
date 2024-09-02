@@ -1,5 +1,5 @@
 import { isString } from "lodash";
-import { ipcMain, type MenuItemConstructorOptions } from "electron";
+import { ipcMain, ipcRenderer, type MenuItemConstructorOptions } from "electron";
 import eventBus from "./eventBus";
 import { IPCEvents } from "@/ipc/events";
 
@@ -106,16 +106,6 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
           type: "separator",
         },
         {
-          label: "Export to PDF",
-          click: () => {
-            ipcMain.emit(IPCEvents.EXPORT_PDF);
-          },
-          accelerator: "Shift+CommandOrControl+p",
-        },
-        {
-          type: "separator",
-        },
-        {
           label: "Import",
           submenu: [
             {
@@ -140,6 +130,23 @@ export const createTemplate = (options: CreateTemplateOptionsType): MenuListType
               click: exportFinalDraft,
             },
           ],
+        },
+        {
+          type: "separator",
+        },
+        {
+          label: "Print",
+          accelerator: "CmdOrCtrl+P",
+          click: () => {
+            ipcMain.emit(IPCEvents.OPEN_PRINT_DIALOG);
+          },
+        },
+        {
+          label: "Create PDF",
+          click: () => {
+            ipcMain.emit(IPCEvents.EXPORT_PDF);
+          },
+          accelerator: "Shift+CommandOrControl+p",
         },
       ],
     },
