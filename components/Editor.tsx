@@ -57,6 +57,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export function Editor(): React.FunctionComponentElement<{}> {
   const { classes } = useStyles();
 
+  // TODO: Implement zooming
+  const [zoom] = React.useState(1);
+
   const editorConfig: Parameters<typeof LexicalComposer>[0]["initialConfig"] = {
     // The editor theme
     theme: ExampleTheme,
@@ -112,7 +115,10 @@ export function Editor(): React.FunctionComponentElement<{}> {
             <AutocompletePlugin />
             <EditorHotkeys />
             <EditorDropTarget>
-              <div className={classes.editorPaper}>
+              <div
+                className={classes.editorPaper}
+                style={{ transform: `scale(${zoom})`, transformOrigin: "top" }}
+              >
                 <RichTextPlugin
                   contentEditable={<ContentEditable className={classes.editorContent} />}
                   placeholder={null}
