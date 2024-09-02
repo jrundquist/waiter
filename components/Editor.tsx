@@ -1,3 +1,4 @@
+import { useCurrentSettings } from "@/contexts/Settings";
 import { EditorDropTarget } from "@components/EditorDropTarget";
 import { EditorHotkeys } from "@components/EditorHotkeys";
 import { ExampleTheme } from "@components/ExampleTheme";
@@ -58,7 +59,10 @@ export function Editor(): React.FunctionComponentElement<{}> {
   const { classes } = useStyles();
 
   // TODO: Implement zooming
-  const [zoom] = React.useState(1);
+  const settings = useCurrentSettings();
+
+  console.log({ settings });
+  const zoom = Math.min(2, Math.max(0.6, settings.zoom));
 
   const editorConfig: Parameters<typeof LexicalComposer>[0]["initialConfig"] = {
     // The editor theme

@@ -4,7 +4,7 @@ import type { Settings } from "@/state/prefs";
 
 interface SettingsContextType {
   currenntSettings: Settings;
-  updateSettings: (settings: Settings) => void;
+  updateSettings: (settings: Partial<Settings>) => void;
 }
 
 const SettingsContext = React.createContext<SettingsContextType | null>(null);

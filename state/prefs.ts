@@ -9,10 +9,12 @@ export type ColorThemeValues = "light" | "dark" | "system";
 
 export interface Settings {
   colorTheme: ColorThemeValues;
+  zoom: number;
 }
 
 export const defaultSettings: Settings = {
   colorTheme: "system",
+  zoom: 1.25,
 };
 
 class PrefsService {

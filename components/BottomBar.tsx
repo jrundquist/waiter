@@ -5,6 +5,7 @@ import CheckIcon from "@mui/icons-material/Check";
 
 import React, { useEffect } from "react";
 import { IPCEvents } from "@/ipc/events";
+import { useCurrentSettings, useUpdateSettings } from "@/contexts/Settings";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -62,13 +63,32 @@ export function BottomBar({}): React.FunctionComponentElement<{}> {
     });
   }, [setSaved]);
 
+  const settings = useCurrentSettings();
+  const updateSettings = useUpdateSettings();
+
+  const updateZoom = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateSettings({ zoom: parseFloat(e.target.value) });
+    },
+    [updateSettings]
+  );
+
   return (
     <div className={classes.root}>
       <div className={`${classes.dirtyMarker} ${saved ? "saved" : "unsaved"}`}>
         <CheckIcon />
       </div>
 
-      <div className={classes.left}>Script Title</div>
+      <div className={classes.left}>
+        <input
+          type="range"
+          min={1}
+          max={1.6}
+          step={0.1}
+          value={settings.zoom}
+          onChange={updateZoom}
+        />
+      </div>
     </div>
   );
 }
