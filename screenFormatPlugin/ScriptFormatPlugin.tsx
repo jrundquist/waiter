@@ -23,7 +23,6 @@ import { ParentheticalNode } from "./ParentheticalNode";
 import { ActionNode } from "./ActionNode";
 import { LyricNode } from "./LyricNode";
 import { parseFountain } from "./utils/parseFountain";
-import { parseFinalDraft } from "./utils/parseFinalDraft";
 import { ClearableWeakMap } from "./utils/clearableWeakMap";
 import { updatePages } from "./utils/updatePages";
 import { useScriptDetails } from "../contexts/ScriptDetails";
@@ -149,7 +148,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
               });
               updatePages(editor, lineNodeToEl);
               editor.update(() => {
-                scriptDetails?.buildScript(editor.getEditorState(), $getRoot(), lineNodeToEl);
+                scriptDetails?.buildScript(editor.getEditorState(), $getRoot());
               });
             }, 0);
           }
@@ -279,7 +278,7 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
           // last known height of this node, and if it hasn't changed, we may be
           // able to assume the hight of the document hasn't changed.
           updateLineNodes(lineNodeToEl, editor);
-          scriptDetails?.buildScript(editorState, $getRoot(), lineNodeToEl);
+          scriptDetails?.buildScript(editorState, $getRoot());
         });
       }
     );

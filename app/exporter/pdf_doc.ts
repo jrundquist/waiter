@@ -1,13 +1,23 @@
 import { jsPDF } from "jspdf";
 import fs from "fs";
+import path from "path";
+import { app } from "electron";
+import { log } from "@/app/logger";
+
+// Function to get the correct path based on the environment
+function getAssetPath(...paths: string[]): string {
+  const p = path.join(app.isPackaged ? process.resourcesPath : "", ...paths);
+  log.info("getAssetPath: " + p);
+  return p;
+}
 
 export const PTS_PER_INCH = 72;
 
 const FONTS = {
-  normal: "assets/fonts/CourierPrime/CourierPrime-Regular.ttf",
-  bold: "assets/fonts/CourierPrime/CourierPrime-Bold.ttf",
-  italics: "assets/fonts/CourierPrime/CourierPrime-Italic.ttf",
-  bolditalics: "assets/fonts/CourierPrime/CourierPrime-BoldItalic.ttf",
+  normal: getAssetPath("assets", "fonts", "CourierPrime", "CourierPrime-Regular.ttf"),
+  bold: getAssetPath("assets", "fonts", "CourierPrime", "CourierPrime-Bold.ttf"),
+  italics: getAssetPath("assets", "fonts", "CourierPrime", "CourierPrime-Italic.ttf"),
+  bolditalics: getAssetPath("assets", "fonts", "CourierPrime", "CourierPrime-BoldItalic.ttf"),
 };
 
 export interface Margins {

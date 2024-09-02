@@ -1,6 +1,5 @@
 import { $isLineNode, LineNode, LineNodeType } from "../screenFormatPlugin/LineNode";
 import { SceneNode } from "../screenFormatPlugin/SceneNode";
-import { ClearableWeakMap } from "../screenFormatPlugin/utils/clearableWeakMap";
 import { EditorState, RootNode } from "lexical";
 import * as React from "react";
 

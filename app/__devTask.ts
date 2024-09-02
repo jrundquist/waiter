@@ -1,6 +1,5 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow } from "electron";
 // import eventBus from "./eventBus";
-import { IPCEvents } from "@/ipc/events";
 import { log } from "./logger";
 import fs from "fs";
 

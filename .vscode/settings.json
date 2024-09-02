@@ -3,6 +3,6 @@
   "files.exclude": {
     "node_modules/": true,
     "out/": false,
-    "dist/": true,
+    "dist/": false,
   }
 }

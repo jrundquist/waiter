@@ -7,8 +7,8 @@ import {
 import { most } from "@/utils/most";
 import { roughlyEqual } from "@/utils/roughlyEqual";
 import { dialog } from "electron";
-import type { getDocument as GetDocumentType, PDFDocumentProxy } from "pdfjs-dist";
-import { TextContent, TextItem, TextMarkedContent } from "pdfjs-dist/types/src/display/api";
+import type { PDFDocumentProxy } from "pdfjs-dist";
+import { TextContent, TextItem } from "pdfjs-dist/types/src/display/api";
 import { ElementType, type ScriptElement } from "../../state/elements/elements";
 import { log } from "../logger";
 // import eventBus from "../eventBus";
@@ -297,6 +297,7 @@ export async function importPdf(pdfFile: string): Promise<ScriptElement[]> {
       } catch (err: unknown) {
         log.error("Failed to Parse PDF. " + (err as Error).message);
         dialog.showErrorBox("Failed to Parse PDF", (err as Error).message);
+        throw new Error("Failed to Parse PDF: " + (err as Error).message);
       }
     })
     .catch((err: Error) => {
@@ -327,7 +328,6 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
   let dualDialogueLineY = 0;
   let hasSeenFirstDialogue = false;
   let prevPositionY = 0;
-  let prevItem: TextItem | TextMarkedContent;
   let isParentheticalOpen = false;
 
   const elements: ParsedElement[] = [];
@@ -538,7 +538,6 @@ function pagesToElementsList([pages, posInfo]: [PageContents[], PositionInfo]): 
       });
 
       // Keep the previous type and position for the next iteration.
-      prevItem = item;
       prevType = type;
       prevHeight = item.height;
       prevPositionY = y;

@@ -536,7 +536,16 @@ ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
     pathName = `${pathName}.pdf`;
   }
 
-  exportPDF(appState, pathName, {});
+  exportPDF(appState, pathName, {})
+    .then((result) => {
+      result && log.info("PDF Exported");
+      !result && log.error("PDF Export Failed");
+      !result && alert("PDF Export Failed");
+    })
+    .catch((e) => {
+      log.error("PDF Export Failed", e);
+      alert("PDF Export Failed: " + (e as Error).message);
+    });
 });
 
 async function openScriptDebugWindow() {
