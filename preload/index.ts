@@ -55,6 +55,9 @@ export const api = {
   getPDFPreview: (options: Partial<PDFOptions>) => {
     return ipcRenderer.invoke(IPCEvents.PREVIEW_PDF, options);
   },
+  savePDF: (options: Partial<PDFOptions>) => {
+    return ipcRenderer.invoke(IPCEvents.EXPORT_PDF, options);
+  },
   getCurrentTitle: () => {
     return ipcRenderer.invoke(IPCEvents.APP_GET_WINDOW_TITLE);
   },

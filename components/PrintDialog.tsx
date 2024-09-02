@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Theme } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
+import { PDFOptions } from "@/app/exporter/pdf_doc";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   underlay: {
@@ -170,12 +171,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-interface TitlePageDialogProps {
+interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) => {
+export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
   const { classes } = useStyles();
 
   const [includeTitlePage, setIncludeTitlePage] = useState(true);
@@ -190,16 +191,31 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
 
   const previewRef = React.useRef<HTMLIFrameElement>(null);
 
-  const handlePrint = () => {
-    console.log("Printing with settings:", {
-      includeTitlePage,
+  const printSettings: Partial<PDFOptions> = React.useMemo(
+    () => ({
+      skipTitlePage: !includeTitlePage,
       includeSceneNumbers,
       pageHeader,
       watermark,
+      watermarkSize: 48,
       watermarkOrientation,
+    }),
+    [includeTitlePage, includeSceneNumbers, pageHeader, watermark, watermarkOrientation]
+  );
+
+  const handlePrint = React.useCallback(() => {
+    console.log("Printing with settings:");
+    window.api.savePDF(printSettings);
+  }, [printSettings, onClose]);
+
+  const handleSavePDF = React.useCallback(() => {
+    console.log("Printing with settings:");
+    window.api.savePDF(printSettings).then((didSave) => {
+      if (didSave) {
+        onClose();
+      }
     });
-    // Add print functionality here
-  };
+  }, [printSettings, onClose]);
 
   const handleEsc = React.useCallback(
     (event: KeyboardEvent) => {
@@ -226,47 +242,29 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
     let previewUrl: string | null = null;
     setLoading(true);
 
-    window.api
-      .getPDFPreview({
-        skipTitlePage: !includeTitlePage,
-        includeSceneNumbers,
-        pageHeader,
-        watermark,
-        watermarkSize: 48,
-        watermarkOrientation,
-      })
-      .then((result) => {
-        console.log("PDF Preview Result:", result);
-        console.log("PDF Preview took", performance.now() - start, "ms");
+    window.api.getPDFPreview(printSettings).then((result) => {
+      console.log("PDF Preview Result:", result);
+      console.log("PDF Preview took", performance.now() - start, "ms");
 
-        const previewBlob = new Blob([result], { type: "application/pdf" });
-        previewUrl = URL.createObjectURL(previewBlob);
+      const previewBlob = new Blob([result], { type: "application/pdf" });
+      previewUrl = URL.createObjectURL(previewBlob);
 
-        if (previewRef.current) {
-          previewRef.current.src = `${previewUrl}#toolbar=0`; // Append #toolbar=0 to hide Chrome's PDF toolbar
-          previewRef.current.width = "100%"; // Set desired width
-          previewRef.current.height = "100%"; // Set desired height
-          previewRef.current.onload = () => {
-            setLoading(false);
-          };
-        }
-      });
+      if (previewRef.current) {
+        previewRef.current.src = `${previewUrl}#toolbar=0`; // Append #toolbar=0 to hide Chrome's PDF toolbar
+        previewRef.current.width = "100%"; // Set desired width
+        previewRef.current.height = "100%"; // Set desired height
+        previewRef.current.onload = () => {
+          setLoading(false);
+        };
+      }
+    });
 
     return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [
-    setLoading,
-    open,
-    includeTitlePage,
-    includeSceneNumbers,
-    pageHeader,
-    watermark,
-    watermarkOrientation,
-    previewRef,
-  ]);
+  }, [setLoading, open, printSettings]);
 
   if (!open) return null;
 
@@ -322,7 +320,7 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
                     <button className={classes.actionButton} onClick={handlePrint}>
                       Print
                     </button>
-                    <button className={classes.actionButton} onClick={handlePrint}>
+                    <button className={classes.actionButton} onClick={handleSavePDF}>
                       PDF
                     </button>
                     <button className={classes.cancelButton} onClick={onClose}>

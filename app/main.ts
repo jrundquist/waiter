@@ -559,7 +559,7 @@ ipcMain.handle(IPCEvents.PREVIEW_PDF, (_, opts: PDFOptions) => {
   return previewPDF({ ...appState }, opts);
 });
 
-ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
+function doPDFSave(_, opts: Partial<PDFOptions>) {
   let pathName = dialog.showSaveDialogSync({
     title: "Export to PDF",
     defaultPath: basename(appState.scriptFile ?? "untitled").replace(/\.[^.]+$/, ".pdf"),
@@ -572,7 +572,7 @@ ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
     pathName = `${pathName}.pdf`;
   }
 
-  exportPDF(appState, pathName, {})
+  return exportPDF(appState, pathName, opts)
     .then((result) => {
       result && log.info("PDF Exported");
       !result && log.error("PDF Export Failed");
@@ -581,8 +581,12 @@ ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
     .catch((e) => {
       log.error("PDF Export Failed", e);
       alert("PDF Export Failed: " + (e as Error).message);
-    });
-});
+    })
+    .then(() => true);
+}
+
+ipcMain.on(IPCEvents.EXPORT_PDF, doPDFSave);
+ipcMain.handle(IPCEvents.EXPORT_PDF, doPDFSave);
 
 async function openScriptDebugWindow() {
   scriptDebugWindow = new BrowserWindow({
