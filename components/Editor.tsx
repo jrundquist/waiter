@@ -126,7 +126,7 @@ export function Editor(): React.FunctionComponentElement<{}> {
                 />
                 <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
                 <ScriptFormatPlugin />
-                <TreeViewPlugin />
+                {window.api.isDev() && <TreeViewPlugin />}
                 <AutoFocusPlugin />
                 <HistoryPlugin />
                 <Find />
