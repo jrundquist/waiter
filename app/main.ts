@@ -6,7 +6,7 @@ import { runDevTask } from "./__devTask";
 import eventBus from "./eventBus";
 import { exportToFinalDraft } from "./exporter/finalDraft";
 import { exportToFountain } from "./exporter/fountain";
-import { exportPDF } from "./exporter/pdf";
+import { exportPDF, previewPDF } from "./exporter/pdf";
 import { init as initImporter } from "./importer";
 import { ElementType, ScriptElement } from "../state/elements/elements";
 import { loadFile, saveState } from "./loader";
@@ -19,6 +19,7 @@ import { isEqual } from "lodash";
 import { IPCEvents } from "@/ipc/events";
 import Prefs from "@/state/prefs";
 import { determineBackgroundColor } from "@/utils/determineBackgroundColor";
+import { PDFOptions } from "./exporter/pdf_doc";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -552,6 +553,10 @@ async function openSettings() {
 ipcMain.on(IPCEvents._DEBUG_DIRECT_PRINT_PDF, async () => {
   const pathName = "/Users/jrundquist/Desktop/debug.pdf";
   exportPDF(appState, pathName, {});
+});
+
+ipcMain.handle(IPCEvents.PREVIEW_PDF, (_, opts: PDFOptions) => {
+  return previewPDF({ ...appState }, opts);
 });
 
 ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {

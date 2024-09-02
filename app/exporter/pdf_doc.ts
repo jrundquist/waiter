@@ -316,4 +316,8 @@ export class Doc {
   async save(fileName: string) {
     await this.pdf.save(fileName, { returnPromise: true });
   }
+
+  async output() {
+    return this.pdf.output("arraybuffer");
+  }
 }

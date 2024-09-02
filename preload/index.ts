@@ -5,6 +5,7 @@ import { log } from "./log";
 import { api as settingsApi, exposedAs as settingsExposedAs } from "./settingsApi";
 import { State } from "@/app/state";
 import type { SetScriptTitle } from "@/app/state";
+import type { PDFOptions } from "@/app/exporter/pdf_doc";
 
 // Custom APIs for renderer
 export const api = {
@@ -50,6 +51,9 @@ export const api = {
     return () => {
       ipcRenderer.removeListener(IPCEvents.APP_WINDOW_TITLE_CHANGED, cb);
     };
+  },
+  getPDFPreview: (options: Partial<PDFOptions>) => {
+    return ipcRenderer.invoke(IPCEvents.PREVIEW_PDF, options);
   },
   getCurrentTitle: () => {
     return ipcRenderer.invoke(IPCEvents.APP_GET_WINDOW_TITLE);

@@ -22,6 +22,7 @@ export enum IPCEvents {
   OPEN_PRINT_DIALOG = "print:open-dialog",
 
   EXPORT_PDF = "pdf:export",
+  PREVIEW_PDF = "pdf:preview",
 
   DO_OPEN_PDF = "pdf:open",
   DO_OPEN_FDX = "fdx:open",

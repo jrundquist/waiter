@@ -31,6 +31,26 @@ const defaultOptions: PDFOptions = {
   },
 };
 
+export async function previewPDF(
+  state: State,
+  options: Partial<PDFOptions> = {}
+): Promise<ArrayBuffer> {
+  const opts = { ...defaultOptions, ...options };
+  log.info(`Previewing PDF`);
+  const doc = new Doc(opts);
+
+  await doc.addFonts();
+
+  createTitlePage(doc, state);
+
+  // Title page is optionally added, either way there is now a blank page for
+  // content.
+
+  createContentPages(doc, state);
+
+  return doc.output();
+}
+
 export async function exportPDF(
   state: State,
   fileName: string,
@@ -205,7 +225,7 @@ function setupContentPage(doc: Doc) {
 // Create content pages
 function createContentPages(doc: Doc, state: State) {
   setupContentPage(doc);
-  const elements = state.scriptElements;
+  const elements = [...state.scriptElements];
 
   const LINE_HEIGHT = doc.lineHeight;
   const DOC_TOP = doc.options.margins.top + LINE_HEIGHT;

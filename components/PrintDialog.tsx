@@ -20,7 +20,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     backgroundColor: theme.palette.background.paper,
-    boxShadow: `0 0 10px ${theme.palette.text.secondary}`,
+    boxShadow: `0 0 10px ${theme.palette.common.black}`,
     border: `2px solid ${theme.palette.divider}`,
     borderRadius: 10,
     zIndex: 100,
@@ -47,8 +47,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.background.default,
     borderRadius: 5,
     border: `1px solid ${theme.palette.divider}`,
-    minHeight: 400,
+    minHeight: 550,
     aspectRatio: "8.5 / 11",
+    "& > iframe": {
+      width: "100%",
+      height: "100%",
+      border: "none",
+      transition: "opacity .2s",
+    },
   },
 
   row: {
@@ -176,8 +182,13 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
   const [includeSceneNumbers, setIncludeSceneNumbers] = useState(true);
   const [pageHeader, setPageHeader] = useState("");
   const [watermark, setWatermark] = useState("");
-  const [watermarkOrientation, setWatermarkOrientation] = useState("landscape");
+  const [watermarkOrientation, setWatermarkOrientation] = useState<
+    "horizontal" | "45" | "vertical"
+  >("horizontal");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const previewRef = React.useRef<HTMLIFrameElement>(null);
 
   const handlePrint = () => {
     console.log("Printing with settings:", {
@@ -207,6 +218,56 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
     };
   }, [open, handleEsc]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    // Generate a PDF preview
+    const start = performance.now();
+    let previewUrl: string | null = null;
+    setLoading(true);
+
+    window.api
+      .getPDFPreview({
+        skipTitlePage: !includeTitlePage,
+        includeSceneNumbers,
+        pageHeader,
+        watermark,
+        watermarkSize: 48,
+        watermarkOrientation,
+      })
+      .then((result) => {
+        console.log("PDF Preview Result:", result);
+        console.log("PDF Preview took", performance.now() - start, "ms");
+
+        const previewBlob = new Blob([result], { type: "application/pdf" });
+        previewUrl = URL.createObjectURL(previewBlob);
+
+        if (previewRef.current) {
+          previewRef.current.src = `${previewUrl}#toolbar=0`; // Append #toolbar=0 to hide Chrome's PDF toolbar
+          previewRef.current.width = "100%"; // Set desired width
+          previewRef.current.height = "100%"; // Set desired height
+          previewRef.current.onload = () => {
+            setLoading(false);
+          };
+        }
+      });
+
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [
+    setLoading,
+    open,
+    includeTitlePage,
+    includeSceneNumbers,
+    pageHeader,
+    watermark,
+    watermarkOrientation,
+    previewRef,
+  ]);
+
   if (!open) return null;
 
   return (
@@ -217,7 +278,7 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
             <div className={classes.section}>
               {/* This is where the PDF preview component would go */}
               <div className={classes.preview}>
-                <p>PDF Preview Area</p>
+                <iframe ref={previewRef} style={{ opacity: loading ? 0 : 100 }} />
               </div>
             </div>
 
@@ -309,8 +370,9 @@ export const PrintDialog: React.FC<TitlePageDialogProps> = ({ open, onClose }) =
                       onChange={(e) => setWatermarkOrientation(e.target.value)}
                       className={classes.input}
                     >
-                      <option value="landscape">Landscape</option>
-                      <option value="portrait">Portrait</option>
+                      <option value="horizontal">Horizontal</option>
+                      <option value="vertical">Vertical</option>
+                      <option value="45">45</option>
                     </select>
                   </div>
                 </div>
