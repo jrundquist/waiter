@@ -3,7 +3,8 @@ import { makeStyles } from "tss-react/mui";
 import { Theme } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-import React from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { IPCEvents } from "@/ipc/events";
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -47,6 +48,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
       userSelect: "none",
     },
   },
+  marker: {
+    alignItems: "center",
+  },
   firtBlock: {
     justifyContent: "flex-start",
     alignItems: "flex-start",
@@ -61,18 +65,28 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export function TitleBar() {
   const { classes } = useStyles();
 
-  const [title, setTitle] = React.useState("");
+  const [title, setTitle] = useState("Untitled");
+  const [saved, setSaved] = useState(true);
 
-  const getTitlePromise = React.useMemo<Promise<string>>(window.api.getCurrentTitle, []);
-  React.useEffect(() => {
-    getTitlePromise.then(setTitle);
+  useEffect(() => {
+    return window.api.subscribeTo(IPCEvents.DIRTY_STATE_CHANGE, (_, isDirty) => {
+      setSaved(!isDirty);
+    });
+  }, [setSaved]);
+  const getTitlePromise = useMemo<Promise<string>>(window.api.getCurrentTitle, []);
+  useEffect(() => {
+    getTitlePromise.then((title) => {
+      setTitle(title.replace(/\*+/g, ""));
+    });
   }, [getTitlePromise]);
 
-  React.useEffect(() => {
-    return window.api.subscribeToTitleChanges(setTitle);
+  useEffect(() => {
+    return window.api.subscribeToTitleChanges((title) => {
+      setTitle(title.replace(/\*+/g, ""));
+    });
   }, [setTitle]);
 
-  const openSettings = React.useCallback(() => {
+  const openSettings = useCallback(() => {
     window.api.openSettings();
   }, []);
 
@@ -80,7 +94,10 @@ export function TitleBar() {
     <div className={classes.root}>
       <div className={classes.content}>
         <div className={`${classes.sideBlock} ${classes.firtBlock}`}></div>
-        <div className={classes.centeredTitle}>{title}</div>
+        <div className={classes.centeredTitle}>
+          {title}
+          {saved ? null : "*"}
+        </div>
         <div className={classes.sideBlock}>
           <div onClick={openSettings} className={classes.settingsButton}>
             <SettingsIcon />

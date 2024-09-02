@@ -127,7 +127,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
 
     // actions
     newAction: () => {
-      if (appState.isDirty) {
+      if (appState.currentHash !== appState.savedHash) {
         const res = dialog.showMessageBoxSync(mainWindow!, {
           type: "question",
           buttons: ["Yes", "No"],
@@ -143,7 +143,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       }
     },
     openAction: () => {
-      if (appState.isDirty) {
+      if (appState.currentHash !== appState.savedHash) {
         const res = dialog.showMessageBoxSync(mainWindow!, {
           type: "question",
           buttons: ["Yes", "No"],
@@ -449,10 +449,10 @@ ipcMain.on(IPCEvents.SHOW_SCRIPT_DEBUG_WINDOW, () => {
 
 eventBus.on("open", (file: string) => {
   loadFile(file).then((state) => {
-    appState = reducer(state, "state:loaded");
+    appState = reducer(state, { type: "state:loaded" });
     mainWindow?.webContents.send(IPCEvents.SET_SCREEN_ELEMENTS, appState.scriptElements);
     mainWindow?.show();
-    const title = `Waiter - ${basename(appState.scriptFile) ?? "Untitled"}`;
+    const title = `Waiter - ${basename(appState.scriptFile ?? "") ?? "Untitled"}`;
     eventBus.emit("bus:window:set-title", title);
   });
 });

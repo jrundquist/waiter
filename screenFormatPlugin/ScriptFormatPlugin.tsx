@@ -3,8 +3,6 @@ import {
   $getNearestNodeFromDOMNode,
   $getRoot,
   COMMAND_PRIORITY_HIGH,
-  INSERT_PARAGRAPH_COMMAND,
-  KEY_ENTER_COMMAND,
   Klass,
   LexicalCommand,
   LexicalEditor,
@@ -15,7 +13,7 @@ import {
 } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getSelection, $isRangeSelection } from "lexical";
-import { $createLineNode, $isLineNode, LineNode, LineNodeType } from "./LineNode";
+import { $isLineNode, LineNode, LineNodeType } from "./LineNode";
 import { $isSceneNode, SceneNode } from "./SceneNode";
 import { CharacterNode } from "./CharacterNode";
 import { TransitionNode } from "./TransitionNode";
@@ -130,63 +128,6 @@ function useScriptFormatPlugin(editor: LexicalEditor) {
       },
       COMMAND_PRIORITY_HIGH
     );
-
-    // editor.registerCommand(
-    //   INSERT_PARAGRAPH_COMMAND,
-    //   () => {
-    //     const selection = $getSelection();
-    //     if (!$isRangeSelection(selection)) {
-    //       return false;
-    //     }
-    //     if ($isRangeSelection(selection) && selection.isCollapsed()) {
-    //       const anchor = selection.anchor;
-    //       const currentNode = anchor.getNode();
-    //       if (currentNode.getTextContentSize() === 0) {
-    //         const newLineNode = $createLineNode(LineNodeType.None);
-    //         const parentNode = currentNode.getParentOrThrow();
-    //         parentNode.insertBefore(newLineNode, false);
-    //         newLineNode.select();
-    //         return true;
-    //       }
-    //     }
-    //     return false;
-    //   },
-    //   COMMAND_PRIORITY_HIGH
-    // );
-
-    // // Register a command to listen for the Enter key at the begining of the line.
-    // editor.registerCommand(
-    //   KEY_ENTER_COMMAND,
-    //   (event) => {
-    //     const selection = $getSelection();
-
-    //     // Check if the selection is a range selection and collapsed (i.e., a caret position)
-    //     if ($isRangeSelection(selection) && selection.isCollapsed()) {
-    //       const anchor = selection.anchor;
-    //       const currentNode = anchor.getNode();
-
-    //       // Check if the selection is at the start of the node
-    //       if (anchor.offset === 0 && currentNode.getTextContentSize() > 0) {
-    //         window.api.log.debug("Enter key pressed at the start of a node");
-    //         event?.preventDefault(); // Prevent the default Enter behavior
-
-    //         const newLineNode = $createLineNode(LineNodeType.None); // Create a new paragraph node
-    //         const parentNode = currentNode.getParentOrThrow();
-
-    //         // Insert the new paragraph node before the current node
-    //         parentNode.insertBefore(newLineNode, false);
-
-    //         // Set the selection to the new paragraph node
-    //         newLineNode.select();
-
-    //         return true; // Indicate that the command has been handled
-    //       }
-    //     }
-
-    //     return false; // Continue with default behavior if not at the start of a node
-    //   },
-    //   COMMAND_PRIORITY_HIGH
-    // );
 
     editor.registerCommand(
       RESET_WITH_FOUNTAIN_FILE,

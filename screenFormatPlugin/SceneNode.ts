@@ -6,6 +6,7 @@ import {
   RangeSelection,
   SerializedElementNode,
   Spread,
+  TextNode,
 } from "lexical";
 import * as utils from "@lexical/utils";
 import { $createLineNode, LineNodeType } from "./LineNode";
@@ -86,7 +87,7 @@ export class SceneNode extends ElementNode {
     return node;
   }
 
-  static importDOM(_element: HTMLElement): DOMConversionMap | null {
+  static importDOM(): DOMConversionMap<any> | null {
     function isSceneSpan(node: HTMLElement): boolean {
       return node.classList.contains("scene");
     }
@@ -117,7 +118,7 @@ export class SceneNode extends ElementNode {
   insertNewAfter(selection: RangeSelection, restoreSelection = true) {
     if (didSplitNode(selection)) {
       // We're in the middle of the line, so a linebreak should be inserted.
-      selection.anchor.getNode()!.splitText(selection.anchor.offset);
+      (selection.anchor.getNode()! as TextNode).splitText(selection.anchor.offset);
       return null;
     }
     // Swap the order so they are inserted in the correct order.

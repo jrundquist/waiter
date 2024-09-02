@@ -154,13 +154,6 @@ export const reducer = (state: State, action: StateAction): State => {
     default:
       break;
   }
-
-  console.log({
-    ...newState,
-    hash: newState.currentHash,
-    savedHash: newState.savedHash,
-    __: initialState.savedHash,
-  });
   return newState;
 };
 
