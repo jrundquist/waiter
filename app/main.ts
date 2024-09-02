@@ -170,6 +170,14 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       }
       const pathName = dialog.showSaveDialogSync({
         title: "Save Script",
+        defaultPath: basename(
+          appState.scriptTitle
+            ?.toLocaleLowerCase()
+            .replace(/\.[^.]+$/, "")
+            .replaceAll(/[^A-Za-z0-9_-]+/g, "_")
+            .replaceAll(/[_]{2,}/g, "_") ?? "untitled"
+        ),
+
         filters: [{ name: "Waiter Files", extensions: ["wai"] }],
       });
 
@@ -239,6 +247,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     exportFinalDraft: () => {
       let pathName = dialog.showSaveDialogSync({
         title: "Export to Final Draft",
+        defaultPath: basename(appState.scriptFile ?? "untitled").replace(/\.[^.]+$/, ".fdx"),
         filters: [{ name: "Final Draft", extensions: ["fdx"] }],
       });
 
@@ -254,6 +263,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     exportFounain: () => {
       let pathName = dialog.showSaveDialogSync({
         title: "Export to Fountain",
+        defaultPath: basename(appState.scriptFile ?? "untitled").replace(/\.[^.]+$/, ".fountain"),
         filters: [{ name: "Fountain", extensions: ["fountain"] }],
       });
 
@@ -527,6 +537,7 @@ ipcMain.on(IPCEvents._DEBUG_DIRECT_PRINT_PDF, async () => {
 ipcMain.on(IPCEvents.EXPORT_PDF, async (_: IpcMainEvent) => {
   let pathName = dialog.showSaveDialogSync({
     title: "Export to PDF",
+    defaultPath: basename(appState.scriptFile ?? "untitled").replace(/\.[^.]+$/, ".pdf"),
     filters: [{ name: "PDF", extensions: ["pdf"] }],
   });
 
