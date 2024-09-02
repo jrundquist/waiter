@@ -100,11 +100,11 @@ export const ScriptDetailsProvider: React.FunctionComponent<React.PropsWithChild
   );
 
   React.useEffect(() => {
-    console.log("characters", characters);
+    // console.log("characters", characters);
   }, [characters]);
 
   React.useEffect(() => {
-    console.log("sceneContent", sceneContent);
+    // console.log("sceneContent", sceneContent);
   }, [sceneContent]);
 
   return (
