@@ -40,6 +40,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
 
+  left: {
+    marginLeft: "auto",
+  },
+
   // This is a hack to prevent the window from being dragged
   noDrag: {
     ["-webkit-app-region"]: "no-drag",
@@ -64,6 +68,8 @@ export function BottomBar({}): React.FunctionComponentElement<{}> {
       <div className={`${classes.dirtyMarker} ${saved ? "saved" : "unsaved"}`}>
         <CheckIcon />
       </div>
+
+      <div className={classes.left}>Script Title</div>
     </div>
   );
 }

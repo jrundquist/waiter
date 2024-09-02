@@ -96,7 +96,7 @@ export function TitleBar() {
         <div className={`${classes.sideBlock} ${classes.firtBlock}`}></div>
         <div className={classes.centeredTitle}>
           {title}
-          {saved ? null : "*"}
+          {saved ? "\u00A0" : "*"}
         </div>
         <div className={classes.sideBlock}>
           <div onClick={openSettings} className={classes.settingsButton}>
