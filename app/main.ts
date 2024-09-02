@@ -409,7 +409,14 @@ ipcMain.on(IPCEvents.CLEAR_SCREEN_ELEMENTS, () => {
 ipcMain.on(IPCEvents.SCREEN_ELEMENTS_CHANGE_TO_BACKEND, (_: IpcMainEvent, els: ScriptElement[]) => {
   if (!isEqual(appState.scriptElements, els)) {
     appState = reducer(appState, { type: "state:set-elements", payload: els });
-    if (appState.isDirty) {
+    mainWindow?.webContents.send(IPCEvents.APP_GET_STATE, appState);
+    log.debug("Screen elements changed to backend", appState.scriptElements);
+    log.debug("\n-" + appState.currentHash + "\n+" + appState.savedHash);
+    mainWindow?.webContents.send(
+      IPCEvents.DIRTY_STATE_CHANGE,
+      appState.currentHash !== appState.savedHash
+    );
+    if (appState.currentHash !== appState.savedHash) {
       eventBus.emit("bus:window:set-title", `Waiter - ${appState.scriptName ?? "Untitled"}*`);
     }
   }
@@ -442,8 +449,7 @@ ipcMain.on(IPCEvents.SHOW_SCRIPT_DEBUG_WINDOW, () => {
 
 eventBus.on("open", (file: string) => {
   loadFile(file).then((state) => {
-    appState = state;
-    appState.scriptFile = file;
+    appState = reducer(state, "state:loaded");
     mainWindow?.webContents.send(IPCEvents.SET_SCREEN_ELEMENTS, appState.scriptElements);
     mainWindow?.show();
     const title = `Waiter - ${basename(appState.scriptFile) ?? "Untitled"}`;
@@ -453,8 +459,13 @@ eventBus.on("open", (file: string) => {
 
 eventBus.on("state:save", (file: string) => {
   log.info("Saving file: " + file);
+  appState.lastSaved = new Date();
   if (saveState(file, appState)) {
     appState = reducer(appState, { type: "state:saved", file });
+    mainWindow?.webContents.send(
+      IPCEvents.DIRTY_STATE_CHANGE,
+      appState.currentHash !== appState.savedHash
+    );
     const title = `Waiter - ${appState.scriptName ?? "Untitled"}`;
     eventBus.emit("bus:window:set-title", title);
     log.debug("File saved: " + file);
@@ -483,6 +494,10 @@ ipcMain.on(IPCEvents.OPEN_TITLE_PAGE, () => {
 ipcMain.on(IPCEvents.SAVE_TITLE_INFO, (_: IpcMainEvent, info: SetScriptTitle["payload"]) => {
   console.log("Saving title info", info);
   appState = reducer(appState, { type: "state:set-script-title", payload: info });
+  mainWindow?.webContents.send(
+    IPCEvents.DIRTY_STATE_CHANGE,
+    appState.currentHash !== appState.savedHash
+  );
   console.log("Saved title info", appState.scriptAuthors);
 });
 

@@ -93,9 +93,9 @@ function _updatePages(
       elToMove.setAttribute("data-page", `${currentPage}.`);
     }
 
-    const updateEnd = performance.now();
-    console.log("Time to update pages: ", updateEnd - updateStart);
-    console.log({ totalPages: currentPage });
+    // const updateEnd = performance.now();
+    // console.log("Time to update pages: ", updateEnd - updateStart);
+    // console.log({ totalPages: currentPage });
   });
 }
 

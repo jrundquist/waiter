@@ -2,6 +2,7 @@
 import { IPCEvents } from "@/ipc/events";
 import { Editor } from "@components/Editor";
 import TitleBar from "@components/Titlebar";
+import { BottomBar } from "@components/BottomBar";
 import { ScriptDetailsProvider } from "@contexts/ScriptDetails";
 import { TitlePageDialog } from "@components/TitlePageDialog";
 import { Theme } from "@mui/material";
@@ -19,7 +20,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   content: {
     position: "fixed",
-    height: "calc(100vh - env(titlebar-area-height, var(--fallback-title-bar-height)))",
+    height:
+      "calc(100vh - env(titlebar-area-height, var(--fallback-title-bar-height)) - var(--bottom-bar-height))",
     top: "calc(0px + env(titlebar-area-height, var(--fallback-title-bar-height)))",
     overflow: "scroll",
     width: "100vw",
@@ -82,6 +84,7 @@ export function App() {
             setTitleDialogOpen(false);
           }}
         />
+        <BottomBar />
       </div>
     </ScriptDetailsProvider>
   );

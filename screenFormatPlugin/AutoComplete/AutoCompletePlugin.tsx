@@ -60,7 +60,6 @@ function $search(
     return [false, ""];
   }
   const text = node.getTextContent();
-  console.log({ type, text });
   if (type === LineNodeType.Character) {
     return [true, node.getTextContent()];
   }
@@ -86,20 +85,16 @@ function useQuery(): (searchText: string) => SearchPromise {
     (searchText: string) => {
       const dismiss = () => {};
       const promise: Promise<null | string> = new Promise((resolve) => {
-        console.time("query");
         const match = scriptDetails?.characters.find(
           (character) => character.startsWith(searchText) ?? null
         );
         if (match === undefined) {
-          console.timeEnd("query");
           return resolve(null);
         }
         const autocompleteChunk = match.substring(searchText.length);
         if (autocompleteChunk === "") {
-          console.timeEnd("query");
           return resolve(null);
         }
-        console.timeEnd("query");
         return resolve(autocompleteChunk);
       });
 

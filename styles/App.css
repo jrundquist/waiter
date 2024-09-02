@@ -28,6 +28,7 @@
 
 :root {
   --fallback-title-bar-height: 48px;
+  --bottom-bar-height: 26px;
 }
 
 html,

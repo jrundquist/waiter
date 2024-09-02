@@ -11,6 +11,7 @@ export enum IPCEvents {
 
   // App Actions
   APP_GET_STATE = "app:get-state",
+  DIRTY_STATE_CHANGE = "app:dirty-state-change",
   APP_GET_WINDOW_TITLE = "app:get-window-title",
   APP_WINDOW_TITLE_CHANGED = "app:window-title-changed",
   SET_WINDOW_OPTIONS = "window:set-menu-options",
