@@ -13,8 +13,6 @@ function _updatePages(
   lineNodeToEl: ClearableWeakMap<LineNode, HTMLElement>
 ) {
   editor.update(() => {
-    const updateStart = performance.now();
-
     let currentPage = 1;
     let remainingHeight = CONTENT_HEIGHT;
 

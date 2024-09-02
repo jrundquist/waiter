@@ -1,7 +1,7 @@
 import { LexicalNode } from "lexical";
 import { ElementType, ScriptElement } from "./elements";
 import { $isLineNode, LineNodeType } from "../../screenFormatPlugin/LineNode";
-import { $isSceneNode, SceneNode } from "../../screenFormatPlugin/SceneNode";
+import { $isSceneNode } from "../../screenFormatPlugin/SceneNode";
 import { $isActionNode, ActionNode } from "../../screenFormatPlugin/ActionNode";
 import { $isCharacterNode, CharacterNode } from "../../screenFormatPlugin/CharacterNode";
 import { $isTransitionNode, TransitionNode } from "../../screenFormatPlugin/TransitionNode";

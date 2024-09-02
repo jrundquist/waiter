@@ -1,10 +1,9 @@
 import { makeStyles } from "tss-react/mui";
 
-import { Icon, Theme } from "@mui/material";
+import { Theme } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 
 import React, { useEffect } from "react";
-import { State } from "@/app/state";
 import { IPCEvents } from "@/ipc/events";
 
 const useStyles = makeStyles()((theme: Theme) => ({

@@ -80,11 +80,11 @@ export async function exportPDF(
 }
 
 function createTitlePage(doc: Doc, state: State) {
-  const title = state.scriptTitle ?? "Untitled Script";
-  const credit = state.scriptCredit ?? "";
-  const authors = state.scriptAuthors ?? "";
-  const date = state.scriptDraftDate ?? "";
-  const contact = state.scriptContact ?? "";
+  const title = state.scriptTitle || "Untitled Script";
+  const credit = state.scriptCredit || "";
+  const authors = state.scriptAuthors || "";
+  const date = state.scriptDraftDate || "";
+  const contact = state.scriptContact || "";
 
   doc.setDocumentProperties({
     title,

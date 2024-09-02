@@ -189,6 +189,9 @@ export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [printerOptions, setPrinterOptions] = useState<{ id: string; value: string }[]>([]);
+  const [selectedPrinter, setSelectedPrinter] = useState<string | undefined>(undefined);
+
   const previewRef = React.useRef<HTMLIFrameElement>(null);
 
   const printSettings: Partial<PDFOptions> = React.useMemo(
@@ -205,8 +208,19 @@ export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
 
   const handlePrint = React.useCallback(() => {
     console.log("Printing with settings:");
-    window.api.savePDF(printSettings);
-  }, [printSettings, onClose]);
+    window.api.print(printSettings, selectedPrinter).then((didPrint) => {
+      if (didPrint) {
+        onClose();
+      }
+    });
+  }, [printSettings, selectedPrinter, onClose]);
+
+  useEffect(() => {
+    window.api.getPrinters().then((res) => {
+      setPrinterOptions(res.printers.map((p) => ({ id: p.printer, value: p.description })));
+      setSelectedPrinter(res.defaultPrinter);
+    });
+  }, [open]);
 
   const handleSavePDF = React.useCallback(() => {
     console.log("Printing with settings:");
@@ -283,6 +297,26 @@ export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
             {/* This is the main print setup area */}
             <div className={classes.section} data-section="main">
               <h2>Print</h2>
+
+              <div className={classes.row}>
+                <label className={classes.label} htmlFor="printer">
+                  Printer
+                </label>
+                <select
+                  value={selectedPrinter}
+                  onChange={(e) => setSelectedPrinter(e.target.value)}
+                  className={classes.input}
+                  id="printer"
+                  disabled={printerOptions.length === 0}
+                >
+                  {printerOptions.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className={classes.row}>
                 <input
                   id="includeTitle"
@@ -317,7 +351,11 @@ export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
                   </div>
 
                   <div className={classes.buttonRow}>
-                    <button className={classes.actionButton} onClick={handlePrint}>
+                    <button
+                      className={classes.actionButton}
+                      onClick={handlePrint}
+                      disabled={printerOptions.length === 0}
+                    >
                       Print
                     </button>
                     <button className={classes.actionButton} onClick={handleSavePDF}>
@@ -365,7 +403,7 @@ export const PrintDialog: React.FC<Props> = ({ open, onClose }) => {
                     <label className={classes.label}>Orientation</label>
                     <select
                       value={watermarkOrientation}
-                      onChange={(e) => setWatermarkOrientation(e.target.value)}
+                      onChange={(e) => setWatermarkOrientation(e.target.value as any)}
                       className={classes.input}
                     >
                       <option value="horizontal">Horizontal</option>

@@ -23,6 +23,8 @@ export enum IPCEvents {
 
   EXPORT_PDF = "pdf:export",
   PREVIEW_PDF = "pdf:preview",
+  GET_PRINTERS = "print:get-printers",
+  PRINT_FILE = "print:file",
 
   DO_OPEN_PDF = "pdf:open",
   DO_OPEN_FDX = "fdx:open",

@@ -55,6 +55,12 @@ export const api = {
   getPDFPreview: (options: Partial<PDFOptions>) => {
     return ipcRenderer.invoke(IPCEvents.PREVIEW_PDF, options);
   },
+  getPrinters: () => {
+    return ipcRenderer.invoke(IPCEvents.GET_PRINTERS);
+  },
+  print: (options: Partial<PDFOptions>, printer: string | undefined) => {
+    return ipcRenderer.invoke(IPCEvents.PRINT_FILE, options, printer);
+  },
   savePDF: (options: Partial<PDFOptions>) => {
     return ipcRenderer.invoke(IPCEvents.EXPORT_PDF, options);
   },

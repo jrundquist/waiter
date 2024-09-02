@@ -2,7 +2,6 @@ import { Action, ElementType, ScriptElement } from "../state/elements/elements";
 import { ScriptMetadata } from "../state/scriptMetadata";
 import path from "node:path";
 import crypto from "node:crypto";
-import { log } from "./logger";
 
 export interface State {
   savedHash: string;

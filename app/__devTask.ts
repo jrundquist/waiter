@@ -1,9 +1,6 @@
 import { BrowserWindow } from "electron";
 // import eventBus from "./eventBus";
 import { log } from "./logger";
-import fs from "fs";
-
-import { exportPDF } from "@/app/exporter/pdf";
 
 // Tasks that are only run in development on app startup.
 export const runDevTask = (mainWindow: BrowserWindow | undefined): void => {

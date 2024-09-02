@@ -1,5 +1,6 @@
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import { BrowserWindow, IpcMainEvent, Menu, app, dialog, ipcMain, shell } from "electron";
+import os from "os";
 import fs from "fs";
 import { join, basename } from "path";
 import { runDevTask } from "./__devTask";
@@ -20,6 +21,8 @@ import { IPCEvents } from "@/ipc/events";
 import Prefs from "@/state/prefs";
 import { determineBackgroundColor } from "@/utils/determineBackgroundColor";
 import { PDFOptions } from "./exporter/pdf_doc";
+import unixPrint from "unix-print";
+import path from "path";
 
 // Keep a global reference of the window object, if you don't, the window will
 //   be closed automatically when the JavaScript object is garbage collected.
@@ -32,6 +35,7 @@ let menuOptions: CreateTemplateOptionsType | undefined;
 
 let appState: State = initialState;
 let isReady = false;
+const isUnix = os.platform() === "darwin" || os.platform() === "linux";
 
 const defaultWebPrefs = {
   devTools: process.argv.some((arg) => arg === "--enable-dev-tools") || is.dev,
@@ -89,8 +93,8 @@ async function createWindow(): Promise<void> {
   }
 
   mainWindow.webContents.on("did-finish-load", () => {
-    for (const path of openQueue) {
-      eventBus.emit("open", path);
+    for (const p of openQueue) {
+      eventBus.emit("open", p);
     }
     openQueue = [];
   });
@@ -200,7 +204,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
       });
     },
     showKeyboardShortcuts: () => {
-      console.log("showKeyboardShortcuts");
+      log.debug("[NOT IMPLEMENTED] Showing keyboard shortcuts");
     },
     showDebugLog: () => {
       eventBus.emit("show-logs");
@@ -483,7 +487,6 @@ ipcMain.handle(IPCEvents.APP_GET_WINDOW_TITLE, () => {
 });
 
 ipcMain.handle(IPCEvents.APP_GET_STATE, () => {
-  console.log("Getting state", appState.scriptTitle);
   return appState;
 });
 
@@ -498,13 +501,12 @@ ipcMain.on(IPCEvents.OPEN_PRINT_DIALOG, () => {
 });
 
 ipcMain.on(IPCEvents.SAVE_TITLE_INFO, (_: IpcMainEvent, info: SetScriptTitle["payload"]) => {
-  console.log("Saving title info", info);
+  log.debug("Saving title info");
   appState = reducer(appState, { type: "state:set-script-title", payload: info });
   mainWindow?.webContents.send(
     IPCEvents.DIRTY_STATE_CHANGE,
     appState.currentHash !== appState.savedHash
   );
-  console.log("Saved title info", appState.scriptAuthors);
 });
 
 eventBus.on("show-logs", () => {
@@ -587,6 +589,52 @@ function doPDFSave(_, opts: Partial<PDFOptions>) {
 
 ipcMain.on(IPCEvents.EXPORT_PDF, doPDFSave);
 ipcMain.handle(IPCEvents.EXPORT_PDF, doPDFSave);
+
+ipcMain.handle(IPCEvents.GET_PRINTERS, async () => {
+  if (!isUnix) {
+    return {
+      printers: [],
+      default: undefined,
+    };
+  }
+
+  const printers = await unixPrint.getPrinters();
+  const defaultPrinter = await unixPrint.getDefaultPrinter();
+
+  return {
+    printers,
+    default: defaultPrinter?.printer,
+  };
+});
+
+ipcMain.handle(
+  IPCEvents.PRINT_FILE,
+  async (_, opts: Partial<PDFOptions> = {}, defaultPrinter: string | undefined = undefined) => {
+    const tmpFile = path.join(app.getPath("temp"), `print-${Date.now()}.pdf`);
+    log.debug("Preping temp print file " + tmpFile);
+    const didSave = await exportPDF(appState, tmpFile, opts);
+    if (!didSave) {
+      log.error("Failed to save temp file");
+      return false;
+    }
+
+    log.debug("Printing file " + tmpFile + " with printer: " + defaultPrinter);
+    if (isUnix) {
+      await unixPrint.print(tmpFile, defaultPrinter, [
+        "-c",
+        "-o sides=one-sided",
+        "-o fit-to-page",
+        "-o media=Letter",
+      ]);
+    } else {
+      alert("Printing is not supported on this platform");
+    }
+
+    fs.unlinkSync(tmpFile);
+
+    return true;
+  }
+);
 
 async function openScriptDebugWindow() {
   scriptDebugWindow = new BrowserWindow({

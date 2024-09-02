@@ -1,5 +1,5 @@
 import { isString } from "lodash";
-import { ipcMain, ipcRenderer, type MenuItemConstructorOptions } from "electron";
+import { ipcMain, type MenuItemConstructorOptions } from "electron";
 import eventBus from "./eventBus";
 import { IPCEvents } from "@/ipc/events";
 
